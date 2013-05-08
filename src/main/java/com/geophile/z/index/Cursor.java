@@ -10,7 +10,7 @@ import com.geophile.z.spatialobject.SpatialObject;
 
 /**
  * A {@link Cursor} provides access to the spatial objects satisfying a spatial search, carried out by
- * {@link com.geophile.SpatialIndex#overlapping(com.geophile.z.spatialobject.SpatialObject, com.geophile.SpatialIndex.Duplicates)}.
+ * {@link com.geophile.z.SpatialIndex#overlapping(com.geophile.z.spatialobject.SpatialObject, com.geophile.z.SpatialIndex.Duplicates)}.
  * @param <SPATIAL_OBJECT> The type of {@link com.geophile.z.spatialobject.SpatialObject} that will be returned by this cursor.
  */
 
@@ -28,7 +28,7 @@ public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
      */
     public abstract Record<SPATIAL_OBJECT> previous();
 
-    public abstract void goTo(long z);
+    public abstract void goTo(SpatialObjectKey key);
 
     /**
      * After calling close(), subsequent calls to {@link #next()} will return null.
@@ -45,8 +45,7 @@ public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
 
     protected final void current(long z, SPATIAL_OBJECT spatialObject)
     {
-        current.z(z);
-        current.spatialObject(spatialObject);
+        current.set(z, spatialObject);
     }
 
     protected State state()
@@ -61,7 +60,7 @@ public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
 
     // Object state
 
-    private final Record<SPATIAL_OBJECT> current = new Record<SPATIAL_OBJECT>();
+    private final Record<SPATIAL_OBJECT> current = new Record<>();
     private State state = State.NEVER_USED;
 
     // Inner classes

@@ -1,6 +1,6 @@
 package com.geophile.z.spatialjoin;
 
-import com.geophile.SpatialIndex;
+import com.geophile.z.SpatialIndex;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
 import com.geophile.z.spatialobject.SpatialObject;
@@ -27,12 +27,12 @@ class SpatialJoinInput<SPATIAL_OBJECT extends SpatialObject>
 
     public long nextEntry()
     {
-        return nextToEnter == null ? EOF : nextToEnter.z();
+        return nextToEnter == null ? EOF : nextToEnter.key().z();
     }
 
     public long nextExit()
     {
-        return nest.isEmpty() ? EOF : nest.peek().z();
+        return nest.isEmpty() ? EOF : nest.peek().key().z();
     }
 
     public SpatialJoinInput(SpatialIndex<SPATIAL_OBJECT> spatialIndex)
@@ -43,8 +43,9 @@ class SpatialJoinInput<SPATIAL_OBJECT extends SpatialObject>
 
     private void fixNest()
     {
+        long z = nextToEnter.key().z();
         Record<SPATIAL_OBJECT> top;
-        while ((top = nest.peek()) != null && !space.contains(top.z(), nextToEnter.z())) {
+        while ((top = nest.peek()) != null && !space.contains(top.key().z(), z)) {
             nest.pop();
         }
         nest.push(nextToEnter);

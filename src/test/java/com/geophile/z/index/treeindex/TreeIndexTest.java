@@ -9,7 +9,6 @@ package com.geophile.z.index.treeindex;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Index;
 import com.geophile.z.index.Record;
-import com.geophile.z.index.treeindex.treeindex.TreeIndex;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import com.geophile.z.space.SpaceImpl;
@@ -26,7 +25,7 @@ public class TreeIndexTest
     public void before()
     {
         space = new SpaceImpl(new int[]{10, 10}, null);
-        index = new TreeIndex<>(space);
+        index = new TreeIndex<>();
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 index.add(space.shuffle(new long[]{x, y}), new Point(x, y));

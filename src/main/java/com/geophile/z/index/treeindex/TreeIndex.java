@@ -23,7 +23,7 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     @Override
     public void add(long z, SPATIAL_OBJECT spatialObject)
     {
-        SPATIAL_OBJECT replaced = tree.put(SpatialObjectKey.key(z, spatialObject.id()), spatialObject);
+        SPATIAL_OBJECT replaced = tree.put(key(z, spatialObject.id()), spatialObject);
         // Checking replaced is not a foolproof way to catch duplicates. If two threads concurrently
         // add spatial objects that have a common z-value and the same id, neither may see the other's insert.
         // (The exact behavior depends on how the underlying index does concurrency control.)
@@ -37,7 +37,7 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     {
         long removedId = -1L;
         Iterator<Map.Entry<SpatialObjectKey, SPATIAL_OBJECT>> zScan =
-            tree.tailMap(SpatialObjectKey.keyLowerBound(z)).entrySet().iterator();
+            tree.tailMap(key(z)).entrySet().iterator();
         boolean done = false;
         while (!done) {
             if (zScan.hasNext()) {
@@ -64,7 +64,7 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     {
         boolean removed = false;
         Iterator<Map.Entry<SpatialObjectKey, SPATIAL_OBJECT>> zScan =
-            tree.tailMap(SpatialObjectKey.key(z, soid)).entrySet().iterator();
+            tree.tailMap(key(z, soid)).entrySet().iterator();
         if (zScan.hasNext()) {
             Map.Entry<SpatialObjectKey, SPATIAL_OBJECT> entry = zScan.next();
             if (entry.getKey().z() == z) {
@@ -82,7 +82,19 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     @Override
     public Cursor<SPATIAL_OBJECT> cursor(long z)
     {
-        return new TreeIndexCursor<>(tree, SpatialObjectKey.keyLowerBound(z));
+        return new TreeIndexCursor<>(tree, key(z));
+    }
+
+    @Override
+    public SpatialObjectKey key(long z)
+    {
+        return SpatialObjectKey.keyLowerBound(z);
+    }
+
+    @Override
+    public SpatialObjectKey key(long z, long soid)
+    {
+        return SpatialObjectKey.key(z, soid);
     }
 
     // TreeIndex

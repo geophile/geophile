@@ -6,7 +6,7 @@
 
 /**
  * Classes in this package implements {@link com.geophile.z.spatialobject.SpatialObject}, and may therefore be stored in a
- * {@link com.geophile.SpatialIndex}. {@link com.geophile.z.spatialobject.SpatialObject} classes
+ * {@link com.geophile.z.SpatialIndex}. {@link com.geophile.z.spatialobject.SpatialObject} classes
  * must also define {@link java.lang.Object#hashCode()}
  * and {@link java.lang.Object#equals(java.lang.Object)}.
  */

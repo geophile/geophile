@@ -6,8 +6,8 @@
 
 package com.geophile.z.index;
 
+import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.spatialobject.d2.Point;
-import com.geophile.z.space.SpaceImpl;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -56,7 +56,7 @@ public class CursorTest
                             expectedEmpty = start > end || start <= end && (end >= startBase || start <= endBase);
                             boolean empty = true;
                             while ((entry = cursor.next()) != null &&
-                                   entry.getKey().compareTo(end) <= 0) {
+                                   entry.key().z() <= end) {
                                 // debug("    %s", entry.getKey());
                                 assertEquals(expectedKey, key(entry));
                                 expectedKey += GAP;
@@ -138,22 +138,22 @@ public class CursorTest
                 match = i * GAP;
                 if (i < n) {
                     // Match, next
-                    cursor.goTo(match);
+                    cursor.goTo(SpatialObjectKey.keyLowerBound(match));
                     assertEquals(match, key(cursor.next()));
                     // Match, previous
-                    cursor.goTo(match);
+                    cursor.goTo(SpatialObjectKey.keyLowerBound(match + 1));
                     assertEquals(match, key(cursor.previous()));
                 }
                 // Before, next
                 before = match - GAP / 2;
-                cursor.goTo(before);
+                cursor.goTo(SpatialObjectKey.keyLowerBound(before));
                 if (i == n) {
                     assertNull(cursor.next());
                 } else {
                     assertEquals(match, key(cursor.next()));
                 }
                 // Before, previous
-                cursor.goTo(before);
+                cursor.goTo(SpatialObjectKey.keyLowerBound(before));
                 if (i == 0) {
                     assertNull(cursor.previous());
                 } else {
@@ -165,8 +165,7 @@ public class CursorTest
 
     private Index<Point> testIndex(int n) throws IOException
     {
-        SpaceImpl space = new SpaceImpl(new int[]{10, 10}, null);
-        Index<Point> index = new TreeIndex<>(space);
+        Index<Point> index = new TreeIndex<>();
         assertTrue(GAP > 1);
         // Populate map with keys 0, GAP, ..., GAP * (n - 1)
         for (int i = 0; i < n; i++) {
@@ -178,7 +177,7 @@ public class CursorTest
 
     private long key(Record<Point> entry)
     {
-        return entry.getKey();
+        return entry.key().z();
     }
 
     private void debug(String template, Object ... args)

@@ -1,7 +1,7 @@
 package com.geophile.z.index;
 
+import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.spatialobject.d2.Point;
-import com.geophile.z.space.SpaceImpl;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -42,8 +42,7 @@ public class CursorIteratorTest
 
     private Index<Point> loadIndex(int n)
     {
-        SpaceImpl space = new SpaceImpl(new int[]{10, 10}, null);
-        Index<Point> index = new TreeIndex<>(space);
+        Index<Point> index = new TreeIndex<>();
         for (int i = 0; i < n; i++) {
             index.add(i, new Point(i, i));
         }

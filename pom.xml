@@ -53,7 +53,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9</version>
         <configuration>
-          <excludePackageNames>com.geophile.z.*</excludePackageNames>
+          <excludePackageNames>com.geophile.z.space.*</excludePackageNames>
           <show>public</show>
         </configuration>
       </plugin>

@@ -1,14 +1,14 @@
 package com.geophile.z.index;
 
-import java.util.Map;
+import com.geophile.z.spatialobject.SpatialObject;
 
-public class Record<SPATIAL_OBJECT> implements Map.Entry<Long, SPATIAL_OBJECT>
+public class Record<SPATIAL_OBJECT extends SpatialObject>
 {
     // Record interface
 
-    public long z()
+    public SpatialObjectKey key()
     {
-        return z;
+        return key;
     }
 
     public SPATIAL_OBJECT spatialObject()
@@ -16,40 +16,16 @@ public class Record<SPATIAL_OBJECT> implements Map.Entry<Long, SPATIAL_OBJECT>
         return spatialObject;
     }
 
-    // Map.Entry interface
-
-    @Override
-    public Long getKey()
-    {
-        return z;
-    }
-
-    @Override
-    public SPATIAL_OBJECT getValue()
-    {
-        return spatialObject;
-    }
-
-    @Override
-    public SPATIAL_OBJECT setValue(SPATIAL_OBJECT value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
     // For use by this package
 
-    void z(long z)
+    void set(long z, SPATIAL_OBJECT spatialObject)
     {
-        this.z = z;
-    }
-
-    void spatialObject(SPATIAL_OBJECT spatialObject)
-    {
+        this.key = SpatialObjectKey.key(z, spatialObject.id());
         this.spatialObject = spatialObject;
     }
 
     // Object state
 
-    private long z;
+    private SpatialObjectKey key;
     private SPATIAL_OBJECT spatialObject;
 }

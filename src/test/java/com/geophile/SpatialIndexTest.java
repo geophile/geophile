@@ -6,12 +6,13 @@
 
 package com.geophile;
 
-import com.geophile.spatialobject.SpatialObject;
-import com.geophile.spatialobject.d2.Box;
-import com.geophile.spatialobject.d2.Point;
-import com.geophile.z.SpaceImpl;
-import com.geophile.z.SpatialIndexImpl;
-import com.geophile.index.TreeIndex;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.spatialobject.SpatialObject;
+import com.geophile.z.spatialobject.d2.Box;
+import com.geophile.z.spatialobject.d2.Point;
+import com.geophile.z.space.SpaceImpl;
+import com.geophile.z.space.SpatialIndexImpl;
+import com.geophile.z.index.treeindex.TreeIndex;
 import org.junit.Test;
 
 import java.util.*;
@@ -25,7 +26,7 @@ public class SpatialIndexTest
     public void testRetrieval()
     {
         SpaceImpl space = new SpaceImpl(new int[]{10, 10}, null);
-        TreeIndex<Point> index = new TreeIndex<>(space);
+        TreeIndex<Point> index = new TreeIndex<>();
         spatialIndex = new SpatialIndexImpl<>(space, index);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
@@ -62,7 +63,7 @@ public class SpatialIndexTest
     public void testRemoveAll()
     {
         SpaceImpl space = new SpaceImpl(new int[]{10, 10}, null);
-        TreeIndex<Point> index = new TreeIndex<>(space);
+        TreeIndex<Point> index = new TreeIndex<>();
         spatialIndex = new SpatialIndexImpl<>(space, index);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
@@ -105,7 +106,7 @@ public class SpatialIndexTest
     public void testRemoveSome()
     {
         SpaceImpl space = new SpaceImpl(new int[]{10, 10}, null);
-        TreeIndex<Point> index = new TreeIndex<>(space);
+        TreeIndex<Point> index = new TreeIndex<>();
         spatialIndex = new SpatialIndexImpl<>(space, index);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {

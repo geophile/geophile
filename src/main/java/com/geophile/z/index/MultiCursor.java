@@ -30,7 +30,7 @@ public class MultiCursor<SPATIAL_OBJECT extends SpatialObject> extends Cursor<SP
         if (next == null) {
             close();
         } else {
-            current(cursor.current().getKey(), cursor.current().getValue());
+            current(cursor.current().key().z(), cursor.current().spatialObject());
         }
         return current();
     }
@@ -43,7 +43,7 @@ public class MultiCursor<SPATIAL_OBJECT extends SpatialObject> extends Cursor<SP
     }
 
     @Override
-    public void goTo(long z)
+    public void goTo(SpatialObjectKey key)
     {
         assert false;
     }

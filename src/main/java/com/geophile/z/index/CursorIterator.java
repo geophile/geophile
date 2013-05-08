@@ -46,8 +46,8 @@ public class CursorIterator<SPATIAL_OBJECT extends SpatialObject> implements Ite
 
     private void getCurrent()
     {
-        Record<SPATIAL_OBJECT> entry = cursor.next();
-        this.current = entry == null ? null : entry.getValue();
+        Record<SPATIAL_OBJECT> record = cursor.next();
+        this.current = record == null ? null : record.spatialObject();
     }
 
     // Object state

@@ -6,6 +6,7 @@
 
 package com.geophile.z.index;
 
+import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.spatialobject.d2.Point;
 import com.geophile.z.space.SpaceImpl;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class MultiCursorTest
             int expected = 0;
             Record<Point> entry;
             while ((entry = cursor.next()) != null) {
-                point = entry.getValue();
+                point = entry.spatialObject();
                 assertEquals(expected, point.x());
                 assertEquals(expected, point.y());
                 expected++;
@@ -82,7 +83,7 @@ public class MultiCursorTest
             int expected = 0;
             Record<Point> entry;
             while ((entry = scan.next()) != null) {
-                point = entry.getValue();
+                point = entry.spatialObject();
                 assertEquals(expected, point.x());
                 assertEquals(expected, point.y());
                 expected++;
@@ -93,7 +94,7 @@ public class MultiCursorTest
     
     private Cursor<Point> scan(Point... points)
     {
-        TreeIndex<Point> treeIndex = new TreeIndex<>(SPACE);
+        TreeIndex<Point> treeIndex = new TreeIndex<>();
         long z = 0;
         for (Point point : points) {
             treeIndex.add(zCounter++,  point);

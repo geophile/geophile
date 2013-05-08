@@ -10,8 +10,10 @@ import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import com.geophile.z.spatialobject.SpatialObject;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
- * A 2-dimensional point that can be stored by a {@link com.geophile.SpatialIndex}.
+ * A 2-dimensional point that can be stored by a {@link com.geophile.z.SpatialIndex}.
  */
 
 public class Point implements SpatialObject
@@ -30,12 +32,7 @@ public class Point implements SpatialObject
     @Override
     public boolean equals(Object o)
     {
-        boolean equals = false;
-        if (o != null && o instanceof Point) {
-            Point that = (Point) o;
-            equals = this.x == that.x && this.y == that.y;
-        }
-        return equals;
+        return o != null && o instanceof Point && equalTo((Point) o);
     }
 
     @Override
@@ -46,9 +43,24 @@ public class Point implements SpatialObject
 
     // SpatialObject interface
 
+    public long id()
+    {
+        return id;
+    }
+
     public long[] arbitraryPoint()
     {
         return new long[]{x, y};
+    }
+
+    public boolean equalTo(SpatialObject spatialObject)
+    {
+        boolean eq = false;
+        if (spatialObject != null && spatialObject instanceof Point) {
+            Point that = (Point) spatialObject;
+            eq = this.x == that.x && this.y == that.y;
+        }
+        return eq;
     }
 
     public boolean containedBy(Region region)
@@ -104,8 +116,13 @@ public class Point implements SpatialObject
         this.y = y;
     }
 
+    // Class state
+
+    private static final AtomicLong idCounter = new AtomicLong(0);
+
     // Object state
 
+    private final long id = idCounter.getAndIncrement();
     private final long x;
     private final long y;
 }

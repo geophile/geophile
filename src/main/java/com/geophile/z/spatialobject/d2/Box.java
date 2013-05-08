@@ -10,8 +10,10 @@ import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import com.geophile.z.spatialobject.SpatialObject;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
- * A 2-dimensional box that can be stored by a {@link com.geophile.SpatialIndex}.
+ * A 2-dimensional box that can be stored by a {@link com.geophile.z.SpatialIndex}.
  */
 
 public class Box implements SpatialObject
@@ -32,16 +34,7 @@ public class Box implements SpatialObject
     @Override
     public boolean equals(Object o)
     {
-        boolean equals = false;
-        if (o != null && o instanceof Box) {
-            Box that = (Box) o;
-            equals = 
-                this.xLo == that.xLo &&
-                this.xHi == that.xHi &&
-                this.yLo == that.yLo &&
-                this.yHi == that.yHi;
-        }
-        return equals;
+        return o != null && o instanceof Box && equalTo((Box) o);
     }
 
     @Override
@@ -52,9 +45,28 @@ public class Box implements SpatialObject
 
     // SpatialObject interface
 
+    public long id()
+    {
+        return id;
+    }
+
     public long[] arbitraryPoint()
     {
         return new long[]{xLo, yLo};
+    }
+
+    public boolean equalTo(SpatialObject spatialObject)
+    {
+        boolean eq = false;
+        if (spatialObject != null && spatialObject instanceof Box) {
+            Box that = (Box) spatialObject;
+            eq =
+                this.xLo == that.xLo &&
+                this.xHi == that.xHi &&
+                this.yLo == that.yLo &&
+                this.yHi == that.yHi;
+        }
+        return eq;
     }
 
     public boolean containedBy(Region region)
@@ -83,6 +95,7 @@ public class Box implements SpatialObject
 
     /**
      * Returns the left boundary of this box.
+     *
      * @return The left boundary of this box.
      */
     public long xLo()
@@ -92,6 +105,7 @@ public class Box implements SpatialObject
 
     /**
      * Returns the right boundary of this box.
+     *
      * @return The right boundary of this box.
      */
     public long xHi()
@@ -101,6 +115,7 @@ public class Box implements SpatialObject
 
     /**
      * Returns the lower boundary of this box.
+     *
      * @return The lower boundary of this box.
      */
     public long yLo()
@@ -110,6 +125,7 @@ public class Box implements SpatialObject
 
     /**
      * Returns the upper boundary of this box.
+     *
      * @return The upper boundary of this box.
      */
     public long yHi()
@@ -120,6 +136,7 @@ public class Box implements SpatialObject
     /**
      * Creates a box containing points (x, y) such that xLo <= x <= xHi, and
      * yLo <= y <= yHi.
+     *
      * @param xLo The left boundary of the box.
      * @param xHi The right boundary of the box.
      * @param yLo The lower boundary of the box.
@@ -133,8 +150,13 @@ public class Box implements SpatialObject
         this.yHi = yHi;
     }
 
+    // Class state
+
+    private static final AtomicLong idCounter = new AtomicLong(0);
+
     // Object state
 
+    private final long id = idCounter.getAndIncrement();
     private final long xLo;
     private final long xHi;
     private final long yLo;
