@@ -4,9 +4,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.index;
+package com.geophile.z.index.treeindex;
 
-import com.geophile.Space;
+import com.geophile.z.index.Cursor;
+import com.geophile.z.index.Record;
+import com.geophile.z.index.SpatialObjectKey;
 import com.geophile.z.spatialobject.SpatialObject;
 
 import java.util.Iterator;
@@ -30,19 +32,19 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
     }
 
     @Override
-    public void goTo(long z)
+    public void goTo(SpatialObjectKey key)
     {
-        this.startAt = z;
+        this.startAt = key;
         state(State.NEVER_USED);
     }
 
 
     // TreeIndexCursor interface
 
-    public TreeIndexCursor(Space space, TreeMap<Long, SPATIAL_OBJECT> tree, long z)
+    public TreeIndexCursor(TreeMap<SpatialObjectKey, SPATIAL_OBJECT> tree, SpatialObjectKey key)
     {
         this.tree = tree;
-        this.startAt = z;
+        this.startAt = key;
     }
 
     // For use by this class
@@ -62,8 +64,8 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
                 return null;
         }
         if (treeIterator.hasNext()) {
-            Map.Entry<Long, SPATIAL_OBJECT> neighbor = treeIterator.next();
-            current(neighbor.getKey(), neighbor.getValue());
+            Map.Entry<SpatialObjectKey, SPATIAL_OBJECT> neighbor = treeIterator.next();
+            current(neighbor.getKey().z(), neighbor.getValue());
             state(State.IN_USE);
             startAt = neighbor.getKey();
         } else {
@@ -83,8 +85,8 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
 
     // Object state
 
-    private final TreeMap<Long, SPATIAL_OBJECT> tree;
-    private long startAt;
+    private final TreeMap<SpatialObjectKey, SPATIAL_OBJECT> tree;
+    private SpatialObjectKey startAt;
     private boolean forward;
-    private Iterator<Map.Entry<Long, SPATIAL_OBJECT>> treeIterator;
+    private Iterator<Map.Entry<SpatialObjectKey, SPATIAL_OBJECT>> treeIterator;
 }

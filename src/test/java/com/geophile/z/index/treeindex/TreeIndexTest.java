@@ -4,8 +4,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.index;
+package com.geophile.z.index.treeindex;
 
+import com.geophile.z.index.Cursor;
+import com.geophile.z.index.Index;
+import com.geophile.z.index.Record;
+import com.geophile.z.index.treeindex.treeindex.TreeIndex;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import com.geophile.z.space.SpaceImpl;
@@ -65,7 +69,7 @@ public class TreeIndexTest
                 Point point;
                 Record<Point> entry;
                 while ((entry = currentIfInside(cursor, z)) != null) {
-                    point = entry.getValue();
+                    point = entry.spatialObject();
                     if (xLo <= point.x() && point.x() <= xHi && yLo <= point.y() && point.y() <= yHi) {
                         actual.add(point);
                     }
@@ -86,7 +90,7 @@ public class TreeIndexTest
     private Record<Point> currentIfInside(Cursor<Point> cursor, long z)
     {
         Record<Point> entry = cursor.next();
-        if (entry != null && entry.getKey() > space.zHi(z)) {
+        if (entry != null && entry.key().z() > space.zHi(z)) {
             entry = null;
         }
         return entry;
