@@ -15,9 +15,18 @@ import com.geophile.z.spatialobject.SpatialObject;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SPATIAL_OBJECT>
 {
+    // Object interface
+
+    @Override
+    public String toString()
+    {
+        return name;
+    }
+
     // Index interface
 
     @Override
@@ -102,7 +111,12 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     public TreeIndex()
     {}
 
+    // Class state
+
+    private static final AtomicInteger idGenerator = new AtomicInteger(0);
+
     // Object state
 
+    private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
     private final TreeMap<SpatialObjectKey, SPATIAL_OBJECT> tree = new TreeMap<>();
 }

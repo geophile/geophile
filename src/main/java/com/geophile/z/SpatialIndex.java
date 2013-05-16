@@ -38,8 +38,9 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
     /**
      * Removes the given spatial object from the index.
      * @param spatialObject The object to be removed.
+     * @return true if spatialObject was found and removed, false otherwise
      */
-    public abstract void remove(SPATIAL_OBJECT spatialObject);
+    public abstract boolean remove(SPATIAL_OBJECT spatialObject);
 
     /**
      * Returns an Iterator that will provide access to all spatial objects in the index that overlap the given query

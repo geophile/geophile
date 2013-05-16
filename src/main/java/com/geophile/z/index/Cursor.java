@@ -35,12 +35,13 @@ public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
      */
     public void close()
     {
+        current.setEOF();
         state = State.DONE;
     }
 
     public final Record<SPATIAL_OBJECT> current()
     {
-        return state == State.DONE ? null : current;
+        return current;
     }
 
     protected final void current(long z, SPATIAL_OBJECT spatialObject)

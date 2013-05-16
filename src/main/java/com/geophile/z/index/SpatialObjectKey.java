@@ -6,6 +6,10 @@
 
 package com.geophile.z.index;
 
+import com.geophile.z.space.SpaceImpl;
+
+import static com.geophile.z.space.SpaceImpl.formatZ;
+
 public class SpatialObjectKey implements Comparable<SpatialObjectKey>
 {
     // Object interface
@@ -13,7 +17,7 @@ public class SpatialObjectKey implements Comparable<SpatialObjectKey>
     @Override
     public String toString()
     {
-        return String.format("(z: 0x%016x, soid: %s)", z, soid);
+        return String.format("(z: %s, soid: %s)", formatZ(z), soid);
     }
 
     @Override

@@ -58,7 +58,7 @@ public class SpaceImpl extends Space
                                 zs[zCount++] = region.z();
                                 break;
                             case REGION_OVERLAPS_OBJECT:
-                                queue.add(region);
+                                queue.add(region.copy());
                                 break;
                         }
                         break;
@@ -91,14 +91,14 @@ public class SpaceImpl extends Space
                             case REGION_OUTSIDE_OBJECT:
                                 region.up();
                                 region.downLeft();
-                                queue.add(region);
+                                queue.add(region.copy());
                                 break;
                             case REGION_INSIDE_OBJECT:
                                 if (queue.size() + 1  + zCount < maxRegions) {
                                     zs[zCount++] = region.z();
                                     region.up();
                                     region.downLeft();
-                                    queue.add(region);
+                                    queue.add(region.copy());
                                 } else {
                                     region.up();
                                     zs[zCount++] = region.z();
@@ -109,10 +109,10 @@ public class SpaceImpl extends Space
                                     queue.add(region.copy());
                                     region.up();
                                     region.downLeft();
-                                    queue.add(region);
+                                    queue.add(region.copy());
                                 } else {
                                     region.up();
-                                    zs[zCount++] = region.z();
+                                      zs[zCount++] = region.z();
                                 }
                                 break;
                         }
@@ -154,7 +154,7 @@ public class SpaceImpl extends Space
                 case 6: z |= shuffle5[d][(int)(xd >>> 40) & 0xff];
                 case 5: z |= shuffle4[d][(int)(xd >>> 32) & 0xff];
                 case 4: z |= shuffle3[d][(int)(xd >>> 24) & 0xff];
-                case 3: z |= shuffle2[d][(int)(xd >>> 18) & 0xff];
+                case 3: z |= shuffle2[d][(int)(xd >>> 16) & 0xff];
                 case 2: z |= shuffle1[d][(int)(xd >>>  8) & 0xff];
                 case 1: z |= shuffle0[d][(int)(xd       ) & 0xff];
             }
@@ -221,6 +221,35 @@ public class SpaceImpl extends Space
         assert (bits & LENGTH_MASK) == 0 : bits;
         assert length <= MAX_Z_BITS : length;
         return (bits >>> 1) | length;
+    }
+
+    public static String formatZ(long z)
+    {
+        String formatted;
+        if (z == -1L) {
+            formatted = "EOF";
+        } else {
+            int length = length(z);
+            int significantDigits = (length + 3) / 4;
+            long bits = (z & ~LENGTH_MASK) >>> (63 - significantDigits * 4);
+            long x = bits;
+            int padLength = significantDigits;
+            while (x > 0) {
+                x = x >>> 4;
+                padLength -= 1;
+            }
+            if (padLength == significantDigits) {
+                padLength--;
+            }
+            String padding = "0000000000000000".substring(0, padLength);
+            formatted = String.format("(0x%s%x, %s)", padding, bits, length);
+        }
+        return formatted;
+    }
+
+    public static int length(long z)
+    {
+        return (int) (z & LENGTH_MASK);
     }
 
     public SpaceImpl(int[] xBits, int[] interleave)
@@ -333,11 +362,6 @@ public class SpaceImpl extends Space
             }
         }
         return shuffle;
-    }
-
-    private int length(long z)
-    {
-        return (int) (z & LENGTH_MASK);
     }
 
     private void check(boolean constraint, String template, Object... args)

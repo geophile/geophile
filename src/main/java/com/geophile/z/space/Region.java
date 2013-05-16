@@ -22,12 +22,14 @@ public class Region
     {
         StringBuilder buffer = new StringBuilder();
         buffer.append('(');
+        buffer.append(level);
+        buffer.append(": ");
         for (int d = 0; d < dimensions; d++) {
             if (d > 0) {
                 buffer.append(", ");
             }
             buffer.append(lo(d));
-            buffer.append(':');
+            buffer.append('-');
             buffer.append(hi(d));
         }
         buffer.append(')');
