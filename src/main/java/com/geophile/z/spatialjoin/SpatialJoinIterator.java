@@ -114,13 +114,13 @@ public class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends Spati
             if (zMin < SpatialJoinInput.EOF) {
                 // Prefer entry to exit to avoid missing join output
                 if (zMin == zLeftEnter) {
-                    left.enterRegion();
+                    left.enterZ();
                 } else if (zMin == zRightEnter) {
-                    right.enterRegion();
+                    right.enterZ();
                 } else if (zMin == zLeftExit) {
-                    left.exitRegion();
+                    left.exitZ();
                 } else {
-                    right.exitRegion();
+                    right.exitZ();
                 }
             }
         } while (pending.isEmpty() && zMin < SpatialJoinInput.EOF);

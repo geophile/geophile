@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -41,6 +43,10 @@ public class SpatialJoinIteratorTest
         TestInput leftInput = null;
         TestInput rightInput = null;
         for (int trial = 0; trial < TRIALS; trial++) {
+            boolean trace = false; // nLeft == 1 && nRight == 1000 && maxLeftXSize == 1 && maxRightXSize == 100000;
+            if (trace) {
+                enableLogging(Level.FINE);
+            }
             // For each trial with a given set of parameters, only generate one new input sequence, for the smaller
             // data set, (or the right data set if the sizes match).
             if (trial == 0 || nLeft < nRight) {
@@ -49,36 +55,36 @@ public class SpatialJoinIteratorTest
             if (trial == 0 || nRight <= nLeft) {
                 rightInput = loadBoxes(nRight, maxRightXSize);
             }
-            // Actual
+            // if (!(trace && trial == 4)) continue;
             Set<Pair<Box, Box>> actual;
             Set<Pair<Box, Box>> expected;
             try {
+                // Actual
                 Iterator<Pair<Box, Box>> joinScan =
-                    rightInput.spatialIndex().join(leftInput.spatialIndex(), SpatialIndex.Duplicates.INCLUDE);
+                    leftInput.spatialIndex().join(rightInput.spatialIndex(), SpatialIndex.Duplicates.INCLUDE);
                 actual = new HashSet<>();
                 while (joinScan.hasNext()) {
                     actual.add(joinScan.next());
                 }
                 // Expected
                 expected = new HashSet<>();
-                for (Box q : rightInput.boxes()) {
-                    for (Box p : leftInput.boxes()) {
-                        if (overlaps(q, p)) {
-                            expected.add(new Pair<>(q, p));
+                for (Box a : leftInput.boxes()) {
+                    for (Box b : rightInput.boxes()) {
+                        if (overlaps(a, b)) {
+                            expected.add(new Pair<>(a, b));
                         }
                     }
                 }
-/*
-            print("rightInput: %s", rightInput.boxes().get(0));
-            print("expected");
-            for (Pair<Box, Box> pair : expected) {
-                print("    %s", pair.right());
-            }
-            print("actual");
-            for (Pair<Box, Box> pair : actual) {
-                print("    %s", pair.right());
-            }
-*/
+                if (trace) {
+                    print("expected");
+                    for (Pair<Box, Box> pair : expected) {
+                        print("    %s", pair);
+                    }
+                    print("actual");
+                    for (Pair<Box, Box> pair : actual) {
+                        print("    %s", pair);
+                    }
+                }
                 assertTrue(actual.containsAll(expected));
             } catch (AssertionError e) {
                 print("Assertion error on: nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s",
@@ -119,6 +125,9 @@ public class SpatialJoinIteratorTest
         if (maxYSize == 0) {
             maxYSize = 1;
         }
+        if (maxYSize > NY) {
+            maxYSize = NY - 1;
+        }
         long xLo = random.nextInt(NX - maxXSize);
         long xHi = xLo + (maxXSize == 1 ? 0 : random.nextInt(maxXSize));
         long yLo = random.nextInt(NY - maxYSize);
@@ -129,6 +138,11 @@ public class SpatialJoinIteratorTest
     private void print(String template, Object... args)
     {
         System.out.println(String.format(template, args));
+    }
+
+    private void enableLogging(Level level)
+    {
+        Logger.getLogger("").setLevel(level);
     }
 
     private static final int NX = 1_000_000;

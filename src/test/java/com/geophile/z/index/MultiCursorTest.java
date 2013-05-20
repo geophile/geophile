@@ -99,7 +99,7 @@ public class MultiCursorTest
         for (Point point : points) {
             treeIndex.add(zCounter++,  point);
         }
-        return treeIndex.cursor(SPACE.z(0, 0)); // cursor the entire space
+        return treeIndex.cursor(SpaceImpl.z(0, 0)); // cursor the entire space
     }
 
     private Point point(long xy)

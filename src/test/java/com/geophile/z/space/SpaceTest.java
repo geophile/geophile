@@ -136,21 +136,21 @@ public class SpaceTest
         SpaceImpl space = new SpaceImpl(ints(10, 10), null);
         final long Z_TEST = 0xaaaaaaaaaaaaaa80L;
         // Root not sibling of itself
-        assertFalse(space.siblings(space.z(0, 0), space.z(0, 0)));
+        assertFalse(space.siblings(SpaceImpl.z(0, 0), SpaceImpl.z(0, 0)));
         // ... or of something it contains
         for (int bits = 0; bits < SpaceImpl.MAX_Z_BITS; bits++) {
             long base = prefix(Z_TEST, bits);
             long sibling = base ^ (1L << (64 - bits));
             // space-value isn't its own sibling
-            assertFalse(space.siblings(space.z(base, bits), space.z(base, bits)));
+            assertFalse(space.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(base, bits)));
             if (bits > 0) {
                 // space-value is it's sibling's sibling
-                assertTrue(space.siblings(space.z(base, bits), space.z(sibling, bits)));
+                assertTrue(space.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(sibling, bits)));
                 // siblings have to be at the same level
-                assertFalse(space.siblings(space.z(base, bits), space.z(sibling, bits + 1)));
+                assertFalse(space.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(sibling, bits + 1)));
                 // Flip an ancestor bit in sibling
                 long notSibling = sibling ^ mask(bits / 2);
-                assertFalse(space.siblings(space.z(base, bits), space.z(notSibling, bits)));
+                assertFalse(space.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(notSibling, bits)));
             }
         }
     }
@@ -161,9 +161,9 @@ public class SpaceTest
         SpaceImpl space = new SpaceImpl(ints(10, 10), null);
         final long Z_TEST = 0xaaaaaaaaaaaaaa80L;
         for (int bits = 1; bits <= SpaceImpl.MAX_Z_BITS; bits++) {
-            long z = space.z(prefix(Z_TEST, bits), bits);
-            long parent = space.z(prefix(Z_TEST, bits - 1), bits - 1);
-            assertEquals(parent, space.parent(z));
+            long z = SpaceImpl.z(prefix(Z_TEST, bits), bits);
+            long parent = SpaceImpl.z(prefix(Z_TEST, bits - 1), bits - 1);
+            assertEquals(parent, SpaceImpl.parent(z));
 
         }
     }
@@ -173,14 +173,14 @@ public class SpaceTest
     {
         SpaceImpl space = new SpaceImpl(ints(10, 10), null);
         final long Z_TEST = 0xaaaaaaaaaaaaaa80L;
-        long z = space.z(Z_TEST, SpaceImpl.MAX_Z_BITS);
+        long z = SpaceImpl.z(Z_TEST, SpaceImpl.MAX_Z_BITS);
         for (int bits = 0; bits <= SpaceImpl.MAX_Z_BITS; bits++) {
             long ancestor = prefix(Z_TEST, bits);
-            assertTrue(space.contains(space.z(ancestor, bits), z));
+            assertTrue(SpaceImpl.contains(SpaceImpl.z(ancestor, bits), z));
             if (bits > 0) {
                 // Flip a bit in ancestor
                 long notAncestor = ancestor ^ mask(bits / 2);
-                assertFalse(space.contains(space.z(notAncestor, bits), z));
+                assertFalse(SpaceImpl.contains(SpaceImpl.z(notAncestor, bits), z));
             }
         }
     }
@@ -193,8 +193,8 @@ public class SpaceTest
         for (int bits = 0; bits <= SpaceImpl.MAX_Z_BITS; bits++) {
             long expectedLo = prefix(Z_TEST, bits);
             long expectedHi = expectedLo | (((1L << (SpaceImpl.MAX_Z_BITS - bits))- 1) << (SpaceImpl.LENGTH_BITS + 1));
-            assertEquals(space.z(expectedLo, bits), space.zLo(space.z(prefix(Z_TEST, bits), bits)));
-            assertEquals(space.z(expectedHi, bits), space.zHi(space.z(prefix(Z_TEST, bits), bits)));
+            assertEquals(SpaceImpl.z(expectedLo, bits), SpaceImpl.zLo(SpaceImpl.z(prefix(Z_TEST, bits), bits)));
+            assertEquals(SpaceImpl.z(expectedHi, bits), SpaceImpl.zHi(SpaceImpl.z(prefix(Z_TEST, bits), bits)));
         }
     }
 
@@ -220,6 +220,6 @@ public class SpaceTest
 
     private void check(SpaceImpl space, long expected, long[] x)
     {
-        assertEquals(space.z(expected, space.zBits()), space.shuffle(x));
+        assertEquals(SpaceImpl.z(expected, space.zBits()), space.shuffle(x));
     }
 }

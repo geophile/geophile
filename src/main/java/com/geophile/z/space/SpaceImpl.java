@@ -174,7 +174,24 @@ public class SpaceImpl extends Space
         return siblings;
     }
 
-    public long parent(long z)
+    public int zBits()
+    {
+        return zBits;
+    }
+
+    public int[] interleave()
+    {
+        return interleave;
+    }
+
+    public static long z(long bits, int length)
+    {
+        assert (bits & LENGTH_MASK) == 0 : bits;
+        assert length <= MAX_Z_BITS : length;
+        return (bits >>> 1) | length;
+    }
+
+    public static long parent(long z)
     {
         int length = length(z);
         check(length > 0, Long.toString(z));
@@ -183,7 +200,18 @@ public class SpaceImpl extends Space
         return (z & mask) | length;
     }
 
-    public boolean contains(long a, long b)
+    public static long zLo(long z)
+    {
+        return z;
+    }
+
+    public static long zHi(long z)
+    {
+        long mask = ((1L << (MAX_Z_BITS - length(z))) - 1) << LENGTH_BITS;
+        return z | mask;
+    }
+
+    public static boolean contains(long a, long b)
     {
         int aLength = length(a);
         int bLength = length(b);
@@ -195,32 +223,9 @@ public class SpaceImpl extends Space
         return prefix;
     }
 
-    public long zLo(long z)
+    public static int length(long z)
     {
-        return z;
-    }
-
-    public long zHi(long z)
-    {
-        long mask = ((1L << (MAX_Z_BITS - length(z))) - 1) << LENGTH_BITS;
-        return z | mask;
-    }
-
-    public int zBits()
-    {
-        return zBits;
-    }
-
-    public int[] interleave()
-    {
-        return interleave;
-    }
-
-    public long z(long bits, int length)
-    {
-        assert (bits & LENGTH_MASK) == 0 : bits;
-        assert length <= MAX_Z_BITS : length;
-        return (bits >>> 1) | length;
+        return (int) (z & LENGTH_MASK);
     }
 
     public static String formatZ(long z)
@@ -245,11 +250,6 @@ public class SpaceImpl extends Space
             formatted = String.format("(0x%s%x, %s)", padding, bits, length);
         }
         return formatted;
-    }
-
-    public static int length(long z)
-    {
-        return (int) (z & LENGTH_MASK);
     }
 
     public SpaceImpl(int[] xBits, int[] interleave)
@@ -364,7 +364,7 @@ public class SpaceImpl extends Space
         return shuffle;
     }
 
-    private void check(boolean constraint, String template, Object... args)
+    private static void check(boolean constraint, String template, Object... args)
     {
         if (!constraint) {
             throw new IllegalArgumentException(String.format(template, args));

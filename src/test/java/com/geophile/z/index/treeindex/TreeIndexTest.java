@@ -64,7 +64,7 @@ public class TreeIndexTest
         for (long z : zs) {
             if (z != -1L) {
                 // debug("%x: %s - %s", space, space.zLo(space), space.zHi(space));
-                Cursor<Point> cursor = index.cursor(space.zLo(z));
+                Cursor<Point> cursor = index.cursor(SpaceImpl.zLo(z));
                 Point point;
                 Record<Point> entry;
                 while ((entry = currentIfInside(cursor, z)) != null) {
@@ -89,7 +89,7 @@ public class TreeIndexTest
     private Record<Point> currentIfInside(Cursor<Point> cursor, long z)
     {
         Record<Point> entry = cursor.next();
-        if (entry != null && entry.key().z() > space.zHi(z)) {
+        if (entry != null && entry.key().z() > SpaceImpl.zHi(z)) {
             entry = null;
         }
         return entry;
