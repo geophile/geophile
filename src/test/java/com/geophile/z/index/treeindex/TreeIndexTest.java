@@ -67,7 +67,7 @@ public class TreeIndexTest
                 Cursor<Point> cursor = index.cursor(SpaceImpl.zLo(z));
                 Point point;
                 Record<Point> entry;
-                while ((entry = currentIfInside(cursor, z)) != null) {
+                while (!(entry = currentIfInside(cursor, z)).eof()) {
                     point = entry.spatialObject();
                     if (xLo <= point.x() && point.x() <= xHi && yLo <= point.y() && point.y() <= yHi) {
                         actual.add(point);
@@ -89,8 +89,8 @@ public class TreeIndexTest
     private Record<Point> currentIfInside(Cursor<Point> cursor, long z)
     {
         Record<Point> entry = cursor.next();
-        if (entry != null && entry.key().z() > SpaceImpl.zHi(z)) {
-            entry = null;
+        if (!entry.eof() && entry.key().z() > SpaceImpl.zHi(z)) {
+            entry.setEOF();
         }
         return entry;
     }

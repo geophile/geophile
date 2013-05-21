@@ -61,7 +61,8 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
                 }
                 break;
             case DONE:
-                return null;
+                assert current().eof();
+                return current();
         }
         if (treeIterator.hasNext()) {
             Map.Entry<SpatialObjectKey, SPATIAL_OBJECT> neighbor = treeIterator.next();

@@ -76,7 +76,7 @@ public class IndexTest
         Cursor<TestSpatialObject> cursor = index.cursor(Long.MIN_VALUE);
         Record<TestSpatialObject> record;
         List<Long> zById[] = (List<Long>[]) new List[uniqueKeys];
-        while ((record = cursor.next()) != null) {
+        while (!(record = cursor.next()).eof()) {
             int id = (int) record.spatialObject().id();
             List<Long> zList = zById[id];
             if (zList == null) {
@@ -111,7 +111,7 @@ public class IndexTest
             assertTrue(!removed);
         }
         Cursor<TestSpatialObject> cursor = index.cursor(Long.MIN_VALUE);
-        assertNull(cursor.next());
+        assertTrue(cursor.next().eof());
     }
 
     private void debug(String template, Object ... args)

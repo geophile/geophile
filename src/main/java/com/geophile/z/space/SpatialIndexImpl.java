@@ -8,9 +8,7 @@ package com.geophile.z.space;
 
 import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
-import com.geophile.z.index.CursorIterator;
 import com.geophile.z.index.Index;
-import com.geophile.z.index.MultiCursor;
 import com.geophile.z.spatialjoin.SpatialJoinIterator;
 import com.geophile.z.spatialobject.SpatialObject;
 
@@ -73,21 +71,6 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
             }
         }
         return found;
-    }
-
-    public Iterator<SPATIAL_OBJECT> overlapping(SpatialObject query, Duplicates duplicates)
-    {
-        if (duplicates == Duplicates.EXCLUDE) {
-            throw new UnsupportedOperationException();
-        }
-        long[] zs = decompose(query);
-        MultiCursor<SPATIAL_OBJECT> multiScan = new MultiCursor<>();
-        int i = 0;
-        while (i < zs.length && zs[i] != -1L) {
-            multiScan.addInput(index.cursor(zs[i++]));
-        }
-        multiScan.start();
-        return new CursorIterator<>(multiScan);
     }
 
     public <OTHER_SPATIAL_OBJECT extends SpatialObject>

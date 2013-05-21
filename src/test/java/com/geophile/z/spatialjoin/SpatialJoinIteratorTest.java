@@ -91,6 +91,7 @@ public class SpatialJoinIteratorTest
                       nLeft, nRight, maxLeftXSize, maxRightXSize, trial);
                 throw e;
             }
+/*
             if (expected.size() == 0) {
                 print("nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s, accuracy: EMPTY RESULT",
                       nLeft, nRight, maxLeftXSize, maxRightXSize, trial);
@@ -99,6 +100,7 @@ public class SpatialJoinIteratorTest
                 print("nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s, accuracy: %s",
                       nLeft, nRight, maxLeftXSize, maxRightXSize, trial, accuracy);
             }
+*/
         }
     }
 

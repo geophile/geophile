@@ -42,20 +42,6 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
      */
     public abstract boolean remove(SPATIAL_OBJECT spatialObject);
 
-    /**
-     * Returns an Iterator that will provide access to all spatial objects in the index that overlap the given query
-     * object. If the index contains non-point objects, then the iterator may yield duplicates. To keep the duplicates,
-     * specify duplicates = {@link Duplicates#INCLUDE}. To eliminate the duplicates,
-     * specify duplicates = {@link Duplicates#EXCLUDE}. If {@link Duplicates#EXCLUDE} is specified,
-     * there is some cost in both time and space because all
-     * returned objects will be tracked by a hash table for the duration of the cursor.
-     * @param query Objects in the index that overlap this object will be returned.
-     * @param duplicates Specifies duplicate-handling behavior.
-     * @return An Iterator that will provide access to all spatial objects in the index that overlap the given query
-     * object.
-     */
-    public abstract Iterator<SPATIAL_OBJECT> overlapping(SpatialObject query, Duplicates duplicates);
-
     public abstract <OTHER_SPATIAL_OBJECT extends SpatialObject>
         Iterator<Pair<SPATIAL_OBJECT, OTHER_SPATIAL_OBJECT>> join(SpatialIndex<OTHER_SPATIAL_OBJECT> that,
                                                                   Duplicates duplicates);
