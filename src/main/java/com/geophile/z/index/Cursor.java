@@ -8,12 +8,6 @@ package com.geophile.z.index;
 
 import com.geophile.z.spatialobject.SpatialObject;
 
-/**
- * A {@link Cursor} provides access to the spatial objects satisfying a spatial search, carried out by
- * {@link com.geophile.z.SpatialIndex#overlapping(com.geophile.z.spatialobject.SpatialObject, com.geophile.z.SpatialIndex.Duplicates)}.
- * @param <SPATIAL_OBJECT> The type of {@link com.geophile.z.spatialobject.SpatialObject} that will be returned by this cursor.
- */
-
 public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
 {
     /**

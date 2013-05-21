@@ -378,11 +378,25 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     public SpatialJoinInput(SpatialIndex<THIS_SPATIAL_OBJECT> spatialIndex,
                             SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput)
     {
-        this.cursor = ((SpatialIndexImpl<THIS_SPATIAL_OBJECT>)spatialIndex).index().cursor(Long.MIN_VALUE);
+        this.cursor = newCursor((SpatialIndexImpl<THIS_SPATIAL_OBJECT>) spatialIndex);
         this.cursor.next().copyTo(this.current);
         this.spatialJoinOutput = spatialJoinOutput;
+        this.ancestors =
+            USE_ANCESTOR_CACHE
+            ? new Ancestors<>((SpatialIndexImpl<THIS_SPATIAL_OBJECT>) spatialIndex)
+            : null;
         log("initialize");
     }
+
+    // For use by this package
+
+    static <SPATIAL_OBJECT extends SpatialObject> Cursor<SPATIAL_OBJECT> newCursor
+        (SpatialIndexImpl<SPATIAL_OBJECT> spatialIndex)
+    {
+        return spatialIndex.index().cursor(Long.MIN_VALUE);
+    }
+
+    // For use by this class
 
     private void advanceCursor()
     {
@@ -412,13 +426,43 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
 
     private void findAncestorToResume(long zStart, long zLowerBound)
     {
-        // Find the largest ancestor of current that exists and that is past current.
+        if (ancestors == null) {
+            findAncestorToResumeWithoutCache(zStart, zLowerBound);
+        } else {
+            findAncestorToResumeWithCache(zStart, zLowerBound);
+        }
+    }
+
+    private void findAncestorToResumeWithoutCache(long zStart, long zLowerBound)
+    {
+        // Find the largest ancestor of current that exists and that is past zLowerBound.
         long zCandidate = SpaceImpl.parent(zStart);
         while (zCandidate > zLowerBound) {
             SpatialObjectKey key = SpatialObjectKey.keyLowerBound(zCandidate);
             cursor.goTo(key);
             Record<THIS_SPATIAL_OBJECT> ancestor = cursor.next();
             if (!ancestor.eof() && ancestor.key().z() == zCandidate) {
+                ancestor.copyTo(current);
+            }
+            zCandidate = SpaceImpl.parent(zCandidate);
+        }
+        // Resume at current
+        if (current.eof()) {
+            cursor.close();
+        } else {
+            assert current.key().z() >= zLowerBound;
+            cursor.goTo(current.key());
+            cursor.next().copyTo(current);
+        }
+    }
+
+    private void findAncestorToResumeWithCache(long zStart, long zLowerBound)
+    {
+        // Find the largest ancestor of current that exists and that is past zLowerBound.
+        long zCandidate = SpaceImpl.parent(zStart);
+        while (zCandidate > zLowerBound) {
+            Record<THIS_SPATIAL_OBJECT> ancestor = ancestors.find(zCandidate);
+            if (ancestor != null) {
                 ancestor.copyTo(current);
             }
             zCandidate = SpaceImpl.parent(zCandidate);
@@ -474,6 +518,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
 
     private static final Logger LOG = Logger.getLogger(SpatialJoinInput.class.getName());
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
+    private static final boolean USE_ANCESTOR_CACHE = false;
 
     // Object state
 
@@ -490,4 +535,5 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     private final Deque<Record<THIS_SPATIAL_OBJECT>> nest = new ArrayDeque<>();
     private final Cursor<THIS_SPATIAL_OBJECT> cursor;
     private final Record<THIS_SPATIAL_OBJECT> current = new Record<>();
+    private final Ancestors<THIS_SPATIAL_OBJECT> ancestors;
 }

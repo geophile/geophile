@@ -373,7 +373,7 @@ public class SpaceImpl extends Space
 
     // Class state
 
-    static final int MAX_Z_BITS = 57; // MSB is unused. 6 LSBs contain the number of z-value bits.
+    public static final int MAX_Z_BITS = 57; // MSB is unused. 6 LSBs contain the number of z-value bits.
     static final long LENGTH_MASK = 0x3f;
     static final int LENGTH_BITS = 6;
 
