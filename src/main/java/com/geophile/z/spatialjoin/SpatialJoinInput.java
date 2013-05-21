@@ -378,7 +378,6 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     public SpatialJoinInput(SpatialIndex<THIS_SPATIAL_OBJECT> spatialIndex,
                             SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput)
     {
-        this.space = (SpaceImpl) spatialIndex.space();
         this.cursor = ((SpatialIndexImpl<THIS_SPATIAL_OBJECT>)spatialIndex).index().cursor(Long.MIN_VALUE);
         this.cursor.next().copyTo(this.current);
         this.spatialJoinOutput = spatialJoinOutput;
@@ -406,21 +405,6 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
                     // that.current does not contain this.current. Look for a z-value in this containing
                     // that.current.
                     findAncestorToResume(thatCurrentZ, thisCurrentZ);
-/*
-                    // thatCurrentZ may be contained by the z-value in this immediately preceding current,
-                    // or some ancestor thereof. If such a z-value exists, resume there, otherwise resume
-                    // at current.
-                    if (current.eof()) {
-                        // The z-value immediately preceding current is the last z-value in this.
-                        cursor.goTo(SpatialObjectKey.keyLowerBound(Long.MAX_VALUE));
-                    }
-                    cursor.previous().copyTo(current);
-                    if (SpaceImpl.contains(current.key().z(), thatCurrentZ)) {
-                        findAncestorToResume(current.key().z(), thisCurrentZ);
-                    } else {
-                        cursor.next().copyTo(current);
-                    }
-*/
                 }
             }
         }
@@ -499,7 +483,6 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     public static long EOF = Long.MAX_VALUE;
 
     private final String name = String.format("sjinput(%s)",idGenerator.getAndIncrement());
-    private final SpaceImpl space;
     private SpatialJoinInput<THAT_SPATIAL_OBJECT, THIS_SPATIAL_OBJECT> that;
     private final SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput;
     // nest contains z-values that have been entered but not exited. current is the next z-value to enter,

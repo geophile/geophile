@@ -149,11 +149,11 @@ public class SpatialJoinIteratorTest
     private static final int NY = 1_000_000;
     private static final Space SPACE = Space.newSpace(new int[]{20, 20});
     private static final long SEED = 123456789L;
-    private static final int MAX_COUNT = 1000; // 1_000_000;
-    private static final int[] COUNTS = new int[]{1, 10, 100, 1_000 /* , 10_000, 100_000, 1_000_000 */};
+    private static final int MAX_COUNT = 1_000_000;
+    private static final int[] COUNTS = new int[]{1, 10, 100, 1_000 , 10_000, 100_000, 1_000_000};
     private static final int[] MAX_X_SIZES = new int[]{1, 10_000 /* 1% */, 100_000 /* 10% */};
     private static final double[] ASPECT_RATIOS = new double[]{1 / 8.0, 1 / 4.0, 1 / 2.0, 1.0, 2.0, 4.0, 8.0};
-    private static final int TRIALS = 10;
+    private static final int TRIALS = 50;
     private static int testIdGenerator = 0;
 
     private final Random random = new Random(SEED);
