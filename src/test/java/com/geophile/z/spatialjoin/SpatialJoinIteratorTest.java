@@ -28,9 +28,15 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     }
 
     @Override
-    protected void check(boolean condition)
+    protected void checkTrue(boolean condition)
     {
         assertTrue(condition);
+    }
+
+    @Override
+    protected void checkEquals(Object expected, Object actual)
+    {
+        assertEquals(expected, actual);
     }
 
     @Override

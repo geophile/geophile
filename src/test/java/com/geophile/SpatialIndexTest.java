@@ -152,10 +152,10 @@ public class SpatialIndexTest
     private void test(int xLo, int xHi, int yLo, int yHi, Filter filter)
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
-        TreeIndex<Box> boxTreeIndex = new TreeIndex<Box>();
+        TreeIndex<Box> boxTreeIndex = new TreeIndex<>();
         SpatialIndex<Box> query = new SpatialIndexImpl<>(SPACE, boxTreeIndex);
         query.add(box);
-        Iterator<Pair<Box, Point>> iterator = new SpatialJoinIterator<>(query, spatialIndex, false);
+        Iterator<Pair<Box, Point>> iterator = new SpatialJoinIterator<>(query, spatialIndex);
         List<Point> actual = new ArrayList<>();
         Point point;
         while (iterator.hasNext()) {

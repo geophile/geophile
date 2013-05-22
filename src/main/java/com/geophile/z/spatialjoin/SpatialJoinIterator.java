@@ -57,9 +57,7 @@ public class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends Spati
 
     // SpatialJoinIterator interface
 
-    public SpatialJoinIterator(SpatialIndex<LEFT> leftSpatialIndex,
-                               SpatialIndex<RIGHT> rightSpatialIndex,
-                               boolean excludeDuplicates)
+    public SpatialJoinIterator(SpatialIndex<LEFT> leftSpatialIndex, SpatialIndex<RIGHT> rightSpatialIndex)
     {
         SpatialJoinOutput<LEFT, RIGHT> pendingLeftRight =
             new SpatialJoinOutput<LEFT, RIGHT>()
@@ -83,7 +81,6 @@ public class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends Spati
         right = new SpatialJoinInput<>(rightSpatialIndex, pendingRightLeft);
         left.otherInput(right);
         right.otherInput(left);
-        this.excludeDuplicates = excludeDuplicates;
         if (LOG.isLoggable(Level.INFO)) {
             LOG.log(Level.INFO,
                     "SpatialJoinIterator {0}: {1} x {2}",
@@ -143,6 +140,5 @@ public class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends Spati
     private final String name = String.format("sj(%s)", idGenerator.getAndIncrement());
     private final SpatialJoinInput<LEFT, RIGHT> left;
     private final SpatialJoinInput<RIGHT, LEFT> right;
-    private final boolean excludeDuplicates;
     private final Queue<Pair<LEFT, RIGHT>> pending = new ArrayDeque<>();
 }

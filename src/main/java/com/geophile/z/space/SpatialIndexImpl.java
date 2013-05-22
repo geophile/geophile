@@ -9,6 +9,7 @@ package com.geophile.z.space;
 import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.index.Index;
+import com.geophile.z.spatialjoin.DuplicateEliminatingIterator;
 import com.geophile.z.spatialjoin.SpatialJoinIterator;
 import com.geophile.z.spatialobject.SpatialObject;
 
@@ -77,10 +78,11 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
         Iterator<Pair<SPATIAL_OBJECT, OTHER_SPATIAL_OBJECT>> join(SpatialIndex<OTHER_SPATIAL_OBJECT> that,
                                                                   Duplicates duplicates)
     {
+        Iterator<Pair<SPATIAL_OBJECT, OTHER_SPATIAL_OBJECT>> iterator = new SpatialJoinIterator<>(this, that);
         if (duplicates == Duplicates.EXCLUDE) {
-            throw new UnsupportedOperationException();
+            iterator = new DuplicateEliminatingIterator<>(iterator);
         }
-        return new SpatialJoinIterator<>(this, that, duplicates == Duplicates.EXCLUDE);
+        return iterator;
     }
 
     public Index<SPATIAL_OBJECT> index()

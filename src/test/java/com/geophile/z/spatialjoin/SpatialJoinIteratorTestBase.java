@@ -17,16 +17,16 @@ import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.spatialobject.d2.Box;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.junit.Assert.assertEquals;
+
 public abstract class SpatialJoinIteratorTestBase
 {
-    protected abstract void check(boolean condition);
+    protected abstract void checkTrue(boolean condition);
+    protected abstract void checkEquals(Object expected, Object actual);
 
     protected abstract boolean verify();
 
@@ -35,7 +35,7 @@ public abstract class SpatialJoinIteratorTestBase
         TestInput leftInput = null;
         TestInput rightInput = null;
         for (int trial = 0; trial < trials; trial++) {
-            boolean trace = false; // nLeft == 1 && nRight == 100000 && maxLeftXSize == 1 && maxRightXSize == 10000;
+            boolean trace = false; // nLeft == 1 && nRight == 1_000_000 && maxLeftXSize == 1 && maxRightXSize == 10000;
             if (trace) {
                 enableLogging(Level.FINE);
             }
@@ -48,56 +48,71 @@ public abstract class SpatialJoinIteratorTestBase
                 rightInput = loadBoxes(nRight, maxRightXSize);
             }
             // if (!(trace && trial == 2)) continue;
-            Set<Pair<Box, Box>> actual = null;
+            Map<Pair<Box, Box>, Integer> actual = null;
             Set<Pair<Box, Box>> expected = null;
-            try {
-                Iterator<Pair<Box, Box>> joinScan =
-                    leftInput.spatialIndex().join(rightInput.spatialIndex(), SpatialIndex.Duplicates.INCLUDE);
-                if (verify()) {
-                    // Actual
-                    actual = new HashSet<>();
-                    while (joinScan.hasNext()) {
-                        actual.add(joinScan.next());
-                    }
-                    // Expected
-                    expected = new HashSet<>();
-                    for (Box a : leftInput.boxes()) {
-                        for (Box b : rightInput.boxes()) {
-                            if (overlaps(a, b)) {
-                                expected.add(new Pair<>(a, b));
+            for (boolean duplicates : DUPLICATES) {
+                try {
+                    Iterator<Pair<Box, Box>> joinScan =
+                        leftInput.spatialIndex().join(rightInput.spatialIndex(),
+                                                      duplicates
+                                                      ? SpatialIndex.Duplicates.INCLUDE
+                                                      : SpatialIndex.Duplicates.EXCLUDE);
+                    if (verify()) {
+                        // Actual
+                        actual = new HashMap<>();
+                        while (joinScan.hasNext()) {
+                            Pair<Box, Box> pair = joinScan.next();
+                            Integer count = actual.get(pair);
+                            if (count == null) {
+                                count = 0;
+                            }
+                            actual.put(pair, count + 1);
+                        }
+                        // Expected
+                        expected = new HashSet<>();
+                        for (Box a : leftInput.boxes()) {
+                            for (Box b : rightInput.boxes()) {
+                                if (overlaps(a, b)) {
+                                    expected.add(new Pair<>(a, b));
+                                }
                             }
                         }
-                    }
-                    if (trace) {
-                        assert expected != null;
-                        print("expected");
-                        for (Pair<Box, Box> pair : expected) {
-                            print("    %s", pair);
+                        if (trace) {
+                            assert expected != null;
+                            print("expected");
+                            for (Pair<Box, Box> pair : expected) {
+                                print("    %s", pair);
+                            }
+                            print("actual");
+                            for (Map.Entry<Pair<Box, Box>, Integer> entry : actual.entrySet()) {
+                                print("    %s: %s", entry.getKey(), entry.getValue());
+                            }
                         }
-                        print("actual");
-                        for (Pair<Box, Box> pair : actual) {
-                            print("    %s", pair);
+                        checkTrue(actual.keySet().containsAll(expected));
+                        if (!duplicates) {
+                            for (Integer count : actual.values()) {
+                                assertEquals(1, count.intValue());
+                            }
+                        }
+                    } else {
+                        while (joinScan.hasNext()) {
+                            joinScan.next();
                         }
                     }
-                    check(actual.containsAll(expected));
-                } else {
-                    while (joinScan.hasNext()) {
-                        joinScan.next();
-                    }
-                }
-            } catch (AssertionError e) {
-                print("Assertion error on: nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s",
-                      nLeft, nRight, maxLeftXSize, maxRightXSize, trial);
-                throw e;
-            }
-            if (PRINT_SUMMARY) {
-                if (expected.size() == 0) {
-                    print("nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s, accuracy: EMPTY RESULT",
+                } catch (AssertionError e) {
+                    print("Assertion error on: nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s",
                           nLeft, nRight, maxLeftXSize, maxRightXSize, trial);
-                } else {
-                    double accuracy = (double) expected.size() / actual.size();
-                    print("nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s, accuracy: %s",
-                          nLeft, nRight, maxLeftXSize, maxRightXSize, trial, accuracy);
+                    throw e;
+                }
+                if (PRINT_SUMMARY) {
+                    if (expected.size() == 0) {
+                        print("nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s, accuracy: EMPTY RESULT",
+                              nLeft, nRight, maxLeftXSize, maxRightXSize, trial);
+                    } else {
+                        double accuracy = (double) expected.size() / actual.size();
+                        print("nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s, accuracy: %s",
+                              nLeft, nRight, maxLeftXSize, maxRightXSize, trial, accuracy);
+                    }
                 }
             }
         }
@@ -147,9 +162,9 @@ public abstract class SpatialJoinIteratorTestBase
     }
 
     protected static final int MAX_COUNT = 1_000_000;
-    protected static final int[] COUNTS = new int[]{1, 10, 100, 1_000 , 10_000, 100_000, 1_000_000 };
+    protected static final int[] COUNTS = new int[]{1, 10, 100, 1_000 , 10_000, 100_000, 1_000_000};
     protected static final int[] MAX_X_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
-    protected static final int TRIALS = 50;
+    protected static final int TRIALS = 1; // 50;
     private static final boolean PRINT_SUMMARY = false;
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
@@ -157,6 +172,7 @@ public abstract class SpatialJoinIteratorTestBase
     private static final long SEED = 123456789L;
     private static final double[] ASPECT_RATIOS = new double[]{1 / 8.0, 1 / 4.0, 1 / 2.0, 1.0, 2.0, 4.0, 8.0};
     private static int testIdGenerator = 0;
+    private static final boolean[] DUPLICATES = { true, false };
 
     private final Random random = new Random(SEED);
     private int testId = testIdGenerator++;
