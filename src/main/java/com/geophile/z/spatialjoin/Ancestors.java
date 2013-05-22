@@ -13,7 +13,7 @@ import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
 import com.geophile.z.spatialobject.SpatialObject;
 
-public class Ancestors<SPATIAL_OBJECT extends SpatialObject>
+class Ancestors<SPATIAL_OBJECT extends SpatialObject>
 {
     public Record<SPATIAL_OBJECT> find(long z)
     {

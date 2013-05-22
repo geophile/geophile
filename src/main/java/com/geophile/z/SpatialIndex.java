@@ -7,18 +7,14 @@
 package com.geophile.z;
 
 import com.geophile.z.index.Index;
-import com.geophile.z.spatialobject.SpatialObject;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
-
-import java.util.Iterator;
+import com.geophile.z.spatialobject.SpatialObject;
 
 /**
  * A {@link SpatialIndex} organizes a set of {@link com.geophile.z.spatialobject.SpatialObject}s for the efficient execution of spatial searches.
  * Spatial objects may be added to the spatial index by {@link SpatialIndex#add(com.geophile.z.spatialobject.SpatialObject)}, and removed by
- * {@link SpatialIndex#remove(com.geophile.z.spatialobject.SpatialObject)}. Spatial search is implemented
- * by {@link SpatialIndex#overlapping(com.geophile.z.spatialobject.SpatialObject, SpatialIndex.Duplicates)} which returns a
- * {@link com.geophile.z.index.Cursor} that will provide access to the spatial objects overlapping the given query object.
+ * {@link SpatialIndex#remove(com.geophile.z.spatialobject.SpatialObject)}.
  * @param <SPATIAL_OBJECT> The type of {@link com.geophile.z.spatialobject.SpatialObject} contained by this spatial index.
  */
 
@@ -41,10 +37,6 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
      * @return true if spatialObject was found and removed, false otherwise
      */
     public abstract boolean remove(SPATIAL_OBJECT spatialObject);
-
-    public abstract <OTHER_SPATIAL_OBJECT extends SpatialObject>
-        Iterator<Pair<SPATIAL_OBJECT, OTHER_SPATIAL_OBJECT>> join(SpatialIndex<OTHER_SPATIAL_OBJECT> that,
-                                                                  Duplicates duplicates);
 
     /**
      * Creates a spatial index of {@link SpatialObject}s that are contained in the given space. The index
@@ -71,8 +63,4 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
 
     protected final SpaceImpl space;
     protected final Index<SPATIAL_OBJECT> index;
-
-    // Inner classes
-
-    public enum Duplicates { INCLUDE, EXCLUDE }
 }

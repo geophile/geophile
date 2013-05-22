@@ -8,7 +8,8 @@ package com.geophile;
 
 import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
-import com.geophile.z.spatialjoin.SpatialJoinIterator;
+import com.geophile.z.spatialjoin.SpatialJoin;
+import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialobject.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
@@ -155,12 +156,13 @@ public class SpatialIndexTest
         TreeIndex<Box> boxTreeIndex = new TreeIndex<>();
         SpatialIndex<Box> query = new SpatialIndexImpl<>(SPACE, boxTreeIndex);
         query.add(box);
-        Iterator<Pair<Box, Point>> iterator = new SpatialJoinIterator<>(query, spatialIndex);
+        Iterator<Pair<Box, Point>> iterator =
+            new SpatialJoin<>(FILTER, SpatialJoin.Duplicates.INCLUDE).iterator(query, spatialIndex);
         List<Point> actual = new ArrayList<>();
         Point point;
         while (iterator.hasNext()) {
             point = iterator.next().right();
-            if (!actual.contains(point) && boxContainsPoint(box, point)) {
+            if (!actual.contains(point)) {
                 actual.add(point);
             }
         }
@@ -176,13 +178,6 @@ public class SpatialIndexTest
         Collections.sort(actual, POINT_RANKING);
         Collections.sort(expected, POINT_RANKING);
         assertEquals(expected, actual);
-    }
-
-    private boolean boxContainsPoint(Box box, Point point)
-    {
-        return
-            box.xLo() <= point.x() && point.x() <= box.xHi() &&
-            box.yLo() <= point.y() && point.y() <= box.yHi();
     }
 
     private static final int SEED = 123456;
@@ -202,6 +197,16 @@ public class SpatialIndexTest
             }
         };
     private static final SpaceImpl SPACE = new SpaceImpl(new int[]{10, 10}, null);
+    private static final SpatialJoinFilter<Box, Point> FILTER = new SpatialJoinFilter<Box, Point>()
+    {
+        @Override
+        public boolean overlap(Box b, Point p)
+        {
+            return
+                b.xLo() <= p.x() && p.x() <= b.xHi() &&
+                b.yLo() <= p.y() && p.y() <= b.yHi();
+        }
+    };
 
     private SpatialIndex<Point> spatialIndex;
 

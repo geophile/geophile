@@ -8,7 +8,7 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.z.spatialobject.SpatialObject;
 
-interface SpatialJoinOutput<S extends SpatialObject, T extends SpatialObject>
+public interface SpatialJoinFilter<LEFT extends SpatialObject, RIGHT extends SpatialObject>
 {
-    void add(S s, T t);
+    boolean overlap(LEFT left, RIGHT right);
 }

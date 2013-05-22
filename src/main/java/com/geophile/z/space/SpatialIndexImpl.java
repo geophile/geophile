@@ -6,14 +6,10 @@
 
 package com.geophile.z.space;
 
-import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.index.Index;
-import com.geophile.z.spatialjoin.DuplicateEliminatingIterator;
-import com.geophile.z.spatialjoin.SpatialJoinIterator;
 import com.geophile.z.spatialobject.SpatialObject;
 
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,17 +68,6 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
             }
         }
         return found;
-    }
-
-    public <OTHER_SPATIAL_OBJECT extends SpatialObject>
-        Iterator<Pair<SPATIAL_OBJECT, OTHER_SPATIAL_OBJECT>> join(SpatialIndex<OTHER_SPATIAL_OBJECT> that,
-                                                                  Duplicates duplicates)
-    {
-        Iterator<Pair<SPATIAL_OBJECT, OTHER_SPATIAL_OBJECT>> iterator = new SpatialJoinIterator<>(this, that);
-        if (duplicates == Duplicates.EXCLUDE) {
-            iterator = new DuplicateEliminatingIterator<>(iterator);
-        }
-        return iterator;
     }
 
     public Index<SPATIAL_OBJECT> index()

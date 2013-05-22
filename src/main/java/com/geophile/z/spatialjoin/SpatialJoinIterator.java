@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObject>
+class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObject>
     implements Iterator<Pair<LEFT, RIGHT>>
 {
     // Object interface
@@ -57,7 +57,9 @@ public class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends Spati
 
     // SpatialJoinIterator interface
 
-    public SpatialJoinIterator(SpatialIndex<LEFT> leftSpatialIndex, SpatialIndex<RIGHT> rightSpatialIndex)
+    public SpatialJoinIterator(SpatialIndex<LEFT> leftSpatialIndex,
+                               SpatialIndex<RIGHT> rightSpatialIndex,
+                               final SpatialJoinFilter<LEFT, RIGHT> filter)
     {
         SpatialJoinOutput<LEFT, RIGHT> pendingLeftRight =
             new SpatialJoinOutput<LEFT, RIGHT>()
@@ -65,7 +67,9 @@ public class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends Spati
                 @Override
                 public void add(LEFT left, RIGHT right)
                 {
-                    pending.add(new Pair<>(left, right));
+                    if (filter.overlap(left, right)) {
+                        pending.add(new Pair<>(left, right));
+                    }
                 }
             };
         left = new SpatialJoinInput<>(leftSpatialIndex, pendingLeftRight);
@@ -75,7 +79,9 @@ public class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends Spati
                 @Override
                 public void add(RIGHT right, LEFT left)
                 {
-                    pending.add(new Pair<>(left, right));
+                    if (filter.overlap(left, right)) {
+                        pending.add(new Pair<>(left, right));
+                    }
                 }
             };
         right = new SpatialJoinInput<>(rightSpatialIndex, pendingRightLeft);

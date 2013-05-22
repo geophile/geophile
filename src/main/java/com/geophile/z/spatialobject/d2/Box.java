@@ -94,6 +94,18 @@ public class Box implements SpatialObject
     // Box interface
 
     /**
+     * Indicates whether this Box overlaps a given box.
+     * @param that Box to compare to.
+     * @return true if this Box overlaps that Box, false otherwise.
+     */
+    public boolean overlap(Box that)
+    {
+        return
+            this.xLo <= that.xHi && that.xLo <= this.xHi &&
+            this.yLo <= that.yHi && that.yLo <= this.yHi;
+    }
+
+    /**
      * Returns the left boundary of this box.
      *
      * @return The left boundary of this box.

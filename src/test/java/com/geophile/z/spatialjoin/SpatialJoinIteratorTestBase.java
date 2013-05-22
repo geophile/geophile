@@ -14,7 +14,6 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Pair;
 import com.geophile.z.Space;
-import com.geophile.z.SpatialIndex;
 import com.geophile.z.spatialobject.d2.Box;
 
 import java.util.*;
@@ -25,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 
 public abstract class SpatialJoinIteratorTestBase
 {
-    protected abstract void checkTrue(boolean condition);
     protected abstract void checkEquals(Object expected, Object actual);
 
     protected abstract boolean verify();
@@ -53,10 +51,9 @@ public abstract class SpatialJoinIteratorTestBase
             for (boolean duplicates : DUPLICATES) {
                 try {
                     Iterator<Pair<Box, Box>> joinScan =
-                        leftInput.spatialIndex().join(rightInput.spatialIndex(),
-                                                      duplicates
-                                                      ? SpatialIndex.Duplicates.INCLUDE
-                                                      : SpatialIndex.Duplicates.EXCLUDE);
+                        new SpatialJoin<>(FILTER,
+                                          duplicates ? SpatialJoin.Duplicates.INCLUDE : SpatialJoin.Duplicates.EXCLUDE)
+                            .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
                     if (verify()) {
                         // Actual
                         actual = new HashMap<>();
@@ -88,7 +85,7 @@ public abstract class SpatialJoinIteratorTestBase
                                 print("    %s: %s", entry.getKey(), entry.getValue());
                             }
                         }
-                        checkTrue(actual.keySet().containsAll(expected));
+                        checkEquals(expected, actual.keySet());
                         if (!duplicates) {
                             for (Integer count : actual.values()) {
                                 assertEquals(1, count.intValue());
@@ -161,8 +158,8 @@ public abstract class SpatialJoinIteratorTestBase
         Logger.getLogger("").setLevel(level);
     }
 
-    protected static final int MAX_COUNT = 1_000_000;
-    protected static final int[] COUNTS = new int[]{1, 10, 100, 1_000 , 10_000, 100_000, 1_000_000};
+    protected static final int MAX_COUNT = 100_000; // 1_000_000;
+    protected static final int[] COUNTS = new int[]{1, 10, 100, 1_000 , 10_000, 100_000 /*, 1_000_000 */};
     protected static final int[] MAX_X_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
     protected static final int TRIALS = 1; // 50;
     private static final boolean PRINT_SUMMARY = false;
@@ -173,6 +170,14 @@ public abstract class SpatialJoinIteratorTestBase
     private static final double[] ASPECT_RATIOS = new double[]{1 / 8.0, 1 / 4.0, 1 / 2.0, 1.0, 2.0, 4.0, 8.0};
     private static int testIdGenerator = 0;
     private static final boolean[] DUPLICATES = { true, false };
+    private static final SpatialJoinFilter<Box, Box> FILTER = new SpatialJoinFilter<Box, Box>()
+    {
+        @Override
+        public boolean overlap(Box x, Box y)
+        {
+            return x.overlap(y);
+        }
+    };
 
     private final Random random = new Random(SEED);
     private int testId = testIdGenerator++;

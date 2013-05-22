@@ -11,7 +11,7 @@
  * {@link com.geophile.z.spatialobject.SpatialObject}s to and remove them from a {@link com.geophile.z.SpatialIndex} associated
  * with the space. The
  * {@link com.geophile.z.SpatialIndex} can be searched using
- * {@link com.geophile.z.SpatialIndex#overlapping(com.geophile.z.spatialobject.SpatialObject, com.geophile.z.SpatialIndex.Duplicates)},
+ * {@link com.geophile.z.SpatialIndex#overlapping(com.geophile.z.spatialobject.SpatialObject, com.geophile.z.spatialjoin.SpatialJoin.Duplicates)},
  * which finds the {@link com.geophile.z.spatialobject.SpatialObject}s in the {@link com.geophile.z.SpatialIndex}
  * that overlap the given query object.
  *
