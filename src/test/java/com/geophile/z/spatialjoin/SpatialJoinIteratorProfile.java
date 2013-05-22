@@ -21,7 +21,7 @@ public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
 
     private void run()
     {
-        test(1000, 50_000, 1000, 50_000, 1000);
+        test(1, 100_000, 100_000, 1, 10_000);
         Counters counters = Counters.forThread();
         double hitRate = (double) counters.ancestorInCache() / counters.ancestorFind();
         print("Ancestor cache hit rate: %s", hitRate);

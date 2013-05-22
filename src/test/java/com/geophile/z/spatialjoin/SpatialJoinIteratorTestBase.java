@@ -51,15 +51,15 @@ public abstract class SpatialJoinIteratorTestBase
             Set<Pair<Box, Box>> actual = null;
             Set<Pair<Box, Box>> expected = null;
             try {
-                // Actual
                 Iterator<Pair<Box, Box>> joinScan =
                     leftInput.spatialIndex().join(rightInput.spatialIndex(), SpatialIndex.Duplicates.INCLUDE);
-                actual = new HashSet<>();
-                while (joinScan.hasNext()) {
-                    actual.add(joinScan.next());
-                }
-                // Expected
                 if (verify()) {
+                    // Actual
+                    actual = new HashSet<>();
+                    while (joinScan.hasNext()) {
+                        actual.add(joinScan.next());
+                    }
+                    // Expected
                     expected = new HashSet<>();
                     for (Box a : leftInput.boxes()) {
                         for (Box b : rightInput.boxes()) {
@@ -68,8 +68,6 @@ public abstract class SpatialJoinIteratorTestBase
                             }
                         }
                     }
-                }
-                if (verify()) {
                     if (trace) {
                         assert expected != null;
                         print("expected");
@@ -82,6 +80,10 @@ public abstract class SpatialJoinIteratorTestBase
                         }
                     }
                     check(actual.containsAll(expected));
+                } else {
+                    while (joinScan.hasNext()) {
+                        joinScan.next();
+                    }
                 }
             } catch (AssertionError e) {
                 print("Assertion error on: nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s",
