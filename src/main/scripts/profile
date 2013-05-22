@@ -1,0 +1,11 @@
+#!/bin/bash
+
+GEOPHILE_DIR=$(dirname $0)/../../..
+
+JVM_OPTIONS="-ea -Djava.util.logging.config.file=$GEOPHILE_DIR/src/main/resources/logging.properties"
+CLASSPATH="$JDK_HOME/jre/lib/rt.jar:$GEOPHILE_DIR/target/test-classes:$GEOPHILE_DIR/target/classes"
+
+MAIN=com.geophile.z.spatialjoin.SpatialJoinIteratorProfile
+
+# $JDK_HOME/bin/java $JVM_OPTIONS -classpath $CLASSPATH $MAIN
+collect -j on -J "$JVM_OPTIONS -cp $CLASSPATH " $JDK_HOME/bin/java $MAIN
