@@ -28,6 +28,16 @@ public class Counters
         ancestorInCache++;
     }
 
+    public long enterZ()
+    {
+        return enterZ;
+    }
+
+    public void countEnterZ()
+    {
+        enterZ++;
+    }
+
     public static Counters forThread()
     {
         return THREAD_COUNTERS.get();
@@ -45,4 +55,5 @@ public class Counters
 
     private long ancestorFind = 0;
     private long ancestorInCache = 0;
+    private long enterZ = 0;
 }

@@ -12,6 +12,10 @@
 
 package com.geophile.z.spatialjoin;
 
+import com.geophile.z.SpatialJoin;
+
+import java.util.EnumSet;
+
 public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
 {
     public static void main(String[] args)
@@ -21,10 +25,12 @@ public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
 
     private void run()
     {
-        test(1, 100_000, 100_000, 1, 10_000);
+        // enableLogging(Level.FINE);
+        final int SPATIAL_JOINS = 10_000;
+        test(1, 100_000, 100_000, 1, SPATIAL_JOINS, EnumSet.of(SpatialJoin.Duplicates.INCLUDE));
         Counters counters = Counters.forThread();
-        double hitRate = (double) counters.ancestorInCache() / counters.ancestorFind();
-        print("Ancestor cache hit rate: %s", hitRate);
+        double entersPerJoin = (double) counters.enterZ() / SPATIAL_JOINS;
+        print("enters per join: %s", entersPerJoin);
     }
 
     @Override

@@ -29,7 +29,12 @@ public abstract class SpatialJoinIteratorTestBase
 
     protected abstract boolean verify();
 
-    protected void test(int nLeft, int maxLeftXSize, int nRight, int maxRightXSize, int trials)
+    protected void test(int nLeft,
+                        int maxLeftXSize,
+                        int nRight,
+                        int maxRightXSize,
+                        int trials,
+                        EnumSet<SpatialJoin.Duplicates> duplicateHandling)
     {
         TestInput leftInput = null;
         TestInput rightInput = null;
@@ -49,14 +54,11 @@ public abstract class SpatialJoinIteratorTestBase
             // if (!(trace && trial == 2)) continue;
             Map<Pair<Box, Box>, Integer> actual = null;
             Set<Pair<Box, Box>> expected = null;
-            for (boolean duplicates : DUPLICATES) {
+            for (SpatialJoin.Duplicates duplicates : duplicateHandling) {
                 try {
                     Iterator<Pair<Box, Box>> joinScan =
-                        SpatialJoin.newSpatialJoin(FILTER,
-                                                   duplicates
-                                                   ? SpatialJoinImpl.Duplicates.INCLUDE
-                                                   : SpatialJoinImpl.Duplicates.EXCLUDE)
-                            .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
+                        SpatialJoin.newSpatialJoin(FILTER, duplicates)
+                                   .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
                     if (verify()) {
                         // Actual
                         actual = new HashMap<>();
@@ -89,7 +91,7 @@ public abstract class SpatialJoinIteratorTestBase
                             }
                         }
                         checkEquals(expected, actual.keySet());
-                        if (!duplicates) {
+                        if (duplicates == SpatialJoin.Duplicates.EXCLUDE) {
                             for (Integer count : actual.values()) {
                                 assertEquals(1, count.intValue());
                             }
@@ -104,7 +106,7 @@ public abstract class SpatialJoinIteratorTestBase
                           nLeft, nRight, maxLeftXSize, maxRightXSize, trial);
                     throw e;
                 }
-                if (PRINT_SUMMARY) {
+                if (printSummary() && expected != null) {
                     if (expected.size() == 0) {
                         print("nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s, accuracy: EMPTY RESULT",
                               nLeft, nRight, maxLeftXSize, maxRightXSize, trial);
@@ -156,16 +158,20 @@ public abstract class SpatialJoinIteratorTestBase
         return new Box(xLo, xHi, yLo, yHi);
     }
 
-    private void enableLogging(Level level)
+    protected void enableLogging(Level level)
     {
         Logger.getLogger("").setLevel(level);
+    }
+
+    private boolean printSummary()
+    {
+        return Logger.getLogger("").getLevel().intValue() < Level.WARNING.intValue();
     }
 
     protected static final int MAX_COUNT = 100_000; // 1_000_000;
     protected static final int[] COUNTS = new int[]{1, 10, 100, 1_000 , 10_000, 100_000 /*, 1_000_000 */};
     protected static final int[] MAX_X_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
     protected static final int TRIALS = 1; // 50;
-    private static final boolean PRINT_SUMMARY = false;
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
     private static final Space SPACE = Space.newSpace(NX, NY);

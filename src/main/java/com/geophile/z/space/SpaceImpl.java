@@ -162,7 +162,17 @@ public class SpaceImpl extends Space
         return z | length;
     }
 
-    public boolean siblings(long a, long b)
+    public int zBits()
+    {
+        return zBits;
+    }
+
+    public int[] interleave()
+    {
+        return interleave;
+    }
+
+    public static boolean siblings(long a, long b)
     {
         boolean siblings = false;
         int length = length(a);
@@ -172,16 +182,6 @@ public class SpaceImpl extends Space
             siblings = (a & matchMask) == (b & matchMask) && (a & differMask) != (b & differMask);
         }
         return siblings;
-    }
-
-    public int zBits()
-    {
-        return zBits;
-    }
-
-    public int[] interleave()
-    {
-        return interleave;
     }
 
     public static long z(long bits, int length)

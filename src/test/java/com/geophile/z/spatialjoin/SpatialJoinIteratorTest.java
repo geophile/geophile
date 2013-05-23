@@ -11,6 +11,7 @@ import com.geophile.z.SpatialJoin;
 import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -28,7 +29,12 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
             assertEquals(MAX_COUNT, nLeft * nRight);
             for (int maxLeftXSize : MAX_X_SIZES) {
                 for (int maxRightXSize : MAX_X_SIZES) {
-                    test(nLeft, maxLeftXSize, nRight, maxRightXSize, TRIALS);
+                    test(nLeft,
+                         maxLeftXSize,
+                         nRight,
+                         maxRightXSize,
+                         TRIALS,
+                         EnumSet.of(SpatialJoin.Duplicates.INCLUDE, SpatialJoin.Duplicates.EXCLUDE));
                 }
             }
         }

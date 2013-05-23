@@ -357,13 +357,15 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
         } else {
             advanceCursor();
         }
+        counters.countEnterZ();
         log("enter");
     }
 
     public void exitZ()
     {
         assert !nest.isEmpty();
-        THIS_SPATIAL_OBJECT thisSpatialObject = nest.pop().spatialObject();
+        Record<THIS_SPATIAL_OBJECT> top = nest.pop();
+        THIS_SPATIAL_OBJECT thisSpatialObject = top.spatialObject();
         for (Record<THAT_SPATIAL_OBJECT> thatRecord : that.nest) {
             spatialJoinOutput.add(thisSpatialObject, thatRecord.spatialObject());
         }
@@ -536,4 +538,5 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     private final Cursor<THIS_SPATIAL_OBJECT> cursor;
     private final Record<THIS_SPATIAL_OBJECT> current = new Record<>();
     private final Ancestors<THIS_SPATIAL_OBJECT> ancestors;
+    private final Counters counters = Counters.forThread();
 }

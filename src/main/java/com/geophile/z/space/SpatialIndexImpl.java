@@ -84,13 +84,16 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
 
     private long[] decompose(SpatialObject spatialObject)
     {
-        int maxZs = space.dimensions() * 2;
+        int maxZs = space.dimensions() * Z_PER_OBJECT;
         long[] zs = new long[maxZs];
         space.decompose(spatialObject, zs);
         return zs;
     }
 
     // Class state
+
+    // TODO: Figure out a good default, and make it configurable per object.
+    private static final int Z_PER_OBJECT = 4;
 
     private static final Logger LOG = Logger.getLogger(SpatialIndexImpl.class.getName());
 }

@@ -133,24 +133,23 @@ public class SpaceTest
     @Test
     public void testSiblings()
     {
-        SpaceImpl space = new SpaceImpl(ints(10, 10), null);
         final long Z_TEST = 0xaaaaaaaaaaaaaa80L;
         // Root not sibling of itself
-        assertFalse(space.siblings(SpaceImpl.z(0, 0), SpaceImpl.z(0, 0)));
+        assertFalse(SpaceImpl.siblings(SpaceImpl.z(0, 0), SpaceImpl.z(0, 0)));
         // ... or of something it contains
         for (int bits = 0; bits < SpaceImpl.MAX_Z_BITS; bits++) {
             long base = prefix(Z_TEST, bits);
             long sibling = base ^ (1L << (64 - bits));
             // space-value isn't its own sibling
-            assertFalse(space.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(base, bits)));
+            assertFalse(SpaceImpl.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(base, bits)));
             if (bits > 0) {
                 // space-value is it's sibling's sibling
-                assertTrue(space.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(sibling, bits)));
+                assertTrue(SpaceImpl.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(sibling, bits)));
                 // siblings have to be at the same level
-                assertFalse(space.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(sibling, bits + 1)));
+                assertFalse(SpaceImpl.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(sibling, bits + 1)));
                 // Flip an ancestor bit in sibling
                 long notSibling = sibling ^ mask(bits / 2);
-                assertFalse(space.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(notSibling, bits)));
+                assertFalse(SpaceImpl.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(notSibling, bits)));
             }
         }
     }
@@ -158,7 +157,6 @@ public class SpaceTest
     @Test
     public void testParent()
     {
-        SpaceImpl space = new SpaceImpl(ints(10, 10), null);
         final long Z_TEST = 0xaaaaaaaaaaaaaa80L;
         for (int bits = 1; bits <= SpaceImpl.MAX_Z_BITS; bits++) {
             long z = SpaceImpl.z(prefix(Z_TEST, bits), bits);
@@ -171,7 +169,6 @@ public class SpaceTest
     @Test
     public void testContains()
     {
-        SpaceImpl space = new SpaceImpl(ints(10, 10), null);
         final long Z_TEST = 0xaaaaaaaaaaaaaa80L;
         long z = SpaceImpl.z(Z_TEST, SpaceImpl.MAX_Z_BITS);
         for (int bits = 0; bits <= SpaceImpl.MAX_Z_BITS; bits++) {
@@ -188,7 +185,6 @@ public class SpaceTest
     @Test
     public void testZLoZHi()
     {
-        SpaceImpl space = new SpaceImpl(ints(10, 10), null);
         final long Z_TEST = 0xaaaaaaaaaaaaaa80L;
         for (int bits = 0; bits <= SpaceImpl.MAX_Z_BITS; bits++) {
             long expectedLo = prefix(Z_TEST, bits);
