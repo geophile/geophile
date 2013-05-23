@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 /**
  * A {@link Region} represents a box-shaped subspace whose edges are parallel to the dimensions of the space.
- * Regions are only relevant to users of geophile who define {@link com.geophile.z.spatialobject.SpatialObject} subtypes.
+ * Regions are only relevant to users of geophile who define {@link com.geophile.z.SpatialObject} subtypes.
  */
 
 public class Region

@@ -6,7 +6,7 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.spatialobject.SpatialObject;
+import com.geophile.z.SpatialObject;
 
 interface SpatialJoinOutput<S extends SpatialObject, T extends SpatialObject>
 {

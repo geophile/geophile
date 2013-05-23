@@ -6,12 +6,12 @@
 
 package com.geophile.z.spatialjoin;
 
+import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
 import com.geophile.z.index.SpatialObjectKey;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
-import com.geophile.z.spatialobject.SpatialObject;
 
 class Ancestors<SPATIAL_OBJECT extends SpatialObject>
 {

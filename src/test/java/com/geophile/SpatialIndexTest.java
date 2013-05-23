@@ -8,14 +8,15 @@ package com.geophile;
 
 import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
-import com.geophile.z.spatialjoin.SpatialJoin;
-import com.geophile.z.spatialjoin.SpatialJoinFilter;
-import com.geophile.z.spatialobject.SpatialObject;
-import com.geophile.z.spatialobject.d2.Box;
-import com.geophile.z.spatialobject.d2.Point;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
+import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
-import com.geophile.z.index.treeindex.TreeIndex;
+import com.geophile.z.spatialjoin.SpatialJoinFilter;
+import com.geophile.z.spatialjoin.SpatialJoinImpl;
+import com.geophile.z.spatialobject.d2.Box;
+import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;
 
 import java.util.*;
@@ -157,7 +158,7 @@ public class SpatialIndexTest
         SpatialIndex<Box> query = new SpatialIndexImpl<>(SPACE, boxTreeIndex);
         query.add(box);
         Iterator<Pair<Box, Point>> iterator =
-            new SpatialJoin<>(FILTER, SpatialJoin.Duplicates.INCLUDE).iterator(query, spatialIndex);
+            SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
         List<Point> actual = new ArrayList<>();
         Point point;
         while (iterator.hasNext()) {

@@ -6,27 +6,16 @@
 
 package com.geophile.z.index;
 
-import com.geophile.z.spatialobject.SpatialObject;
+import com.geophile.z.SpatialObject;
 
 public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
 {
-    /**
-     * Returns the next spatial object of the cursor.
-     * @return The next spatial object of the cursor, or null if the cursor is complete.
-     */
     public abstract Record<SPATIAL_OBJECT> next();
 
-    /**
-     * Returns the previous spatial object of the cursor.
-     * @return The previous spatial object of the cursor, or null if the cursor is complete.
-     */
     public abstract Record<SPATIAL_OBJECT> previous();
 
     public abstract void goTo(SpatialObjectKey key);
 
-    /**
-     * After calling close(), subsequent calls to {@link #next()} will return null.
-     */
     public void close()
     {
         current.setEOF();
@@ -72,11 +61,6 @@ public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
         IN_USE,
 
         // The cursor has run off one end. A call to next() or previous() will return null.
-        DONE;
-
-        public boolean isDone()
-        {
-            return this == DONE;
-        }
+        DONE
     }
 }

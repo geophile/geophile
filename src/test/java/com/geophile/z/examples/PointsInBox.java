@@ -9,9 +9,10 @@ package com.geophile.z.examples;
 import com.geophile.z.Pair;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoin;
 import com.geophile.z.index.treeindex.TreeIndex;
-import com.geophile.z.spatialjoin.SpatialJoin;
 import com.geophile.z.spatialjoin.SpatialJoinFilter;
+import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 
@@ -27,7 +28,7 @@ public class PointsInBox
 
     private void run()
     {
-        Space space = Space.newSpace(new int[]{SPACE_X_BITS, SPACE_Y_BITS});
+        Space space = Space.newSpace(SPACE_X, SPACE_Y);
         // Load spatial index with points
         SpatialIndex<Point> points = SpatialIndex.newSpatialIndex(space, new TreeIndex<Point>());
         for (int i = 0; i < N_POINTS; i++) {
@@ -41,11 +42,13 @@ public class PointsInBox
             box.add(query);
             // Create Iterator over spatial join output
             Iterator<Pair<Box, Point>> iterator =
-                new SpatialJoin<>(BOX_CONTAINS_POINT, SpatialJoin.Duplicates.EXCLUDE).iterator(box, points);
+                SpatialJoin.newSpatialJoin(BOX_CONTAINS_POINT, SpatialJoinImpl.Duplicates.EXCLUDE)
+                           .iterator(box, points);
             // Print points contained in box
             System.out.println(String.format("Points inside %s", query));
             while (iterator.hasNext()) {
-                System.out.println(String.format("    %s", iterator.next().right()));
+                Pair<Box, Point> pointInBox = iterator.next();
+                System.out.println(String.format("    %s", pointInBox.right()));
             }
         }
     }
@@ -68,8 +71,6 @@ public class PointsInBox
 
     private static final int SPACE_X = 1_000_000;
     private static final int SPACE_Y = 1_000_000;
-    private static final int SPACE_X_BITS = 20;
-    private static final int SPACE_Y_BITS = 20;
     private static final int N_POINTS = 1_000_000;
     private static final int BOX_WIDTH = 2_000;
     private static final int BOX_HEIGHT = 2_000;

@@ -6,19 +6,17 @@
 
 package com.geophile.z.index;
 
+import com.geophile.z.Index;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.geophile.z.spatialobject.SpatialObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static junit.framework.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class IndexTest
 {

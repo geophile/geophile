@@ -7,7 +7,7 @@
 package com.geophile.z.space;
 
 import com.geophile.z.Space;
-import com.geophile.z.spatialobject.SpatialObject;
+import com.geophile.z.SpatialObject;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -252,6 +252,11 @@ public class SpaceImpl extends Space
         return formatted;
     }
 
+    public SpaceImpl(long[] size)
+    {
+        this(log2(size), null);
+    }
+
     public SpaceImpl(int[] xBits, int[] interleave)
     {
         this.dimensions = xBits.length;
@@ -369,6 +374,32 @@ public class SpaceImpl extends Space
         if (!constraint) {
             throw new IllegalArgumentException(String.format(template, args));
         }
+    }
+
+    private static int ceilLog2(long x)
+    {
+        int log2;
+        // Loop won't work if x = 0x8000000000000000L
+        if (x == 0x8000000000000000L) {
+            log2 = 63;
+        } else {
+            log2 = 0;
+            long p = 1;
+            while (p < x) {
+                log2++;
+                p <<= 1;
+            }
+        }
+        return log2;
+    }
+
+    private static int[] log2(long ... x)
+    {
+        int[] log2 = new int[x.length];
+        for (int d = 0; d < x.length; d++) {
+            log2[d] = ceilLog2(x[d]);
+        }
+        return log2;
     }
 
     // Class state

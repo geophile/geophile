@@ -6,10 +6,10 @@
 
 package com.geophile.z.index.treeindex;
 
+import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
 import com.geophile.z.index.SpatialObjectKey;
-import com.geophile.z.spatialobject.SpatialObject;
 
 import java.util.Iterator;
 import java.util.Map;

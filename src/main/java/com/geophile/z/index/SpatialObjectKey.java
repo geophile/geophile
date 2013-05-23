@@ -6,8 +6,6 @@
 
 package com.geophile.z.index;
 
-import com.geophile.z.space.SpaceImpl;
-
 import static com.geophile.z.space.SpaceImpl.formatZ;
 
 public class SpatialObjectKey implements Comparable<SpatialObjectKey>

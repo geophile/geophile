@@ -14,6 +14,7 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Pair;
 import com.geophile.z.Space;
+import com.geophile.z.SpatialJoin;
 import com.geophile.z.spatialobject.d2.Box;
 
 import java.util.*;
@@ -51,8 +52,10 @@ public abstract class SpatialJoinIteratorTestBase
             for (boolean duplicates : DUPLICATES) {
                 try {
                     Iterator<Pair<Box, Box>> joinScan =
-                        new SpatialJoin<>(FILTER,
-                                          duplicates ? SpatialJoin.Duplicates.INCLUDE : SpatialJoin.Duplicates.EXCLUDE)
+                        SpatialJoin.newSpatialJoin(FILTER,
+                                                   duplicates
+                                                   ? SpatialJoinImpl.Duplicates.INCLUDE
+                                                   : SpatialJoinImpl.Duplicates.EXCLUDE)
                             .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
                     if (verify()) {
                         // Actual
@@ -127,7 +130,7 @@ public abstract class SpatialJoinIteratorTestBase
             a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
     }
 
-    private TestInput loadBoxes(int n, int maxXSize)
+    protected TestInput loadBoxes(int n, int maxXSize)
     {
         TestInput input = new TestInput(SPACE);
         for (int i = 0; i < n; i++) {
@@ -165,7 +168,7 @@ public abstract class SpatialJoinIteratorTestBase
     private static final boolean PRINT_SUMMARY = false;
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
-    private static final Space SPACE = Space.newSpace(new int[]{20, 20});
+    private static final Space SPACE = Space.newSpace(NX, NY);
     private static final long SEED = 123456789L;
     private static final double[] ASPECT_RATIOS = new double[]{1 / 8.0, 1 / 4.0, 1 / 2.0, 1.0, 2.0, 4.0, 8.0};
     private static int testIdGenerator = 0;

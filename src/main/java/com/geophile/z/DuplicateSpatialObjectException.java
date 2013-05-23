@@ -6,6 +6,11 @@
 
 package com.geophile.z;
 
+/**
+ * Indicates an attempt to add a duplicate {@link SpatialObject} to a
+ * {@link com.geophile.z.SpatialIndex}.
+ */
+
 public class DuplicateSpatialObjectException extends RuntimeException
 {
     public DuplicateSpatialObjectException()

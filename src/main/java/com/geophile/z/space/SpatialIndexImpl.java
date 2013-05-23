@@ -6,9 +6,9 @@
 
 package com.geophile.z.space;
 
+import com.geophile.z.Index;
 import com.geophile.z.SpatialIndex;
-import com.geophile.z.index.Index;
-import com.geophile.z.spatialobject.SpatialObject;
+import com.geophile.z.SpatialObject;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

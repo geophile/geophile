@@ -2,7 +2,7 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
-import com.geophile.z.spatialobject.SpatialObject;
+import com.geophile.z.SpatialObject;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;

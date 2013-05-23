@@ -9,9 +9,10 @@ package com.geophile.z.examples;
 import com.geophile.z.Pair;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoin;
 import com.geophile.z.index.treeindex.TreeIndex;
-import com.geophile.z.spatialjoin.SpatialJoin;
 import com.geophile.z.spatialjoin.SpatialJoinFilter;
+import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 
 import java.util.Iterator;
@@ -26,7 +27,7 @@ public class OverlappingPairs
 
     private void run()
     {
-        Space space = Space.newSpace(new int[]{SPACE_X_BITS, SPACE_Y_BITS});
+        Space space = Space.newSpace(SPACE_X, SPACE_Y);
         // Load spatial indexes with boxes
         SpatialIndex<Box> left = SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
         SpatialIndex<Box> right = SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
@@ -36,11 +37,12 @@ public class OverlappingPairs
         }
         // Find overlapping pairs
         Iterator<Pair<Box, Box>> iterator =
-            new SpatialJoin<>(BOX_OVERLAP, SpatialJoin.Duplicates.EXCLUDE).iterator(left, right);
+            SpatialJoin.newSpatialJoin(BOX_OVERLAP, SpatialJoinImpl.Duplicates.EXCLUDE).iterator(left, right);
         // Print points contained in box
         System.out.println("Overlapping pairs");
         while (iterator.hasNext()) {
-            System.out.println(String.format("    %s", iterator.next()));
+            Pair<Box, Box> overlappingPair = iterator.next();
+            System.out.println(String.format("    %s", overlappingPair));
         }
     }
 
@@ -55,8 +57,6 @@ public class OverlappingPairs
 
     private static final int SPACE_X = 1_000_000;
     private static final int SPACE_Y = 1_000_000;
-    private static final int SPACE_X_BITS = 20;
-    private static final int SPACE_Y_BITS = 20;
     private static final int N_BOXES = 1_000_000;
     private static final int BOX_WIDTH = 2;
     private static final int BOX_HEIGHT = 2;

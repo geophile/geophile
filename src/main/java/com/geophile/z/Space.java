@@ -9,26 +9,27 @@ package com.geophile.z;
 import com.geophile.z.space.SpaceImpl;
 
 /**
- * A {@link Space} represents the space in which {@link com.geophile.z.spatialobject.SpatialObject}s reside. The lower bound of each dimension
- * is zero, and the upper bound of a dimension is given only approximately, as a power of 2, (i.e., the number of
- * bits needed to represent a number for that dimension). More precise bounds, including non-zero lower bounds,
- * are the application's responsibility.
+ * A Space represents the space in which {@link SpatialObject}s reside. The lower bound
+ * of each dimension is zero, and the upper bounds are given when the Space is created. Conceptually, a Space is a
+ * multi-dimensional grid of cells.
  */
 
 public abstract class Space
 {
     /**
-     * Creates a {@link Space}. The space has xBits.length dimensions. A coordinate of dimension d
-     * must lie between 0 inclusive and 2**xBits[d] - 1 exclusive.
-     * @param xBits Specifies the dimensions and extent of the space.
+     * Creates a {@link Space}. A coordinate of dimension d must lie between 0 inclusive and size[d] exclusive.
+     * @param size Specifies the number of cells along each dimension. The number of dimensions of the space is
+     *             equal to the length of this array.
      */
-    public static Space newSpace(int[] xBits)
+    public static Space newSpace(long ... size)
     {
-        return new SpaceImpl(xBits, null);
+        return new SpaceImpl(size);
     }
 
     /**
-     * Creates a {@link Space}. The space has xBits.length dimensions. A coordinate of dimension d
+     * Creates a {@link Space}, providing a greater degree of control over performance than
+     * {@link Space#newSpace(long...)}.
+     * The space has xBits.length dimensions. A coordinate of dimension d
      * must lie between 0 inclusive and 2**xBits[d] - 1 exclusive.
      * @param xBits Specifies the dimensions and extent of the space.
      * @param interleave Specifies the how bits of coordinates are interleaved. 0 <= interleave[i] < 2**xBits[d],
@@ -40,5 +41,8 @@ public abstract class Space
         return new SpaceImpl(xBits, interleave);
     }
 
+    /**
+     * The maximum number of dimensions of a Space.
+     */
     public static final int MAX_DIMENSIONS = 6;
 }

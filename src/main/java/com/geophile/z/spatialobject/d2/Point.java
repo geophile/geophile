@@ -6,11 +6,10 @@
 
 package com.geophile.z.spatialobject.d2;
 
+import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.geophile.z.spatialobject.SpatialObject;
-
-import java.util.concurrent.atomic.AtomicLong;
+import com.geophile.z.spatialobject.SpatialObjectIdGenerator;
 
 /**
  * A 2-dimensional point that can be stored by a {@link com.geophile.z.SpatialIndex}.
@@ -24,8 +23,8 @@ public class Point implements SpatialObject
     public int hashCode()
     {
         long h =
-            1000000087L * x ^
-            1000000093L * y;
+            (1000000087L * x) ^
+            (1000000093L * y);
         return ((int) (h >>> 32)) ^ (int) h;
     }
 
@@ -116,13 +115,9 @@ public class Point implements SpatialObject
         this.y = y;
     }
 
-    // Class state
-
-    private static final AtomicLong idCounter = new AtomicLong(0);
-
     // Object state
 
-    private final long id = idCounter.getAndIncrement();
+    private final long id = SpatialObjectIdGenerator.newId();
     private final long x;
     private final long y;
 }

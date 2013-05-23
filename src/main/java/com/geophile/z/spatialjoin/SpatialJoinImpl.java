@@ -8,13 +8,14 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
-import com.geophile.z.spatialobject.SpatialObject;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
 
 import java.util.Iterator;
 
-public class SpatialJoin<LEFT extends SpatialObject, RIGHT extends SpatialObject>
+public class SpatialJoinImpl<LEFT extends SpatialObject, RIGHT extends SpatialObject> extends SpatialJoin<LEFT, RIGHT>
 {
-    public SpatialJoin(SpatialJoinFilter<LEFT, RIGHT> filter, Duplicates duplicates)
+    public SpatialJoinImpl(SpatialJoinFilter<LEFT, RIGHT> filter, Duplicates duplicates)
     {
         this.filter = filter;
         this.duplicates = duplicates;
@@ -30,8 +31,6 @@ public class SpatialJoin<LEFT extends SpatialObject, RIGHT extends SpatialObject
         }
         return iterator;
     }
-
-    public enum Duplicates { INCLUDE, EXCLUDE }
 
     private final SpatialJoinFilter<LEFT, RIGHT> filter;
     private final Duplicates duplicates;

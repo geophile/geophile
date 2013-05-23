@@ -6,11 +6,10 @@
 
 package com.geophile.z.spatialobject.d2;
 
+import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.geophile.z.spatialobject.SpatialObject;
-
-import java.util.concurrent.atomic.AtomicLong;
+import com.geophile.z.spatialobject.SpatialObjectIdGenerator;
 
 /**
  * A 2-dimensional box that can be stored by a {@link com.geophile.z.SpatialIndex}.
@@ -24,10 +23,10 @@ public class Box implements SpatialObject
     public int hashCode()
     {
         long h =
-            1000000007L * xLo ^
-            1000000009L * xHi ^
-            1000000021L * yLo ^
-            1000000033L * yHi;
+            (1000000007L * xLo) ^
+            (1000000009L * xHi) ^
+            (1000000021L * yLo) ^
+            (1000000033L * yHi);
         return ((int) (h >>> 32)) ^ (int) h;
     }
 
@@ -162,13 +161,9 @@ public class Box implements SpatialObject
         this.yHi = yHi;
     }
 
-    // Class state
-
-    private static final AtomicLong idCounter = new AtomicLong(0);
-
     // Object state
 
-    private final long id = idCounter.getAndIncrement();
+    private final long id = SpatialObjectIdGenerator.newId();
     private final long xLo;
     private final long xHi;
     private final long yLo;

@@ -1,6 +1,6 @@
 package com.geophile.z.index;
 
-import com.geophile.z.spatialobject.SpatialObject;
+import com.geophile.z.SpatialObject;
 
 public class Record<SPATIAL_OBJECT extends SpatialObject>
 {

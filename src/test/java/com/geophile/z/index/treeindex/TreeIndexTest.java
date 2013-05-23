@@ -6,12 +6,12 @@
 
 package com.geophile.z.index.treeindex;
 
+import com.geophile.z.Index;
 import com.geophile.z.index.Cursor;
-import com.geophile.z.index.Index;
 import com.geophile.z.index.Record;
+import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
-import com.geophile.z.space.SpaceImpl;
 import org.junit.Before;
 import org.junit.Test;
 

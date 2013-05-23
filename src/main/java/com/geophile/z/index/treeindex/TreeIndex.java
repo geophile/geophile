@@ -7,15 +7,20 @@
 package com.geophile.z.index.treeindex;
 
 import com.geophile.z.DuplicateSpatialObjectException;
+import com.geophile.z.Index;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
-import com.geophile.z.index.Index;
 import com.geophile.z.index.SpatialObjectKey;
-import com.geophile.z.spatialobject.SpatialObject;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * TreeIndex implements the {@link com.geophile.z.Index} interface in terms of a {@link java.util.TreeMap}.
+ * @param <SPATIAL_OBJECT>
+ */
 
 public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SPATIAL_OBJECT>
 {
