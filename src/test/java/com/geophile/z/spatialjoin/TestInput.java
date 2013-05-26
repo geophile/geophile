@@ -5,12 +5,13 @@ import com.geophile.z.SpatialIndex;
 import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.spatialobject.d2.Box;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestInput
 {
-    public void addBox(Box box)
+    public void addBox(Box box) throws IOException, InterruptedException
     {
         boxes.add(box);
         spatialIndex.add(box);
@@ -26,7 +27,7 @@ public class TestInput
         return spatialIndex;
     }
 
-    public TestInput(Space space)
+    public TestInput(Space space) throws IOException, InterruptedException
     {
         this.boxes = new ArrayList<>();
         this.spatialIndex = SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());

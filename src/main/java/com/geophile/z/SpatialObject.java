@@ -9,6 +9,8 @@ package com.geophile.z;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 
+import java.nio.ByteBuffer;
+
 /**
  * A SpatialObject represents a set of points in a {@link com.geophile.z.Space}.
  * Each SpatialObject has an {@link #id()}, assigned by the application, which must be unique within the containing
@@ -28,6 +30,12 @@ public interface SpatialObject
      * @return The coordinates of an arbitrary point inside this spatial object.
      */
     long[] arbitraryPoint();
+
+    /**
+     * Returns the maximum number of z-values to be used in approximating this object.
+     * @return The maximum number of z-values to be used in approximating this object.
+     */
+    int maxZ();
 
     /**
      * Returns true if this and that describe the same points in space, false otherwise.
@@ -52,4 +60,8 @@ public interface SpatialObject
      * @return The relationship of this spatial object to the given Region.
      */
     RegionComparison compare(Region region);
+
+    void readFrom(ByteBuffer buffer);
+
+    void writeTo(ByteBuffer buffer);
 }

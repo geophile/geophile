@@ -11,6 +11,8 @@ import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import com.geophile.z.spatialobject.SpatialObjectIdGenerator;
 
+import java.nio.ByteBuffer;
+
 /**
  * A 2-dimensional point that can be stored by a {@link com.geophile.z.SpatialIndex}.
  */
@@ -42,16 +44,25 @@ public class Point implements SpatialObject
 
     // SpatialObject interface
 
+    @Override
     public long id()
     {
         return id;
     }
 
+    @Override
     public long[] arbitraryPoint()
     {
         return new long[]{x, y};
     }
 
+    @Override
+    public int maxZ()
+    {
+        return 1;
+    }
+
+    @Override
     public boolean equalTo(SpatialObject spatialObject)
     {
         boolean eq = false;
@@ -62,6 +73,7 @@ public class Point implements SpatialObject
         return eq;
     }
 
+    @Override
     public boolean containedBy(Region region)
     {
         return
@@ -69,6 +81,7 @@ public class Point implements SpatialObject
             region.lo(1) <= y && y <= region.hi(1);
     }
 
+    @Override
     public RegionComparison compare(Region region)
     {
         long rXLo = region.lo(0);
@@ -82,6 +95,20 @@ public class Point implements SpatialObject
         } else {
             return RegionComparison.REGION_OVERLAPS_OBJECT;
         }
+    }
+
+    @Override
+    public void readFrom(ByteBuffer buffer)
+    {
+        id = buffer.getLong();
+        x = buffer.getLong();
+        y = buffer.getLong();
+    }
+
+    @Override
+    public void writeTo(ByteBuffer buffer)
+    {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     // Point interface
@@ -117,7 +144,7 @@ public class Point implements SpatialObject
 
     // Object state
 
-    private final long id = SpatialObjectIdGenerator.newId();
-    private final long x;
-    private final long y;
+    private long id = SpatialObjectIdGenerator.newId();
+    private long x;
+    private long y;
 }

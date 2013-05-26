@@ -15,17 +15,18 @@ import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Random;
 
 public class OverlappingPairs
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws IOException, InterruptedException
     {
         new OverlappingPairs().run();
     }
 
-    private void run()
+    private void run() throws IOException, InterruptedException
     {
         Space space = Space.newSpace(SPACE_X, SPACE_Y);
         // Load spatial indexes with boxes

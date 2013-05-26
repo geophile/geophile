@@ -8,6 +8,7 @@ import com.geophile.z.index.SpatialObjectKey;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
@@ -267,7 +268,7 @@ And we only have to consider a container c with c.zlo >= g, (because
 we already determined that gh doesn't overlap with mn, and c.zlo can't
 be < g or else we would have already processed it).
 
-Going back to the original data set (without YZ), and this state:
+Going back to the original data set (without yz), and this state:
 
         X:    nest: []        current: pq
         Y:    next: []        current: mn
@@ -379,6 +380,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
 
     public SpatialJoinInput(SpatialIndex<THIS_SPATIAL_OBJECT> spatialIndex,
                             SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput)
+        throws IOException, InterruptedException
     {
         this.cursor = newCursor((SpatialIndexImpl<THIS_SPATIAL_OBJECT>) spatialIndex);
         this.cursor.next().copyTo(this.current);
@@ -393,7 +395,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     // For use by this package
 
     static <SPATIAL_OBJECT extends SpatialObject> Cursor<SPATIAL_OBJECT> newCursor
-        (SpatialIndexImpl<SPATIAL_OBJECT> spatialIndex)
+        (SpatialIndexImpl<SPATIAL_OBJECT> spatialIndex) throws IOException, InterruptedException
     {
         return spatialIndex.index().cursor(Long.MIN_VALUE);
     }

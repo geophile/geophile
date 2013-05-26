@@ -4,6 +4,7 @@ import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -59,7 +60,7 @@ class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObjec
 
     public SpatialJoinIterator(SpatialIndex<LEFT> leftSpatialIndex,
                                SpatialIndex<RIGHT> rightSpatialIndex,
-                               final SpatialJoinFilter<LEFT, RIGHT> filter)
+                               final SpatialJoinFilter<LEFT, RIGHT> filter) throws IOException, InterruptedException
     {
         SpatialJoinOutput<LEFT, RIGHT> pendingLeftRight =
             new SpatialJoinOutput<LEFT, RIGHT>()

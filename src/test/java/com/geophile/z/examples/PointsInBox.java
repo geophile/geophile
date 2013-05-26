@@ -16,17 +16,18 @@ import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Random;
 
 public class PointsInBox
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws IOException, InterruptedException
     {
         new PointsInBox().run();
     }
 
-    private void run()
+    private void run() throws IOException, InterruptedException
     {
         Space space = Space.newSpace(SPACE_X, SPACE_Y);
         // Load spatial index with points

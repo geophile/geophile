@@ -319,7 +319,7 @@ public class SpaceImpl extends Space
         // z-value format:
         // - Leading bit is zero.
         // - Last 6 bits is the bit count.
-        // - Everything in between is a left-justified bitstring. Bits past the length are zero.
+        // - Everything in between is a left-justified bitstring. Bits between the bitstring and length are zero.
         // A bit count of 0 means a 0-length bitstring, covering the entire space. The maximum bit count is 57,
         // (the number of bits between the leading 0 and the bit count).
         //

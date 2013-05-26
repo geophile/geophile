@@ -11,6 +11,7 @@ import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialJoin;
 import com.geophile.z.SpatialObject;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 public class SpatialJoinImpl<LEFT extends SpatialObject, RIGHT extends SpatialObject> extends SpatialJoin<LEFT, RIGHT>
@@ -23,6 +24,7 @@ public class SpatialJoinImpl<LEFT extends SpatialObject, RIGHT extends SpatialOb
 
     public Iterator<Pair<LEFT, RIGHT>> iterator(SpatialIndex<LEFT> leftSpatialIndex,
                                                 SpatialIndex<RIGHT> rightSpatialIndex)
+        throws IOException, InterruptedException
     {
         Iterator<Pair<LEFT, RIGHT>> iterator =
             new SpatialJoinIterator<>(leftSpatialIndex, rightSpatialIndex, filter);

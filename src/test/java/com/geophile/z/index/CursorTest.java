@@ -165,7 +165,7 @@ public class CursorTest
         }
     }
 
-    private Index<Point> testIndex(int n) throws IOException
+    private Index<Point> testIndex(int n) throws IOException, InterruptedException
     {
         Index<Point> index = new TreeIndex<>();
         assertTrue(GAP > 1);

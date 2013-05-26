@@ -43,6 +43,13 @@ public class Counters
         return THREAD_COUNTERS.get();
     }
 
+    public void reset()
+    {
+        ancestorFind = 0;
+        ancestorInCache = 0;
+        enterZ = 0;
+    }
+
     private static final ThreadLocal<Counters> THREAD_COUNTERS =
         new ThreadLocal<Counters>()
         {

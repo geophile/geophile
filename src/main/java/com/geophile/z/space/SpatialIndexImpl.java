@@ -9,7 +9,11 @@ package com.geophile.z.space;
 import com.geophile.z.Index;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
+import com.geophile.z.index.Cursor;
+import com.geophile.z.index.Record;
+import com.geophile.z.index.SpatialObjectKey;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +31,7 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
 
     // SpatialIndex interface
 
-    public void add(SPATIAL_OBJECT spatialObject)
+    public void add(SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException
     {
         long[] zs = decompose(spatialObject);
         for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
@@ -41,7 +45,7 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
         }
     }
 
-    public boolean remove(SPATIAL_OBJECT spatialObject)
+    public boolean remove(SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException
     {
         boolean found;
         long[] zs = decompose(spatialObject);
@@ -56,15 +60,13 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
             }
         }
         // Do the first removal, getting the spatial object id.
-        long soid = index.remove(zSmallest, spatialObject);
-        if (found = soid != -1L) {
+        long soid = soid(zSmallest, spatialObject);
+        if (found = soid != MISSING) {
             // Remove everything else with the same soid.
-            for (int i = 1; i < zs.length && zs[i] != -1L; i++) {
+            for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
                 long z = zs[i];
-                if (z != zSmallest) {
-                    boolean removed = index.remove(z, soid);
-                    assert removed;
-                }
+                boolean removed = index.remove(z, soid);
+                assert removed;
             }
         }
         return found;
@@ -84,16 +86,37 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
 
     private long[] decompose(SpatialObject spatialObject)
     {
-        int maxZs = space.dimensions() * Z_PER_OBJECT;
+        int maxZs = spatialObject.maxZ();
         long[] zs = new long[maxZs];
         space.decompose(spatialObject, zs);
         return zs;
     }
 
+    long soid(long z, SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException
+    {
+        long soid = UNKNOWN;
+        Cursor<SPATIAL_OBJECT> cursor = index.cursor(z);
+        while (soid == UNKNOWN) {
+            Record<SPATIAL_OBJECT> record = cursor.next();
+            if (record != null) {
+                SpatialObjectKey key = record.key();
+                if (key.z() == z) {
+                    if (record.spatialObject().equalTo(spatialObject)) {
+                        soid = record.spatialObject().id();
+                    }
+                } else {
+                    soid = MISSING;
+                }
+            } else {
+                soid = MISSING;
+            }
+        }
+        return soid;
+    }
+
     // Class state
 
-    // TODO: Figure out a good default, and make it configurable per object.
-    private static final int Z_PER_OBJECT = 4;
-
     private static final Logger LOG = Logger.getLogger(SpatialIndexImpl.class.getName());
+    private static final long UNKNOWN = -2L;
+    private static final long MISSING = -1L;
 }

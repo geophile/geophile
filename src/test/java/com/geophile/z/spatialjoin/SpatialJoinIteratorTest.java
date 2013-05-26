@@ -11,6 +11,7 @@ import com.geophile.z.SpatialJoin;
 import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
 {
     @Test
-    public void test()
+    public void test() throws IOException, InterruptedException
     {
         for (int nLeft : COUNTS) {
             int nRight = MAX_COUNT / nLeft;
@@ -41,7 +42,7 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     }
 
     @Test
-    public void selfJoin()
+    public void selfJoin() throws IOException, InterruptedException
     {
         SpatialJoinFilter<Box, Box> filter =
             new SpatialJoinFilter<Box, Box>()
@@ -69,6 +70,24 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     }
 
     @Override
+    protected Box randomBox(int maxXSize)
+    {
+        double aspectRatio = ASPECT_RATIOS[random.nextInt(ASPECT_RATIOS.length)];
+        int maxYSize = (int) (maxXSize * aspectRatio);
+        if (maxYSize == 0) {
+            maxYSize = 1;
+        }
+        if (maxYSize > NY) {
+            maxYSize = NY - 1;
+        }
+        long xLo = random.nextInt(NX - maxXSize);
+        long xHi = xLo + (maxXSize == 1 ? 0 : random.nextInt(maxXSize));
+        long yLo = random.nextInt(NY - maxYSize);
+        long yHi = yLo + (maxYSize == 1 ? 0 : random.nextInt(maxYSize));
+        return new Box(xLo, xHi, yLo, yHi);
+    }
+
+    @Override
     protected void checkEquals(Object expected, Object actual)
     {
         assertEquals(expected, actual);
@@ -79,4 +98,9 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     {
         return true;
     }
+
+    protected static final int MAX_COUNT = 100_000; // 1_000_000;
+    protected static final int[] COUNTS = new int[]{1, 10, 100, 1_000 , 10_000, 100_000 /*, 1_000_000 */};
+    protected static final int[] MAX_X_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
+    private static final double[] ASPECT_RATIOS = new double[]{1 / 8.0, 1 / 4.0, 1 / 2.0, 1.0, 2.0, 4.0, 8.0};
 }

@@ -17,6 +17,7 @@ import com.geophile.z.Space;
 import com.geophile.z.SpatialJoin;
 import com.geophile.z.spatialobject.d2.Box;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +35,7 @@ public abstract class SpatialJoinIteratorTestBase
                         int nRight,
                         int maxRightXSize,
                         int trials,
-                        EnumSet<SpatialJoin.Duplicates> duplicateHandling)
+                        EnumSet<SpatialJoin.Duplicates> duplicateHandling) throws IOException, InterruptedException
     {
         TestInput leftInput = null;
         TestInput rightInput = null;
@@ -132,7 +133,7 @@ public abstract class SpatialJoinIteratorTestBase
             a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
     }
 
-    protected TestInput loadBoxes(int n, int maxXSize)
+    protected TestInput loadBoxes(int n, int maxXSize) throws IOException, InterruptedException
     {
         TestInput input = new TestInput(SPACE);
         for (int i = 0; i < n; i++) {
@@ -141,22 +142,7 @@ public abstract class SpatialJoinIteratorTestBase
         return input;
     }
 
-    private Box randomBox(int maxXSize)
-    {
-        double aspectRatio = ASPECT_RATIOS[random.nextInt(ASPECT_RATIOS.length)];
-        int maxYSize = (int) (maxXSize * aspectRatio);
-        if (maxYSize == 0) {
-            maxYSize = 1;
-        }
-        if (maxYSize > NY) {
-            maxYSize = NY - 1;
-        }
-        long xLo = random.nextInt(NX - maxXSize);
-        long xHi = xLo + (maxXSize == 1 ? 0 : random.nextInt(maxXSize));
-        long yLo = random.nextInt(NY - maxYSize);
-        long yHi = yLo + (maxYSize == 1 ? 0 : random.nextInt(maxYSize));
-        return new Box(xLo, xHi, yLo, yHi);
-    }
+    protected abstract Box randomBox(int maxXSize);
 
     protected void enableLogging(Level level)
     {
@@ -165,20 +151,15 @@ public abstract class SpatialJoinIteratorTestBase
 
     private boolean printSummary()
     {
-        return Logger.getLogger("").getLevel().intValue() < Level.WARNING.intValue();
+        return Logger.getLogger("").getLevel().intValue() >= Level.WARNING.intValue();
     }
 
-    protected static final int MAX_COUNT = 100_000; // 1_000_000;
-    protected static final int[] COUNTS = new int[]{1, 10, 100, 1_000 , 10_000, 100_000 /*, 1_000_000 */};
-    protected static final int[] MAX_X_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
     protected static final int TRIALS = 1; // 50;
-    private static final int NX = 1_000_000;
-    private static final int NY = 1_000_000;
+    protected static final int NX = 1_000_000;
+    protected static final int NY = 1_000_000;
     private static final Space SPACE = Space.newSpace(NX, NY);
     private static final long SEED = 123456789L;
-    private static final double[] ASPECT_RATIOS = new double[]{1 / 8.0, 1 / 4.0, 1 / 2.0, 1.0, 2.0, 4.0, 8.0};
     private static int testIdGenerator = 0;
-    private static final boolean[] DUPLICATES = { true, false };
     private static final SpatialJoinFilter<Box, Box> FILTER = new SpatialJoinFilter<Box, Box>()
     {
         @Override
@@ -188,6 +169,6 @@ public abstract class SpatialJoinIteratorTestBase
         }
     };
 
-    private final Random random = new Random(SEED);
+    protected final Random random = new Random(SEED);
     private int testId = testIdGenerator++;
 }

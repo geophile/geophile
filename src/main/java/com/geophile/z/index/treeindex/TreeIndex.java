@@ -47,33 +47,6 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     }
 
     @Override
-    public long remove(long z, SPATIAL_OBJECT spatialObject)
-    {
-        long removedId = -1L;
-        Iterator<Map.Entry<SpatialObjectKey, SPATIAL_OBJECT>> zScan =
-            tree.tailMap(key(z)).entrySet().iterator();
-        boolean done = false;
-        while (!done) {
-            if (zScan.hasNext()) {
-                Map.Entry<SpatialObjectKey, SPATIAL_OBJECT> entry = zScan.next();
-                SpatialObjectKey key = entry.getKey();
-                if (key.z() == z) {
-                    if (entry.getValue().equalTo(spatialObject)) {
-                        removedId = entry.getValue().id();
-                        zScan.remove();
-                        done = true;
-                    }
-                } else {
-                    done = true;
-                }
-            } else {
-                done = true;
-            }
-        }
-        return removedId;
-    }
-
-    @Override
     public boolean remove(long z, long soid)
     {
         boolean removed = false;

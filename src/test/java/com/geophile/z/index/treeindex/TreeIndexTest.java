@@ -15,6 +15,7 @@ import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -22,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 public class TreeIndexTest
 {
     @Before
-    public void before()
+    public void before() throws IOException, InterruptedException
     {
         space = new SpaceImpl(new int[]{10, 10}, null);
         index = new TreeIndex<>();
@@ -34,7 +35,7 @@ public class TreeIndexTest
     }
 
     @Test
-    public void testRetrieval()
+    public void testRetrieval() throws IOException, InterruptedException
     {
         Random random = new Random(419);
         int xLo;
@@ -54,7 +55,7 @@ public class TreeIndexTest
         }
     }
 
-    private void testRetrieval(int xLo, int xHi, int yLo, int yHi)
+    private void testRetrieval(int xLo, int xHi, int yLo, int yHi) throws IOException, InterruptedException
     {
         // debug("(%s: %s, %s: %s)", xLo, xHi, yLo, yHi);
         Box box = new Box(xLo, xHi, yLo, yHi);

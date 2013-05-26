@@ -13,6 +13,8 @@ import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,20 +23,20 @@ import static org.junit.Assert.*;
 public class IndexTest
 {
     @Test
-    public void test() throws IllegalAccessException, InstantiationException
+    public void test() throws IllegalAccessException, InstantiationException, IOException, InterruptedException
     {
         test(TreeIndex.class);
     }
 
     private void test(Class indexClass)
-        throws InstantiationException, IllegalAccessException
+        throws InstantiationException, IllegalAccessException, IOException, InterruptedException
     {
-        Index<TestSpatialObject> index = newIndex(indexClass);
         for (int uniqueKeys = 10; uniqueKeys <= 1000; uniqueKeys += 10) {
             for (int copies = 1; copies <= 8; copies++) {
+                Index<TestSpatialObject> index = newIndex(indexClass);
                 load(index, uniqueKeys, copies);
                 checkContents(index, uniqueKeys, copies);
-                testRemoval(index, uniqueKeys, copies);
+                // Index.remove tested indirectly -- SpatialIndexTest tests SpatialIndex.remove
             }
         }
     }
@@ -46,6 +48,7 @@ public class IndexTest
     }
 
     private void load(Index<TestSpatialObject> index, int uniqueKeys, int zCount)
+        throws IOException, InterruptedException
     {
         /*
             With zCount = 3:
@@ -69,6 +72,7 @@ public class IndexTest
     }
 
     private void checkContents(Index<TestSpatialObject> index, int uniqueKeys, int zCount)
+        throws IOException, InterruptedException
     {
         // debug("uniqueKeys: %s, zCount: %s", uniqueKeys, zCount);
         Cursor<TestSpatialObject> cursor = index.cursor(Long.MIN_VALUE);
@@ -94,24 +98,6 @@ public class IndexTest
         }
     }
 
-    private void testRemoval(Index<TestSpatialObject> index, int uniqueKeys, int zCount)
-    {
-        for (long k = 0; k < uniqueKeys; k++) {
-            long z = k * GAP;
-            long id = index.remove(z, new TestSpatialObject(k));
-            assertEquals(k, id);
-            for (int c = 1; c < zCount; c++) {
-                z += GAP;
-                boolean removed = index.remove(z, id);
-                assertTrue(removed);
-            }
-            boolean removed = index.remove(z + GAP, id);
-            assertTrue(!removed);
-        }
-        Cursor<TestSpatialObject> cursor = index.cursor(Long.MIN_VALUE);
-        assertTrue(cursor.next().eof());
-    }
-
     private void debug(String template, Object ... args)
     {
         System.out.println(String.format(template, args));
@@ -133,6 +119,12 @@ public class IndexTest
         }
 
         @Override
+        public int maxZ()
+        {
+            return 1;
+        }
+
+        @Override
         public boolean equalTo(SpatialObject that)
         {
             return this.id == ((TestSpatialObject)that).id;
@@ -150,6 +142,18 @@ public class IndexTest
         {
             fail();
             return null;
+        }
+
+        @Override
+        public void readFrom(ByteBuffer buffer)
+        {
+            fail();
+        }
+
+        @Override
+        public void writeTo(ByteBuffer buffer)
+        {
+            fail();
         }
 
         public TestSpatialObject(long id)

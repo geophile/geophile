@@ -13,6 +13,8 @@ import com.geophile.z.index.SpatialObjectKey;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
 
+import java.io.IOException;
+
 class Ancestors<SPATIAL_OBJECT extends SpatialObject>
 {
     public Record<SPATIAL_OBJECT> find(long z)
@@ -35,7 +37,7 @@ class Ancestors<SPATIAL_OBJECT extends SpatialObject>
         return !record.eof() && record.key().z() == z ? record : null;
     }
 
-    public Ancestors(SpatialIndexImpl<SPATIAL_OBJECT> index)
+    public Ancestors(SpatialIndexImpl<SPATIAL_OBJECT> index) throws IOException, InterruptedException
     {
         this.cursor = SpatialJoinInput.newCursor(index);
     }

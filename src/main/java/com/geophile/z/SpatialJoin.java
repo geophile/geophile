@@ -9,6 +9,7 @@ package com.geophile.z;
 import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 /**
@@ -62,7 +63,8 @@ public abstract class SpatialJoin<LEFT extends SpatialObject, RIGHT extends Spat
      * @return An {@link java.util.Iterator} providing access to spatial join results.
      */
     public abstract Iterator<Pair<LEFT, RIGHT>> iterator(SpatialIndex<LEFT> leftSpatialIndex,
-                                                         SpatialIndex<RIGHT> rightSpatialIndex);
+                                                         SpatialIndex<RIGHT> rightSpatialIndex)
+        throws IOException, InterruptedException;
 
     /**
      * Specifies duplicate-handling behavior for spatial joins.

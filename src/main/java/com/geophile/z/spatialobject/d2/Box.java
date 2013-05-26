@@ -11,6 +11,8 @@ import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import com.geophile.z.spatialobject.SpatialObjectIdGenerator;
 
+import java.nio.ByteBuffer;
+
 /**
  * A 2-dimensional box that can be stored by a {@link com.geophile.z.SpatialIndex}.
  */
@@ -44,16 +46,26 @@ public class Box implements SpatialObject
 
     // SpatialObject interface
 
+    @Override
     public long id()
     {
         return id;
     }
 
+    @Override
     public long[] arbitraryPoint()
     {
         return new long[]{xLo, yLo};
     }
 
+    @Override
+    public int maxZ()
+    {
+        // TODO: Don't rely on system variable
+        return Integer.getInteger("maxz", 4);
+    }
+
+    @Override
     public boolean equalTo(SpatialObject spatialObject)
     {
         boolean eq = false;
@@ -68,6 +80,7 @@ public class Box implements SpatialObject
         return eq;
     }
 
+    @Override
     public boolean containedBy(Region region)
     {
         return
@@ -75,6 +88,7 @@ public class Box implements SpatialObject
             region.lo(1) <= yLo && yHi <= region.hi(1);
     }
 
+    @Override
     public RegionComparison compare(Region region)
     {
         long rXLo = region.lo(0);
@@ -88,6 +102,26 @@ public class Box implements SpatialObject
         } else {
             return RegionComparison.REGION_OVERLAPS_OBJECT;
         }
+    }
+
+    @Override
+    public void readFrom(ByteBuffer buffer)
+    {
+        id = buffer.getLong();
+        xLo = buffer.getLong();
+        xHi = buffer.getLong();
+        yLo = buffer.getLong();
+        yHi = buffer.getLong();
+    }
+
+    @Override
+    public void writeTo(ByteBuffer buffer)
+    {
+        buffer.putLong(id);
+        buffer.putLong(xLo);
+        buffer.putLong(xHi);
+        buffer.putLong(yLo);
+        buffer.putLong(yHi);
     }
 
     // Box interface
@@ -163,9 +197,9 @@ public class Box implements SpatialObject
 
     // Object state
 
-    private final long id = SpatialObjectIdGenerator.newId();
-    private final long xLo;
-    private final long xHi;
-    private final long yLo;
-    private final long yHi;
+    private long id = SpatialObjectIdGenerator.newId();
+    private long xLo;
+    private long xHi;
+    private long yLo;
+    private long yHi;
 }

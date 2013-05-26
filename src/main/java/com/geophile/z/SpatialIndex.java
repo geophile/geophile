@@ -9,6 +9,8 @@ package com.geophile.z;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
 
+import java.io.IOException;
+
 /**
  * A SpatialIndex organizes a set of {@link SpatialObject}s for the efficient execution of spatial searches.
  * @param <SPATIAL_OBJECT> The type of {@link SpatialObject} contained by this spatial index.
@@ -29,14 +31,14 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
      * Adds the given spatial object to the index.
      * @param spatialObject The object to be added.
      */
-    public abstract void add(SPATIAL_OBJECT spatialObject);
+    public abstract void add(SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException;
 
     /**
      * Removes the given spatial object from the index.
      * @param spatialObject The object to be removed.
      * @return true if spatialObject was found and removed, false otherwise
      */
-    public abstract boolean remove(SPATIAL_OBJECT spatialObject);
+    public abstract boolean remove(SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException;
 
     /**
      * Creates a SpatialIndex. The index
@@ -46,7 +48,7 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
      * @param index The {@link Index} that will store the indexed {@link SpatialObject}s.
      */
     public static <SPATIAL_OBJECT extends SpatialObject> SpatialIndex<SPATIAL_OBJECT> newSpatialIndex
-        (Space space, Index<SPATIAL_OBJECT> index)
+        (Space space, Index<SPATIAL_OBJECT> index) throws IOException, InterruptedException
     {
         return new SpatialIndexImpl<>((SpaceImpl) space, index);
     }

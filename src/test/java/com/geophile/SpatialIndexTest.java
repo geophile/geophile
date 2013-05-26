@@ -19,6 +19,7 @@ import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -27,7 +28,7 @@ public class SpatialIndexTest
 {
     // Like TreeIndexTest.testRetrieval, but written in terms of SpatialIndex
     @Test
-    public void testRetrieval()
+    public void testRetrieval() throws IOException, InterruptedException
     {
         TreeIndex<Point> index = new TreeIndex<>();
         spatialIndex = new SpatialIndexImpl<>(SPACE, index);
@@ -63,7 +64,7 @@ public class SpatialIndexTest
     }
 
     @Test
-    public void testRemoveAll()
+    public void testRemoveAll() throws IOException, InterruptedException
     {
         TreeIndex<Point> index = new TreeIndex<>();
         spatialIndex = new SpatialIndexImpl<>(SPACE, index);
@@ -105,7 +106,7 @@ public class SpatialIndexTest
     }
 
     @Test
-    public void testRemoveSome()
+    public void testRemoveSome() throws IOException, InterruptedException
     {
         TreeIndex<Point> index = new TreeIndex<>();
         spatialIndex = new SpatialIndexImpl<>(SPACE, index);
@@ -151,7 +152,7 @@ public class SpatialIndexTest
         }
     }
 
-    private void test(int xLo, int xHi, int yLo, int yHi, Filter filter)
+    private void test(int xLo, int xHi, int yLo, int yHi, Filter filter) throws IOException, InterruptedException
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
         TreeIndex<Box> boxTreeIndex = new TreeIndex<>();
