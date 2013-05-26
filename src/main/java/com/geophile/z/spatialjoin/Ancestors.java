@@ -17,7 +17,7 @@ import java.io.IOException;
 
 class Ancestors<SPATIAL_OBJECT extends SpatialObject>
 {
-    public Record<SPATIAL_OBJECT> find(long z)
+    public Record<SPATIAL_OBJECT> find(long z) throws IOException, InterruptedException
     {
         Record<SPATIAL_OBJECT> record;
         int level = SpaceImpl.length(z);

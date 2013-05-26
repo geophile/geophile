@@ -8,13 +8,15 @@ package com.geophile.z.index;
 
 import com.geophile.z.SpatialObject;
 
+import java.io.IOException;
+
 public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
 {
-    public abstract Record<SPATIAL_OBJECT> next();
+    public abstract Record<SPATIAL_OBJECT> next() throws IOException, InterruptedException;
 
-    public abstract Record<SPATIAL_OBJECT> previous();
+    public abstract Record<SPATIAL_OBJECT> previous() throws IOException, InterruptedException;
 
-    public abstract void goTo(SpatialObjectKey key);
+    public abstract void goTo(SpatialObjectKey key) throws IOException, InterruptedException;
 
     public void close()
     {
@@ -22,7 +24,7 @@ public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
         state = State.DONE;
     }
 
-    public final Record<SPATIAL_OBJECT> current()
+    public final Record<SPATIAL_OBJECT> current() throws IOException, InterruptedException
     {
         return current;
     }

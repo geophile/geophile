@@ -11,6 +11,7 @@ import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
 import com.geophile.z.index.SpatialObjectKey;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -20,13 +21,13 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
     // Cursor interface
 
     @Override
-    public Record<SPATIAL_OBJECT> next()
+    public Record<SPATIAL_OBJECT> next() throws IOException, InterruptedException
     {
         return neighbor(true);
     }
 
     @Override
-    public Record<SPATIAL_OBJECT> previous()
+    public Record<SPATIAL_OBJECT> previous() throws IOException, InterruptedException
     {
         return neighbor(false);
     }
@@ -49,7 +50,7 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
 
     // For use by this class
 
-    private Record<SPATIAL_OBJECT> neighbor(boolean forwardMove)
+    private Record<SPATIAL_OBJECT> neighbor(boolean forwardMove) throws IOException, InterruptedException
     {
         switch (state()) {
             case NEVER_USED:

@@ -2,6 +2,7 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoinRuntimeException;
 import com.geophile.z.SpatialObject;
 
 import java.io.IOException;
@@ -101,11 +102,15 @@ class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObjec
     private void ensurePending()
     {
         if (pending.isEmpty()) {
-            findPairs();
+            try {
+                findPairs();
+            } catch (IOException | InterruptedException e) {
+                throw new SpatialJoinRuntimeException(e);
+            }
         }
     }
 
-    private void findPairs()
+    private void findPairs() throws IOException, InterruptedException
     {
         assert pending.isEmpty();
         long zMin;

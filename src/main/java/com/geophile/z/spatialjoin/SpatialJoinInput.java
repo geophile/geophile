@@ -341,7 +341,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
         return nest.isEmpty() ? EOF : SpaceImpl.zHi(nest.peek().key().z());
     }
 
-    public void enterZ()
+    public void enterZ() throws IOException, InterruptedException
     {
         assert !current.eof();
         if (currentOverlapsOtherNest() ||
@@ -402,7 +402,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
 
     // For use by this class
 
-    private void advanceCursor()
+    private void advanceCursor() throws IOException, InterruptedException
     {
         // Use that.current to skip ahead
         if (that.current.eof()) {
@@ -428,7 +428,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
         }
     }
 
-    private void findAncestorToResume(long zStart, long zLowerBound)
+    private void findAncestorToResume(long zStart, long zLowerBound) throws IOException, InterruptedException
     {
         if (ancestors == null) {
             findAncestorToResumeWithoutCache(zStart, zLowerBound);
@@ -438,6 +438,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     }
 
     private void findAncestorToResumeWithoutCache(long zStart, long zLowerBound)
+        throws IOException, InterruptedException
     {
         // Find the largest ancestor of current that exists and that is past zLowerBound.
         long zCandidate = SpaceImpl.parent(zStart);
@@ -460,7 +461,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
         }
     }
 
-    private void findAncestorToResumeWithCache(long zStart, long zLowerBound)
+    private void findAncestorToResumeWithCache(long zStart, long zLowerBound) throws IOException, InterruptedException
     {
         // Find the largest ancestor of current that exists and that is past zLowerBound.
         long zCandidate = SpaceImpl.parent(zStart);
