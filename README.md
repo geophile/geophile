@@ -1,8 +1,8 @@
 # Geophile
 
 Geophile is a Java implementation of *spatial join*. Given two sets of
-spatial objects, *R* and *S*, the spatial join is the set of pairs,
-(*x*, *y*), such that *x* belongs to *R*, *y* belongs to *S*, and *x*
+spatial objects, *R* and *S*, the spatial join is the set of pairs, ( _x_, _y_), 
+such that *x* belongs to *R*, *y* belongs to *S*, and *x*
 and *y* overlap.
 
 This implementation is built on two abstractions:
