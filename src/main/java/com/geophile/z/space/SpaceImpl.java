@@ -243,7 +243,7 @@ public class SpaceImpl extends Space
                 x = x >>> 4;
                 padLength -= 1;
             }
-            if (padLength == significantDigits) {
+            if (padLength > 0 && padLength == significantDigits) {
                 padLength--;
             }
             String padding = "0000000000000000".substring(0, padLength);
@@ -404,9 +404,11 @@ public class SpaceImpl extends Space
 
     // Class state
 
+    public static final int LENGTH_BITS = 6;
+    static final long LENGTH_MASK = (1 << LENGTH_BITS) - 1;
     public static final int MAX_Z_BITS = 57; // MSB is unused. 6 LSBs contain the number of z-value bits.
-    static final long LENGTH_MASK = 0x3f;
-    static final int LENGTH_BITS = 6;
+    public static final long Z_MIN = 0x0L;
+    public static final long Z_MAX = ((1L << MAX_Z_BITS) - 1) << LENGTH_BITS | LENGTH_MASK;
 
     // Object state
 

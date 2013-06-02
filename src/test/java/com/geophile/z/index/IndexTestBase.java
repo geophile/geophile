@@ -7,6 +7,7 @@
 package com.geophile.z.index;
 
 import com.geophile.z.Index;
+import com.geophile.z.space.SpaceImpl;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ public abstract class IndexTestBase
     // TODO: Load and remove in other orders.
 
     @Test
-    public void test() throws IllegalAccessException, InstantiationException, IOException, InterruptedException
+    public void test() throws Exception
     {
         Index<TestSpatialObject> index = newIndex();
         for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
@@ -32,7 +33,7 @@ public abstract class IndexTestBase
         }
     }
 
-    protected abstract Index<TestSpatialObject> newIndex();
+    protected abstract Index<TestSpatialObject> newIndex() throws Exception;
 
     private void load(Index<TestSpatialObject> index, int nObjects, int zCount)
         throws IOException, InterruptedException
@@ -52,7 +53,8 @@ public abstract class IndexTestBase
         for (long id = 0; id < nObjects; id++) {
             TestSpatialObject spatialObject = new TestSpatialObject(id);
             for (long c = 0; c < zCount; c++) {
-                long z = (id + c) * GAP;
+                long z = z((id + c) * GAP);
+                // print("id: %s, c: %s -- z: %s", id, c, SpaceImpl.formatZ(z));
                 index.add(z, spatialObject);
             }
         }
@@ -62,7 +64,7 @@ public abstract class IndexTestBase
         throws IOException, InterruptedException
     {
         Set<Long> presentIds = new HashSet<>();
-        Cursor<TestSpatialObject> cursor = index.cursor(Long.MIN_VALUE);
+        Cursor<TestSpatialObject> cursor = index.cursor(SpaceImpl.Z_MIN);
         Record<TestSpatialObject> record;
         List<List<Long>> zById = new ArrayList<>();
         for (long id = 0; id < nObjects; id++) {
@@ -82,7 +84,7 @@ public abstract class IndexTestBase
                 assertEquals(zCount, zList.size());
                 long expected = id * GAP;
                 for (Long z : zList) {
-                    assertEquals(expected, z.longValue());
+                    assertEquals(z(expected), z.longValue());
                     expected += GAP;
                 }
             }
@@ -96,12 +98,12 @@ public abstract class IndexTestBase
         for (long id = 0; id < nObjects; id++) {
             // Remove id and check remaining contents
             for (long c = 0; c < zCount; c++) {
-                long z = (id + c) * GAP;
-                boolean removed = index.remove(z, id);
+                long expected = (id + c) * GAP;
+                boolean removed = index.remove(z(expected), id);
                 assertTrue(removed);
-                removed = index.remove(z + GAP / 2, id);
+                removed = index.remove(z(expected + GAP / 2), id);
                 assertTrue(!removed);
-                removed = index.remove(z, Long.MAX_VALUE);
+                removed = index.remove(z(expected), SpaceImpl.Z_MAX);
                 assertTrue(!removed);
             }
             removedIds.add(id);
@@ -112,14 +114,11 @@ public abstract class IndexTestBase
     private void checkRetrieval(Index<TestSpatialObject> index, int nObjects, int zCount)
         throws IOException, InterruptedException
     {
-        print("nObjects: %s, zCount: %s", nObjects, zCount);
         // Expected
         NavigableMap<SpatialObjectKey, Object> allKeys = new TreeMap<>();
         for (long id = 0; id < nObjects; id++) {
-            // Remove id and check remaining contents
             for (long c = 0; c < zCount; c++) {
-                long z = (id + c) * GAP;
-                SpatialObjectKey key = SpatialObjectKey.key(z, id);
+                SpatialObjectKey key = SpatialObjectKey.key(z((id + c) * GAP), id);
                 allKeys.put(key, null);
             }
         }
@@ -127,16 +126,20 @@ public abstract class IndexTestBase
         Record<TestSpatialObject> record;
         Iterator<SpatialObjectKey> expected;
         SpatialObjectKey start;
+        int count;
         // Try traversal forward from the beginning
-        start = SpatialObjectKey.keyLowerBound(Long.MIN_VALUE);
+        start = SpatialObjectKey.keyLowerBound(z(SpaceImpl.Z_MIN));
         expected = allKeys.keySet().iterator();
         cursor = index.cursor(start.z());
+        count = 0;
         while (!(record = cursor.next()).eof()) {
             assertEquals(expected.next(), record.key());
+            count++;
         }
         assertTrue(!expected.hasNext());
-        // Try traversal forward from the halfway
-        start = SpatialObjectKey.keyLowerBound(GAP * nObjects / 2);
+        assertEquals(nObjects * zCount, count);
+        // Try traversal forward from halfway
+        start = SpatialObjectKey.keyLowerBound(z(GAP * nObjects / 2 + GAP / 2));
         expected = allKeys.tailMap(start, true).keySet().iterator();
         cursor = index.cursor(start.z());
         while (!(record = cursor.next()).eof()) {
@@ -144,37 +147,45 @@ public abstract class IndexTestBase
         }
         assertTrue(!expected.hasNext());
         // Try traversal forward from the end
-        start = SpatialObjectKey.keyLowerBound(Long.MAX_VALUE);
+        start = SpatialObjectKey.keyUpperBound(z(SpaceImpl.Z_MAX));
         expected = allKeys.tailMap(start, true).keySet().iterator();
         cursor = index.cursor(start.z());
         while (!(record = cursor.next()).eof()) {
             fail();
         }
         assertTrue(!expected.hasNext());
-        // Try traversal backward from the beginning
-        start = SpatialObjectKey.keyLowerBound(Long.MIN_VALUE);
+        // Try traversal backward from the beginning (lower bound is before first key)
+        start = SpatialObjectKey.keyLowerBound(z(SpaceImpl.Z_MIN));
         expected = allKeys.headMap(start, true).descendingKeySet().iterator();
         cursor = index.cursor(start.z());
         while (!(record = cursor.previous()).eof()) {
             fail();
         }
         assertTrue(!expected.hasNext());
-        // Try traversal backward from the halfway
-        start = SpatialObjectKey.keyLowerBound(GAP * nObjects / 2);
+        // Try traversal backward from halfway
+        start = SpatialObjectKey.keyUpperBound(z(GAP * nObjects / 2 + GAP / 2));
         expected = allKeys.headMap(start, true).descendingKeySet().iterator();
         cursor = index.cursor(start.z());
         while (!(record = cursor.previous()).eof()) {
             assertEquals(expected.next(), record.key());
         }
         assertTrue(!expected.hasNext());
-        // Try traversal backward from the end
-        start = SpatialObjectKey.keyLowerBound(Long.MAX_VALUE);
+        // Try traversal backward from the end (upper bound gets everything)
+        start = SpatialObjectKey.keyUpperBound(z(SpaceImpl.Z_MAX));
         expected = allKeys.descendingKeySet().iterator();
         cursor = index.cursor(start.z());
+        count = 0;
         while (!(record = cursor.previous()).eof()) {
             assertEquals(expected.next(), record.key());
+            count++;
         }
         assertTrue(!expected.hasNext());
+        assertEquals(nObjects * zCount, count);
+    }
+
+    private long z(long x)
+    {
+        return SpaceImpl.z(x << SpaceImpl.LENGTH_BITS, SpaceImpl.MAX_Z_BITS);
     }
 
     private void print(String template, Object ... args)

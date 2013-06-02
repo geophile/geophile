@@ -79,6 +79,11 @@ public class SpatialObjectKey implements Comparable<SpatialObjectKey>
         return new SpatialObjectKey(z, Long.MIN_VALUE);
     }
 
+    public static SpatialObjectKey keyUpperBound(long z)
+    {
+        return new SpatialObjectKey(z, Long.MAX_VALUE);
+    }
+
     // For use by this class
 
     private SpatialObjectKey(long z, long soid)

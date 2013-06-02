@@ -397,7 +397,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     static <SPATIAL_OBJECT extends SpatialObject> Cursor<SPATIAL_OBJECT> newCursor
         (SpatialIndexImpl<SPATIAL_OBJECT> spatialIndex) throws IOException, InterruptedException
     {
-        return spatialIndex.index().cursor(Long.MIN_VALUE);
+        return spatialIndex.index().cursor(SpaceImpl.Z_MIN);
     }
 
     // For use by this class
