@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * TreeIndex implements the {@link com.geophile.z.Index} interface in terms of a {@link java.util.TreeMap}.
+ * A TreeIndex is not safe for use for simultaneous use by multiple threads.
  * @param <SPATIAL_OBJECT>
  */
 
@@ -34,13 +35,17 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
 
     // Index interface
 
+
+    @Override
+    public boolean blindUpdates()
+    {
+        return false;
+    }
+
     @Override
     public void add(long z, SPATIAL_OBJECT spatialObject)
     {
         SPATIAL_OBJECT replaced = tree.put(key(z, spatialObject.id()), spatialObject);
-        // Checking replaced is not a foolproof way to catch duplicates. If two threads concurrently
-        // add spatial objects that have a common z-value and the same id, neither may see the other's insert.
-        // (The exact behavior depends on how the underlying index does concurrency control.)
         if (replaced != null) {
             throw new DuplicateSpatialObjectException();
         }

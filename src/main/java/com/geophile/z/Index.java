@@ -22,6 +22,11 @@ import java.io.IOException;
  *
  * Removal of a {@link com.geophile.z.SpatialObject} from a {@link com.geophile.z.SpatialIndex} is
  * done by calling {@link #remove(long, long)} for each z-value of the {@link com.geophile.z.SpatialObject}.
+ * In order to completely remove a {@link com.geophile.z.SpatialObject}, the same z-values must be provided
+ * as when the object was added.
+ *
+ * An index that does "blind updates" cannot detect duplicate keys, and cannot indicate whether a removal succeeds.
+ * An index with these behaviors is indicated by {@link #blindUpdates()}.
  *
  * Access to Index contents is accomplished using a {@link com.geophile.z.index.Cursor}, obtained by
  * {@link Index#cursor(long)}.
@@ -33,18 +38,28 @@ import java.io.IOException;
 public interface Index<SPATIAL_OBJECT extends SpatialObject>
 {
     /**
+     * Indicates whether this index does blind updates.
+     * @return true if this index does blind updates, false otherwise.
+     */
+    boolean blindUpdates();
+
+    /**
      * Adds a spatial object to this index, associated with the given z-value.
      * @param z z-value representing a region that overlaps the spatial object.
      * @param spatialObject The spatial object being added to the index.
+     * @throws DuplicateSpatialObjectException if (z, spatialObject.id()) is already present. This exception cannot
+     *         be thrown by an index that does blind updates.
      */
-    void add(long z, SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException;
+    void add(long z, SPATIAL_OBJECT spatialObject)
+        throws IOException, InterruptedException, DuplicateSpatialObjectException;
 
     /**
      * Removes the association between the given z-value and the spatial object with the given id.
      * Complete removal of a spatial object will require removal for each of the object's z-values.
      * @param z z-value representing a region that overlaps the spatial object.
      * @param soid Identifies the spatial object being removed from the index.
-     * @return true if (z, soid) was found and removed, false otherwise.
+     * @return false if this index does blind updates. Otherwise, the return value is true
+     *               if the record with key (z, spatialObject.id()) was found and removed, false otherwise.
      */
     boolean remove(long z, long soid) throws IOException, InterruptedException;
 
