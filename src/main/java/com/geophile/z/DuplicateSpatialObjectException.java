@@ -13,6 +13,8 @@ package com.geophile.z;
 
 public class DuplicateSpatialObjectException extends RuntimeException
 {
-    public DuplicateSpatialObjectException()
-    {}
+    public DuplicateSpatialObjectException(SpatialObject spatialObject)
+    {
+        super(spatialObject.toString());
+    }
 }

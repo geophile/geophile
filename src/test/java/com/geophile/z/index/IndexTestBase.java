@@ -100,7 +100,7 @@ public abstract class IndexTestBase
             for (long c = 0; c < zCount; c++) {
                 long expected = (id + c) * GAP;
                 boolean removed = index.remove(z(expected), id);
-                assertTrue(removed);
+                assertTrue(index.blindUpdates() && !removed || !index.blindUpdates() && removed);
                 removed = index.remove(z(expected + GAP / 2), id);
                 assertTrue(!removed);
                 removed = index.remove(z(expected), SpaceImpl.Z_MAX);

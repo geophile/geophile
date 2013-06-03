@@ -47,7 +47,7 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     {
         SPATIAL_OBJECT replaced = tree.put(key(z, spatialObject.id()), spatialObject);
         if (replaced != null) {
-            throw new DuplicateSpatialObjectException();
+            throw new DuplicateSpatialObjectException(replaced);
         }
     }
 
