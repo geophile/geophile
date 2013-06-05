@@ -27,12 +27,30 @@ public class TestInput
         return spatialIndex;
     }
 
-    public TestInput(Space space) throws IOException, InterruptedException
+    public int maxXSize()
+    {
+        return maxXSize;
+    }
+
+    public int maxYSize()
+    {
+        return maxYSize;
+    }
+
+    public TestInput(Space space, int maxXSize, int maxYSize, boolean singleCell)
+        throws IOException, InterruptedException
     {
         this.boxes = new ArrayList<>();
-        this.spatialIndex = SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
+        this.spatialIndex = SpatialIndex.newSpatialIndex
+            (space,
+             new TreeIndex<Box>(),
+             singleCell ? SpatialIndex.Options.SINGLE_CELL : SpatialIndex.Options.DEFAULT);
+        this.maxXSize = maxXSize;
+        this.maxYSize = maxYSize;
     }
 
     private final List<Box> boxes;
     private final SpatialIndex<Box> spatialIndex;
+    private final int maxXSize;
+    private final int maxYSize;
 }

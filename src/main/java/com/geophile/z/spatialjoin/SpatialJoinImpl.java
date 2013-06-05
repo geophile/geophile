@@ -10,6 +10,7 @@ import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialJoin;
 import com.geophile.z.SpatialObject;
+import com.geophile.z.space.SpatialIndexImpl;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -27,12 +28,21 @@ public class SpatialJoinImpl<LEFT extends SpatialObject, RIGHT extends SpatialOb
         throws IOException, InterruptedException
     {
         Iterator<Pair<LEFT, RIGHT>> iterator =
-            new SpatialJoinIterator<>(leftSpatialIndex, rightSpatialIndex, filter);
+            new SpatialJoinIterator<>((SpatialIndexImpl<LEFT>) leftSpatialIndex,
+                                      (SpatialIndexImpl<RIGHT>) rightSpatialIndex,
+                                      filter);
         if (duplicates == Duplicates.EXCLUDE) {
             iterator = new DuplicateEliminatingIterator<>(iterator);
         }
         return iterator;
     }
+
+    public static boolean singleCellOptimization()
+    {
+        return Boolean.valueOf(System.getProperty(SINGLE_CELL_OPTIMIZATION_PROPERTY, "true"));
+    }
+
+    public static final String SINGLE_CELL_OPTIMIZATION_PROPERTY = "singlecellopt";
 
     private final SpatialJoinFilter<LEFT, RIGHT> filter;
     private final Duplicates duplicates;

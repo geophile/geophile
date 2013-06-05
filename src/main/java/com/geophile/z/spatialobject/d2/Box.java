@@ -62,7 +62,10 @@ public class Box implements SpatialObject
     public int maxZ()
     {
         // TODO: Don't rely on system variable
-        return Integer.getInteger("maxz", 4);
+        return
+            xLo == xHi && yLo == yHi
+            ? 1
+            : Integer.getInteger("maxz", 4);
     }
 
     @Override

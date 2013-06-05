@@ -12,7 +12,6 @@ import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -25,17 +24,27 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     @Test
     public void test() throws IOException, InterruptedException
     {
+        TestInput leftInput = null;
+        TestInput rightInput = null;
         for (int nLeft : COUNTS) {
             int nRight = MAX_COUNT / nLeft;
             assertEquals(MAX_COUNT, nLeft * nRight);
-            for (int maxLeftXSize : MAX_X_SIZES) {
-                for (int maxRightXSize : MAX_X_SIZES) {
-                    test(nLeft,
-                         maxLeftXSize,
-                         nRight,
-                         maxRightXSize,
-                         TRIALS,
-                         EnumSet.of(SpatialJoin.Duplicates.INCLUDE, SpatialJoin.Duplicates.EXCLUDE));
+            for (int maxLeftXSize : MAX_SIZES) {
+                for (int maxLeftYSize : MAX_SIZES) {
+                    for (int maxRightXSize : MAX_SIZES) {
+                        for (int maxRightYSize : MAX_SIZES) {
+                            for (int trial = 0; trial < TRIALS; trial++) {
+                                if (trial == 0 || nLeft < nRight) {
+                                    leftInput = loadBoxes(nLeft, maxLeftXSize, maxLeftYSize);
+                                }
+                                if (trial == 0 || nRight <= nLeft) {
+                                    rightInput = loadBoxes(nRight, maxRightXSize, maxRightYSize);
+                                }
+                                test(leftInput, rightInput, SpatialJoin.Duplicates.INCLUDE);
+                                test(leftInput, rightInput, SpatialJoin.Duplicates.EXCLUDE);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -53,33 +62,27 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
                     return a.equalTo(b);
                 }
             };
-        for (int maxXSize : MAX_X_SIZES) {
-            TestInput input = loadBoxes(10_000, maxXSize);
-            Set<Box> actual = new HashSet<>();
-            Iterator<Pair<Box, Box>> iterator =
-                SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE)
-                           .iterator(input.spatialIndex(), input.spatialIndex());
-            while (iterator.hasNext()) {
-                Pair<Box, Box> pair = iterator.next();
-                Box box = pair.left();
-                assertTrue(box.equalTo(pair.right()));
-                actual.add(box);
+        for (int maxXSize : MAX_SIZES) {
+            for (int maxYSize : MAX_SIZES) {
+                TestInput input = loadBoxes(10_000, maxXSize, maxYSize);
+                Set<Box> actual = new HashSet<>();
+                Iterator<Pair<Box, Box>> iterator =
+                    SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE)
+                               .iterator(input.spatialIndex(), input.spatialIndex());
+                while (iterator.hasNext()) {
+                    Pair<Box, Box> pair = iterator.next();
+                    Box box = pair.left();
+                    assertTrue(box.equalTo(pair.right()));
+                    actual.add(box);
+                }
+                assertEquals(new HashSet<>(input.boxes()), actual);
             }
-            assertEquals(new HashSet<>(input.boxes()), actual);
         }
     }
 
     @Override
-    protected Box randomBox(int maxXSize)
+    protected Box randomBox(int maxXSize, int maxYSize)
     {
-        double aspectRatio = ASPECT_RATIOS[random.nextInt(ASPECT_RATIOS.length)];
-        int maxYSize = (int) (maxXSize * aspectRatio);
-        if (maxYSize == 0) {
-            maxYSize = 1;
-        }
-        if (maxYSize > NY) {
-            maxYSize = NY - 1;
-        }
         long xLo = random.nextInt(NX - maxXSize);
         long xHi = xLo + (maxXSize == 1 ? 0 : random.nextInt(maxXSize));
         long yLo = random.nextInt(NY - maxYSize);
@@ -100,7 +103,6 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     }
 
     protected static final int MAX_COUNT = 100_000; // 1_000_000;
-    protected static final int[] COUNTS = new int[]{1, 10, 100, 1_000 , 10_000, 100_000 /*, 1_000_000 */};
-    protected static final int[] MAX_X_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
-    private static final double[] ASPECT_RATIOS = new double[]{1 / 8.0, 1 / 4.0, 1 / 2.0, 1.0, 2.0, 4.0, 8.0};
+    protected static final int[] COUNTS = new int[]{1, 10, 100, 1_000, 10_000, 100_000 /*, 1_000_000 */};
+    protected static final int[] MAX_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
 }

@@ -1,6 +1,5 @@
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
@@ -378,17 +377,19 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
         this.that = that;
     }
 
-    public SpatialJoinInput(SpatialIndex<THIS_SPATIAL_OBJECT> spatialIndex,
+    public SpatialJoinInput(SpatialIndexImpl<THIS_SPATIAL_OBJECT> spatialIndex,
                             SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput)
         throws IOException, InterruptedException
     {
-        this.cursor = newCursor((SpatialIndexImpl<THIS_SPATIAL_OBJECT>) spatialIndex);
+        this.singleCell = spatialIndex.singleCell();
+        this.cursor = newCursor(spatialIndex);
         this.cursor.next().copyTo(this.current);
         this.spatialJoinOutput = spatialJoinOutput;
         this.ancestors =
             USE_ANCESTOR_CACHE
-            ? new Ancestors<>((SpatialIndexImpl<THIS_SPATIAL_OBJECT>) spatialIndex)
+            ? new Ancestors<>(spatialIndex)
             : null;
+        this.singleCellOptimization = SpatialJoinImpl.singleCellOptimization();
         log("initialize");
     }
 
@@ -412,18 +413,21 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
             assert !current.eof(); // Should have been checked in caller, but just to be sure.
             long thisCurrentZ = this.current.key().z();
             long thatCurrentZ = that.current.key().z();
-            assert thatCurrentZ >= thisCurrentZ; // otherwise, we would have entered this.current
+            assert thatCurrentZ >= thisCurrentZ; // otherwise, we would have entered that.current
             if (thatCurrentZ > thisCurrentZ) {
                 cursor.goTo(SpatialObjectKey.keyLowerBound(thatCurrentZ));
                 cursor.next().copyTo(current);
-                if (!current.eof() && SpaceImpl.contains(thatCurrentZ, current.key().z())) {
-                    // that.current contains this.current. Find the largest ancestor.
-                    findAncestorToResume(current.key().z(), thisCurrentZ);
-                } else {
-                    // that.current does not contain this.current. Look for a z-value in this containing
-                    // that.current.
-                    findAncestorToResume(thatCurrentZ, thisCurrentZ);
+                if (!singleCellOptimization || !singleCell) {
+                    if (!current.eof() && SpaceImpl.contains(thatCurrentZ, current.key().z())) {
+                        // that.current contains this.current. Find the largest ancestor.
+                        findAncestorToResume(current.key().z(), thisCurrentZ);
+                    } else {
+                        // that.current does not contain this.current. Look for a z-value in this containing
+                        // that.current.
+                        findAncestorToResume(thatCurrentZ, thisCurrentZ);
+                    }
                 }
+                // else: No ancestor z-values in a single-cell index
             }
         }
     }
@@ -523,7 +527,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
 
     private static final Logger LOG = Logger.getLogger(SpatialJoinInput.class.getName());
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
-    private static final boolean USE_ANCESTOR_CACHE = false;
+    private static final boolean USE_ANCESTOR_CACHE = true; // false;
 
     // Object state
 
@@ -535,6 +539,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     private final String name = String.format("sjinput(%s)",idGenerator.getAndIncrement());
     private SpatialJoinInput<THAT_SPATIAL_OBJECT, THIS_SPATIAL_OBJECT> that;
     private final SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput;
+    private final boolean singleCell;
     // nest contains z-values that have been entered but not exited. current is the next z-value to enter,
     // and cursor contains later z-values.
     private final Deque<Record<THIS_SPATIAL_OBJECT>> nest = new ArrayDeque<>();
@@ -542,4 +547,5 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     private final Record<THIS_SPATIAL_OBJECT> current = new Record<>();
     private final Ancestors<THIS_SPATIAL_OBJECT> ancestors;
     private final Counters counters = Counters.forThread();
+    private final boolean singleCellOptimization;
 }

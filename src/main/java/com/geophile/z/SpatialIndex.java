@@ -48,21 +48,42 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
      * @param index The {@link Index} that will store the indexed {@link SpatialObject}s.
      */
     public static <SPATIAL_OBJECT extends SpatialObject> SpatialIndex<SPATIAL_OBJECT> newSpatialIndex
-        (Space space, Index<SPATIAL_OBJECT> index) throws IOException, InterruptedException
+        (Space space, Index<SPATIAL_OBJECT> index)
+        throws IOException, InterruptedException
     {
-        return new SpatialIndexImpl<>((SpaceImpl) space, index);
+        return newSpatialIndex(space, index, Options.DEFAULT);
+    }
+
+    /**
+     * Creates a SpatialIndex. The index
+     * should never be manipulated directly at any time. It is intended to be maintained and searched only
+     * through the interface of this class.
+     * @param space The {@link Space} containing the {@link SpatialObject}s to be indexed.
+     * @param index The {@link Index} that will store the indexed {@link SpatialObject}s.
+     */
+    public static <SPATIAL_OBJECT extends SpatialObject> SpatialIndex<SPATIAL_OBJECT> newSpatialIndex
+        (Space space, Index<SPATIAL_OBJECT> index, Options options)
+        throws IOException, InterruptedException
+    {
+        return new SpatialIndexImpl<>((SpaceImpl) space, index, options);
     }
 
     // For use by subclasses
 
-    protected SpatialIndex(SpaceImpl space, Index<SPATIAL_OBJECT> index)
+    protected SpatialIndex(SpaceImpl space, Index<SPATIAL_OBJECT> index, Options options)
     {
         this.space = space;
         this.index = index;
+        this.options = options;
     }
 
     // Object state
 
     protected final SpaceImpl space;
     protected final Index<SPATIAL_OBJECT> index;
+    protected final Options options;
+
+    // Inner classes
+
+    public enum Options {DEFAULT, SINGLE_CELL}
 }

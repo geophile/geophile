@@ -30,95 +30,100 @@ public abstract class SpatialJoinIteratorTestBase
 
     protected abstract boolean verify();
 
-    protected void test(int nLeft,
-                        int maxLeftXSize,
-                        int nRight,
-                        int maxRightXSize,
-                        int trials,
-                        EnumSet<SpatialJoin.Duplicates> duplicateHandling) throws IOException, InterruptedException
+    protected void test(TestInput leftInput, TestInput rightInput, SpatialJoin.Duplicates duplicates)
+        throws IOException, InterruptedException
     {
-        TestInput leftInput = null;
-        TestInput rightInput = null;
-        for (int trial = 0; trial < trials; trial++) {
-            boolean trace = false; // nLeft == 1 && nRight == 1_000_000 && maxLeftXSize == 1 && maxRightXSize == 10000;
+        this.leftInput = leftInput;
+        this.rightInput = rightInput;
+        this.duplicates = duplicates;
+        boolean trace =
+            false;
+/*
+                nLeft == 1 &&
+                maxLeftXSize == 10_000 && maxLeftYSize == 10_000 &&
+                nRight == 100_000 &&
+                maxRightXSize == 1 && maxRightYSize == 1;
+            if (!trace) continue;
             if (trace) {
                 enableLogging(Level.FINE);
             }
-            // For each trial with a given set of parameters, only generate one new input sequence, for the smaller
-            // data set, (or the right data set if the sizes match).
-            if (trial == 0 || nLeft < nRight) {
-                leftInput = loadBoxes(nLeft, maxLeftXSize);
+*/
+        Map<Pair<Box, Box>, Integer> actual = null;
+        Set<Pair<Box, Box>> expected = null;
+        try {
+            long start = System.currentTimeMillis();
+            Iterator<Pair<Box, Box>> joinScan =
+                SpatialJoin.newSpatialJoin(FILTER, duplicates)
+                           .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
+            // Actual
+            actual = new HashMap<>();
+            while (joinScan.hasNext()) {
+                Pair<Box, Box> pair = joinScan.next();
+                if (verify()) {
+                    Integer count = actual.get(pair);
+                    if (count == null) {
+                        count = 0;
+                    }
+                    actual.put(pair, count + 1);
+                }
+                testStats.outputRowCount++;
             }
-            if (trial == 0 || nRight <= nLeft) {
-                rightInput = loadBoxes(nRight, maxRightXSize);
-            }
-            // if (!(trace && trial == 2)) continue;
-            Map<Pair<Box, Box>, Integer> actual = null;
-            Set<Pair<Box, Box>> expected = null;
-            for (SpatialJoin.Duplicates duplicates : duplicateHandling) {
-                try {
-                    Iterator<Pair<Box, Box>> joinScan =
-                        SpatialJoin.newSpatialJoin(FILTER, duplicates)
-                                   .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
-                    if (verify()) {
-                        // Actual
-                        actual = new HashMap<>();
-                        while (joinScan.hasNext()) {
-                            Pair<Box, Box> pair = joinScan.next();
-                            Integer count = actual.get(pair);
-                            if (count == null) {
-                                count = 0;
-                            }
-                            actual.put(pair, count + 1);
-                        }
-                        // Expected
-                        expected = new HashSet<>();
-                        for (Box a : leftInput.boxes()) {
-                            for (Box b : rightInput.boxes()) {
-                                if (overlaps(a, b)) {
-                                    expected.add(new Pair<>(a, b));
-                                }
-                            }
-                        }
-                        if (trace) {
-                            assert expected != null;
-                            print("expected");
-                            for (Pair<Box, Box> pair : expected) {
-                                print("    %s", pair);
-                            }
-                            print("actual");
-                            for (Map.Entry<Pair<Box, Box>, Integer> entry : actual.entrySet()) {
-                                print("    %s: %s", entry.getKey(), entry.getValue());
-                            }
-                        }
-                        checkEquals(expected, actual.keySet());
-                        if (duplicates == SpatialJoin.Duplicates.EXCLUDE) {
-                            for (Integer count : actual.values()) {
-                                assertEquals(1, count.intValue());
-                            }
-                        }
-                    } else {
-                        while (joinScan.hasNext()) {
-                            joinScan.next();
+            long stop = System.currentTimeMillis();
+            testStats.joinTimeMsec += stop - start;
+            if (verify()) {
+                // Expected
+                expected = new HashSet<>();
+                for (Box a : leftInput.boxes()) {
+                    for (Box b : rightInput.boxes()) {
+                        if (overlaps(a, b)) {
+                            expected.add(new Pair<>(a, b));
                         }
                     }
-                } catch (AssertionError e) {
-                    print("Assertion error on: nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s",
-                          nLeft, nRight, maxLeftXSize, maxRightXSize, trial);
-                    throw e;
                 }
-                if (printSummary() && expected != null) {
-                    if (expected.size() == 0) {
-                        print("nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s, accuracy: EMPTY RESULT",
-                              nLeft, nRight, maxLeftXSize, maxRightXSize, trial);
-                    } else {
-                        double accuracy = (double) expected.size() / actual.size();
-                        print("nLeft: %s, nRight: %s, maxLeftXSize: %s, maxRightXSize: %s, trial: %s, accuracy: %s",
-                              nLeft, nRight, maxLeftXSize, maxRightXSize, trial, accuracy);
+                if (trace) {
+                    assert expected != null;
+                    print("expected");
+                    for (Pair<Box, Box> pair : expected) {
+                        print("    %s", pair);
+                    }
+                    print("actual");
+                    for (Map.Entry<Pair<Box, Box>, Integer> entry : actual.entrySet()) {
+                        print("    %s: %s", entry.getKey(), entry.getValue());
                     }
                 }
+                checkEquals(expected, actual.keySet());
+                if (duplicates == SpatialJoin.Duplicates.EXCLUDE) {
+                    for (Integer count : actual.values()) {
+                        assertEquals(1, count.intValue());
+                    }
+                }
+            } else {
+                while (joinScan.hasNext()) {
+                    joinScan.next();
+                }
+            }
+        } catch (AssertionError e) {
+            print("Assertion error on %s", describeTest());
+            throw e;
+        }
+        if (printSummary() && expected != null) {
+            if (expected.size() == 0) {
+                print("%s\taccuracy = EMPTY RESULT", describeTest());
+            } else {
+                double accuracy = testStats.overlapCount / testStats.filterCount;
+                print("%s\taccuracy = %s", describeTest(), accuracy);
             }
         }
+    }
+
+    private String describeTest()
+    {
+        return String.format("test# %s - duplicates = %s" +
+                             "LEFT: n = %s, max sizes = (%s, %s)\t" +
+                             "RIGHT: n = %s, max sizes = (%s, %s)\t",
+                             testId, duplicates,
+                             leftInput.boxes().size(), leftInput.maxXSize(), leftInput.maxYSize(),
+                             rightInput.boxes().size(), rightInput.maxXSize(), rightInput.maxYSize());
     }
 
     protected void print(String template, Object... args)
@@ -133,23 +138,27 @@ public abstract class SpatialJoinIteratorTestBase
             a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
     }
 
-    protected TestInput loadBoxes(int n, int maxXSize) throws IOException, InterruptedException
+    protected TestInput loadBoxes(int n, int maxXSize, int maxYSize) throws IOException, InterruptedException
     {
-        TestInput input = new TestInput(SPACE);
+        long start = System.currentTimeMillis();
+        boolean singleCell = maxXSize == 1 && maxYSize == 1;
+        TestInput input = new TestInput(SPACE, maxXSize, maxYSize, singleCell);
         for (int i = 0; i < n; i++) {
-            input.addBox(randomBox(maxXSize));
+            input.addBox(randomBox(maxXSize, maxYSize));
         }
+        long stop = System.currentTimeMillis();
+        testStats.loadTimeMsec += stop - start;
         return input;
     }
 
-    protected abstract Box randomBox(int maxXSize);
+    protected abstract Box randomBox(int maxXSize, int maxYSize);
 
     protected void enableLogging(Level level)
     {
         Logger.getLogger("").setLevel(level);
     }
 
-    private boolean printSummary()
+    protected boolean printSummary()
     {
         return Logger.getLogger("").getLevel().intValue() >= Level.WARNING.intValue();
     }
@@ -160,15 +169,26 @@ public abstract class SpatialJoinIteratorTestBase
     private static final Space SPACE = Space.newSpace(NX, NY);
     private static final long SEED = 123456789L;
     private static int testIdGenerator = 0;
-    private static final SpatialJoinFilter<Box, Box> FILTER = new SpatialJoinFilter<Box, Box>()
+
+    private final TestFilter FILTER = new TestFilter();
+    protected final Random random = new Random(SEED);
+    private final int testId = testIdGenerator++;
+    private TestInput leftInput;
+    private TestInput rightInput;
+    private SpatialJoin.Duplicates duplicates;
+    protected TestStats testStats = new TestStats();
+
+    private final class TestFilter implements SpatialJoinFilter<Box, Box>
     {
         @Override
         public boolean overlap(Box x, Box y)
         {
-            return x.overlap(y);
+            testStats.filterCount++;
+            boolean overlap = x.overlap(y);
+            if (overlap) {
+                testStats.overlapCount++;
+            }
+            return overlap;
         }
-    };
-
-    protected final Random random = new Random(SEED);
-    private int testId = testIdGenerator++;
+    }
 }

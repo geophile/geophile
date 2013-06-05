@@ -7,6 +7,7 @@
 package com.geophile.z.space;
 
 import com.geophile.z.Index;
+import com.geophile.z.SingleCellException;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
@@ -72,22 +73,31 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
         return found;
     }
 
+    public boolean singleCell()
+    {
+        return singleCell;
+    }
+
     public Index<SPATIAL_OBJECT> index()
     {
         return index;
     }
 
-    public SpatialIndexImpl(SpaceImpl space, Index<SPATIAL_OBJECT> index)
+    public SpatialIndexImpl(SpaceImpl space, Index<SPATIAL_OBJECT> index, Options options)
     {
-        super(space, index);
+        super(space, index, options);
+        singleCell = options == Options.SINGLE_CELL;
     }
 
     // For use by this class
 
     private long[] decompose(SpatialObject spatialObject)
     {
-        int maxZs = spatialObject.maxZ();
-        long[] zs = new long[maxZs];
+        int maxZ = spatialObject.maxZ();
+        if (singleCell && maxZ > 1) {
+            throw new SingleCellException(spatialObject);
+        }
+        long[] zs = new long[maxZ];
         space.decompose(spatialObject, zs);
         return zs;
     }
@@ -119,4 +129,8 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
     private static final Logger LOG = Logger.getLogger(SpatialIndexImpl.class.getName());
     private static final long UNKNOWN = -2L;
     private static final long MISSING = -1L;
+
+    // Object state
+
+    private final boolean singleCell;
 }

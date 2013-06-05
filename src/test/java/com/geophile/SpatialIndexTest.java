@@ -31,7 +31,7 @@ public class SpatialIndexTest
     public void testRetrieval() throws IOException, InterruptedException
     {
         TreeIndex<Point> index = new TreeIndex<>();
-        spatialIndex = new SpatialIndexImpl<>(SPACE, index);
+        spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.add(new Point(x, y));
@@ -67,7 +67,7 @@ public class SpatialIndexTest
     public void testRemoveAll() throws IOException, InterruptedException
     {
         TreeIndex<Point> index = new TreeIndex<>();
-        spatialIndex = new SpatialIndexImpl<>(SPACE, index);
+        spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.add(new Point(x, y));
@@ -109,7 +109,7 @@ public class SpatialIndexTest
     public void testRemoveSome() throws IOException, InterruptedException
     {
         TreeIndex<Point> index = new TreeIndex<>();
-        spatialIndex = new SpatialIndexImpl<>(SPACE, index);
+        spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.add(new Point(x, y));
@@ -156,7 +156,7 @@ public class SpatialIndexTest
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
         TreeIndex<Box> boxTreeIndex = new TreeIndex<>();
-        SpatialIndex<Box> query = new SpatialIndexImpl<>(SPACE, boxTreeIndex);
+        SpatialIndex<Box> query = new SpatialIndexImpl<>(SPACE, boxTreeIndex, SpatialIndex.Options.DEFAULT);
         query.add(box);
         Iterator<Pair<Box, Point>> iterator =
             SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);

@@ -1,9 +1,9 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Pair;
-import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialJoinRuntimeException;
 import com.geophile.z.SpatialObject;
+import com.geophile.z.space.SpatialIndexImpl;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -59,8 +59,8 @@ class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObjec
 
     // SpatialJoinIterator interface
 
-    public SpatialJoinIterator(SpatialIndex<LEFT> leftSpatialIndex,
-                               SpatialIndex<RIGHT> rightSpatialIndex,
+    public SpatialJoinIterator(SpatialIndexImpl<LEFT> leftSpatialIndex,
+                               SpatialIndexImpl<RIGHT> rightSpatialIndex,
                                final SpatialJoinFilter<LEFT, RIGHT> filter) throws IOException, InterruptedException
     {
         SpatialJoinOutput<LEFT, RIGHT> pendingLeftRight =

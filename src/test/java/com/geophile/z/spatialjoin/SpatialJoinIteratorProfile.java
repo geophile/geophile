@@ -16,7 +16,6 @@ import com.geophile.z.SpatialJoin;
 import com.geophile.z.spatialobject.d2.Box;
 
 import java.io.IOException;
-import java.util.EnumSet;
 
 public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
 {
@@ -36,9 +35,13 @@ public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
         for (int size : SIZES) {
             for (int maxZ : MAX_Z) {
                 System.setProperty("maxz", Integer.toString(maxZ));
+                TestInput leftInput = loadBoxes(1, size, size);
                 counters.reset();
                 long start = System.currentTimeMillis();
-                test(1, size, N_POINTS, 1, TRIALS, EnumSet.of(SpatialJoin.Duplicates.INCLUDE));
+                for (int trial = 0; trial < TRIALS; trial++) {
+                    TestInput rightInput = loadBoxes(N_POINTS, 1, 1);
+                    test(leftInput, rightInput, SpatialJoin.Duplicates.INCLUDE);
+                }
                 long stop = System.currentTimeMillis();
                 double enters = (double) counters.enterZ() / TRIALS;
                 double msec = (stop - start) / TRIALS;
@@ -48,12 +51,12 @@ public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
     }
 
     @Override
-    protected Box randomBox(int size)
+    protected Box randomBox(int xSize, int ySize)
     {
-        long xLo = random.nextInt(NX - size + 1);
-        long xHi = xLo + size - 1;
-        long yLo = random.nextInt(NY - size + 1);
-        long yHi = yLo + size - 1;
+        long xLo = random.nextInt(NX - xSize + 1);
+        long xHi = xLo + xSize - 1;
+        long yLo = random.nextInt(NY - ySize + 1);
+        long yHi = yLo + ySize - 1;
         return new Box(xLo, xHi, yLo, yHi);
     }
 
