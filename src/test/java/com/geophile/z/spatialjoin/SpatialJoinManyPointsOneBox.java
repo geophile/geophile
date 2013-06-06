@@ -60,7 +60,7 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinIteratorTestBase
             test(leftInput, rightInput, SpatialJoin.Duplicates.INCLUDE);
         }
         double loadMsecPerPoint = (double) testStats.loadTimeMsec / N_POINTS;
-        double averageJoinMsec = (double) testStats.joinTimeMsec / TRIALS;
+        double averageJoinMsec = (double) testStats.joinTimeNsec / (TRIALS * 1_000_000);
         double averageOutputRowCount = (double) testStats.outputRowCount / TRIALS;
         if (!warmup) {
             print("singlecell: %s\tload msec/point: %s\tjoin msec: %s\tancestor: %s\tenter: %s\toutput size: %s",

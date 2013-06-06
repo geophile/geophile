@@ -27,27 +27,21 @@ public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
     private void run() throws IOException, InterruptedException
     {
         // enableLogging(Level.FINE);
-        final int[] SIZES = { 1_000, 2_000, 4_000, 8_000, 16_000, 32_000, 64_000, 128_000 };
-        final int TRIALS = 10;
-        final int N_POINTS = 100_000;
-        final int[] MAX_Z = new int[]{ 4, 8, 12, 16, 20, 24 };
-        Counters counters = Counters.forThread();
-        for (int size : SIZES) {
-            for (int maxZ : MAX_Z) {
-                System.setProperty("maxz", Integer.toString(maxZ));
-                TestInput leftInput = loadBoxes(1, size, size);
-                counters.reset();
-                long start = System.currentTimeMillis();
-                for (int trial = 0; trial < TRIALS; trial++) {
-                    TestInput rightInput = loadBoxes(N_POINTS, 1, 1);
-                    test(leftInput, rightInput, SpatialJoin.Duplicates.INCLUDE);
-                }
-                long stop = System.currentTimeMillis();
-                double enters = (double) counters.enterZ() / TRIALS;
-                double msec = (stop - start) / TRIALS;
-                print("size: %s\tmaxZ: %s\tenters: %s\tmsec: %s", size, maxZ, enters, msec);
-            }
+        final int TRIALS = 1_000_000;
+        final int N_POINTS = 1_000_000;
+        final int MAX_Z = 8;
+        final int SIZE = 5_000;
+        System.setProperty("maxz", Integer.toString(MAX_Z));
+        System.setProperty(SpatialJoinImpl.SINGLE_CELL_OPTIMIZATION_PROPERTY, "true");
+        TestInput leftInput = loadBoxes(1, SIZE, SIZE);
+        TestInput rightInput = loadBoxes(N_POINTS, 1, 1);
+        testStats.resetAll();
+        for (int trial = 0; trial < TRIALS; trial++) {
+            test(leftInput, rightInput, SpatialJoin.Duplicates.INCLUDE);
         }
+        double joinTimeMsec = (double) testStats.joinTimeNsec / (TRIALS * 1_000_000L);
+        print("points: %s, maxZ: %s, box size: %s, join time: %s msec",
+              N_POINTS, MAX_Z, SIZE, joinTimeMsec);
     }
 
     @Override

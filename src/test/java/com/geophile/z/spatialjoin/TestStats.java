@@ -11,14 +11,14 @@ class TestStats
     void resetAll()
     {
         loadTimeMsec = 0;
-        joinTimeMsec = 0;
+        joinTimeNsec = 0;
         outputRowCount = 0;
         filterCount = 0;
         overlapCount = 0;
     }
 
     long loadTimeMsec;
-    long joinTimeMsec;
+    long joinTimeNsec;
     long outputRowCount;
     long filterCount;
     long overlapCount;

@@ -51,7 +51,7 @@ public abstract class SpatialJoinIteratorTestBase
         Map<Pair<Box, Box>, Integer> actual = null;
         Set<Pair<Box, Box>> expected = null;
         try {
-            long start = System.currentTimeMillis();
+            long start = System.nanoTime();
             Iterator<Pair<Box, Box>> joinScan =
                 SpatialJoin.newSpatialJoin(FILTER, duplicates)
                            .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
@@ -68,8 +68,8 @@ public abstract class SpatialJoinIteratorTestBase
                 }
                 testStats.outputRowCount++;
             }
-            long stop = System.currentTimeMillis();
-            testStats.joinTimeMsec += stop - start;
+            long stop = System.nanoTime();
+            testStats.joinTimeNsec += stop - start;
             if (verify()) {
                 // Expected
                 expected = new HashSet<>();

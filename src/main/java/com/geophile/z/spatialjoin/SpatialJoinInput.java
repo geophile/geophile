@@ -327,7 +327,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     @Override
     public String toString()
     {
-        return name;
+        return name();
     }
 
     public long nextEntry()
@@ -523,6 +523,11 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
         return SpaceImpl.contains(z1, z2) || SpaceImpl.contains(z2, z1);
     }
 
+    private String name()
+    {
+        return String.format("sjinput(%s)", id);
+    }
+
     // Class state
 
     private static final Logger LOG = Logger.getLogger(SpatialJoinInput.class.getName());
@@ -536,7 +541,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     // while Long.MAX_VALUE doesn't.
     public static long EOF = Long.MAX_VALUE;
 
-    private final String name = String.format("sjinput(%s)",idGenerator.getAndIncrement());
+    private final int id = idGenerator.getAndIncrement();
     private SpatialJoinInput<THAT_SPATIAL_OBJECT, THIS_SPATIAL_OBJECT> that;
     private final SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput;
     private final boolean singleCell;
