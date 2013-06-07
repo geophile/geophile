@@ -74,7 +74,7 @@ class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObjec
                     }
                 }
             };
-        left = new SpatialJoinInput<>(leftSpatialIndex, pendingLeftRight);
+        left = SpatialJoinInput.newSpatialJoinInput(leftSpatialIndex, pendingLeftRight);
         SpatialJoinOutput<RIGHT, LEFT> pendingRightLeft =
             new SpatialJoinOutput<RIGHT, LEFT>()
             {
@@ -86,7 +86,7 @@ class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObjec
                     }
                 }
             };
-        right = new SpatialJoinInput<>(rightSpatialIndex, pendingRightLeft);
+        right = SpatialJoinInput.newSpatialJoinInput(rightSpatialIndex, pendingRightLeft);
         left.otherInput(right);
         right.otherInput(left);
         if (LOG.isLoggable(Level.INFO)) {
