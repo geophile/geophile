@@ -431,11 +431,11 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
                 if (!singleCellOptimization || !singleCell) {
                     if (!current.eof() && SpaceImpl.contains(thatCurrentZ, current.key().z())) {
                         // that.current contains this.current. Find the largest ancestor.
-                        findAncestorToResumeWithoutCache(current.key().z(), thisCurrentZ);
+                        findAncestorToResume(current.key().z(), thisCurrentZ);
                     } else {
                         // that.current does not contain this.current. Look for a z-value in this containing
                         // that.current.
-                        findAncestorToResumeWithoutCache(thatCurrentZ, thisCurrentZ);
+                        findAncestorToResume(thatCurrentZ, thisCurrentZ);
                     }
                 }
                 // else: No ancestor z-values in a single-cell index
@@ -463,7 +463,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
         }
     }
 
-    private void findAncestorToResumeWithoutCache(long zStart, long zLowerBound)
+    private void findAncestorToResume(long zStart, long zLowerBound)
         throws IOException, InterruptedException
     {
         // Find the largest ancestor of current that exists and that is past zLowerBound.
@@ -476,6 +476,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
                 ancestor.copyTo(current);
             }
             zCandidate = SpaceImpl.parent(zCandidate);
+            counters.countAncestorFind();
         }
         // Resume at current
         if (current.eof()) {

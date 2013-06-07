@@ -33,13 +33,17 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinIteratorTestBase
 
     private void run() throws IOException, InterruptedException
     {
-        // warmup
-        run(false, true);
-        run(true, true);
-        run(false, true);
-        run(true, true);
-        // measure
+        // without single-cell optimizaiton - warmup
+        for (int w = 0; w < 10; w++) {
+            run(false, true);
+        }
+        // without single-cell optimizaiton - measure
         run(false, false);
+        // with single-cell optimizaiton - measure
+        for (int w = 0; w < 10; w++) {
+            run(true, true);
+        }
+        // with single-cell optimizaiton - measure
         run(true, false);
     }
 
@@ -52,7 +56,7 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinIteratorTestBase
         testStats.resetAll();
         final int TRIALS = 100;
         final int N_POINTS = 1_000_000;
-        final int SIZE = 50_000;
+        final int SIZE = 5_000;
         TestInput leftInput = loadBoxes(1, SIZE, SIZE);
         testStats.loadTimeMsec = 0;
         TestInput rightInput = loadBoxes(N_POINTS, 1, 1);

@@ -27,10 +27,10 @@ public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
     private void run() throws IOException, InterruptedException
     {
         // enableLogging(Level.FINE);
-        final int TRIALS = 1_000_000;
+        final int TRIALS = 100_000;
         final int N_POINTS = 1_000_000;
         final int MAX_Z = 8;
-        final int SIZE = 5_000;
+        final int SIZE = 75_000;
         System.setProperty("maxz", Integer.toString(MAX_Z));
         System.setProperty(SpatialJoinImpl.SINGLE_CELL_OPTIMIZATION_PROPERTY, "true");
         TestInput leftInput = loadBoxes(1, SIZE, SIZE);
