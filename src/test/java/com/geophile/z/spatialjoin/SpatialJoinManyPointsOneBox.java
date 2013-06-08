@@ -33,17 +33,19 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinIteratorTestBase
 
     private void run() throws IOException, InterruptedException
     {
-        // without single-cell optimizaiton - warmup
+/*
+        // without single-cell optimization - warmup
         for (int w = 0; w < 10; w++) {
             run(false, true);
         }
-        // without single-cell optimizaiton - measure
+        // without single-cell optimization - measure
         run(false, false);
-        // with single-cell optimizaiton - measure
+*/
+        // with single-cell optimization - measure
         for (int w = 0; w < 10; w++) {
             run(true, true);
         }
-        // with single-cell optimizaiton - measure
+        // with single-cell optimization - measure
         run(true, false);
     }
 
@@ -56,24 +58,26 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinIteratorTestBase
         testStats.resetAll();
         final int TRIALS = 100;
         final int N_POINTS = 1_000_000;
-        final int SIZE = 5_000;
-        TestInput leftInput = loadBoxes(1, SIZE, SIZE);
         testStats.loadTimeMsec = 0;
         TestInput rightInput = loadBoxes(N_POINTS, 1, 1);
-        for (int trial = 0; trial < TRIALS; trial++) {
-            test(leftInput, rightInput, SpatialJoin.Duplicates.INCLUDE);
-        }
-        double loadMsecPerPoint = (double) testStats.loadTimeMsec / N_POINTS;
-        double averageJoinMsec = (double) testStats.joinTimeNsec / (TRIALS * 1_000_000);
-        double averageOutputRowCount = (double) testStats.outputRowCount / TRIALS;
-        if (!warmup) {
-            print("singlecell: %s\tload msec/point: %s\tjoin msec: %s\tancestor: %s\tenter: %s\toutput size: %s",
-                  singleCell,
-                  loadMsecPerPoint,
-                  averageJoinMsec,
-                  counters.ancestorFind(),
-                  counters.enterZ(),
-                  averageOutputRowCount);
+        int maxSize = warmup ? 1000 : 64000;
+        for (int size = 1000; size <= maxSize; size *= 2) {
+            TestInput leftInput = loadBoxes(1, size, size);
+            for (int trial = 0; trial < TRIALS; trial++) {
+                test(leftInput, rightInput, SpatialJoin.Duplicates.INCLUDE);
+            }
+            double loadMsecPerPoint = (double) testStats.loadTimeMsec / N_POINTS;
+            double averageJoinMsec = (double) testStats.joinTimeNsec / (TRIALS * 1_000_000);
+            double averageOutputRowCount = (double) testStats.outputRowCount / TRIALS;
+            if (!warmup) {
+                print("singlecell: %s\tload msec/point: %s\tjoin msec: %s\tancestor: %s\tenter: %s\toutput size: %s",
+                      singleCell,
+                      loadMsecPerPoint,
+                      averageJoinMsec,
+                      counters.ancestorFind(),
+                      counters.enterZ(),
+                      averageOutputRowCount);
+            }
         }
     }
 
