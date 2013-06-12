@@ -9,6 +9,7 @@ package com.geophile.z;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -61,7 +62,7 @@ public interface SpatialObject
      */
     RegionComparison compare(Region region);
 
-    void readFrom(ByteBuffer buffer);
+    void readFrom(ByteBuffer buffer) throws IOException;
 
-    void writeTo(ByteBuffer buffer);
+    void writeTo(ByteBuffer buffer) throws IOException;
 }

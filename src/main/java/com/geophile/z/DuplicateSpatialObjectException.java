@@ -11,7 +11,7 @@ package com.geophile.z;
  * {@link com.geophile.z.SpatialIndex}.
  */
 
-public class DuplicateSpatialObjectException extends RuntimeException
+public class DuplicateSpatialObjectException extends SpatialObjectException
 {
     public DuplicateSpatialObjectException(SpatialObject spatialObject)
     {

@@ -12,11 +12,18 @@
   <name>geophile</name>
   <url>http://maven.apache.org</url>
   <dependencies>
+    <!-- junit -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.8.1</version>
       <scope>test</scope>
+    </dependency>
+    <!-- jts -->
+    <dependency>
+      <groupId>com.vividsolutions</groupId>
+      <artifactId>jts</artifactId>
+      <version>1.8</version>
     </dependency>
   </dependencies>
   <build>
