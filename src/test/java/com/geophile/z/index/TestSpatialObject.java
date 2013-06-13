@@ -17,7 +17,7 @@ public class TestSpatialObject implements SpatialObject
     }
 
     @Override
-    public long[] arbitraryPoint()
+    public double[] arbitraryPoint()
     {
         fail();
         return null;

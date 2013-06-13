@@ -6,10 +6,7 @@
 
 package com.geophile.z.examples;
 
-import com.geophile.z.Pair;
-import com.geophile.z.Space;
-import com.geophile.z.SpatialIndex;
-import com.geophile.z.SpatialJoin;
+import com.geophile.z.*;
 import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;
@@ -29,7 +26,7 @@ public class PointsInBox
 
     private void run() throws IOException, InterruptedException
     {
-        Space space = Space.newSpace(SPACE_X, SPACE_Y);
+        Space space = Space.newSpace(APPLICATION_SPACE, SPACE_X, SPACE_Y);
         // Load spatial index with points
         SpatialIndex<Point> points = SpatialIndex.newSpatialIndex(space, new TreeIndex<Point>());
         for (int i = 0; i < N_POINTS; i++) {
@@ -76,6 +73,32 @@ public class PointsInBox
     private static final int BOX_WIDTH = 2_000;
     private static final int BOX_HEIGHT = 2_000;
     private static final int N_QUERIES = 5;
+    private static final ApplicationSpace APPLICATION_SPACE =
+        new ApplicationSpace()
+        {
+            @Override
+            public int dimensions()
+            {
+                return 2;
+            }
+
+            @Override
+            public double lo(int d)
+            {
+                return 0;
+            }
+
+            @Override
+            public double hi(int d)
+            {
+                switch (d) {
+                    case 0: return SPACE_X;
+                    case 1: return SPACE_Y;
+                }
+                assert false;
+                return Double.NaN;
+            }
+        };
     private static final SpatialJoinFilter<Box, Point> BOX_CONTAINS_POINT =
         new SpatialJoinFilter<Box, Point>()
         {

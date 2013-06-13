@@ -19,9 +19,9 @@ public class JTSPoint extends JTSBase
     // SpatialObject interface (not implemented by JTSBase)
 
     @Override
-    public long[] arbitraryPoint()
+    public double[] arbitraryPoint()
     {
-        long[] point = new long[2];
+        double[] point = new double[2];
         Coordinate coord = point().getCoordinate();
 /*
         point[0] = coord.x;

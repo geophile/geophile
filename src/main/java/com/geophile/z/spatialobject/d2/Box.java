@@ -9,6 +9,7 @@ package com.geophile.z.spatialobject.d2;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
+import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.spatialobject.SpatialObjectIdGenerator;
 
 import java.nio.ByteBuffer;
@@ -25,10 +26,10 @@ public class Box implements SpatialObject
     public int hashCode()
     {
         long h =
-            (1000000007L * xLo) ^
-            (1000000009L * xHi) ^
-            (1000000021L * yLo) ^
-            (1000000033L * yHi);
+            (1000000007L * Double.doubleToLongBits(xLo)) ^
+            (1000000009L * Double.doubleToLongBits(xHi)) ^
+            (1000000021L * Double.doubleToLongBits(yLo)) ^
+            (1000000033L * Double.doubleToLongBits(yHi));
         return ((int) (h >>> 32)) ^ (int) h;
     }
 
@@ -53,9 +54,9 @@ public class Box implements SpatialObject
     }
 
     @Override
-    public long[] arbitraryPoint()
+    public double[] arbitraryPoint()
     {
-        return new long[]{xLo, yLo};
+        return new double[]{xLo, yLo};
     }
 
     @Override
@@ -86,9 +87,14 @@ public class Box implements SpatialObject
     @Override
     public boolean containedBy(Region region)
     {
+        SpaceImpl space = (SpaceImpl) region.space();
+        long zxLo = space.appToZ(0, xLo);
+        long zxHi = space.appToZ(0, xHi);
+        long zyLo = space.appToZ(1, yLo);
+        long zyHi = space.appToZ(1, yHi);
         return
-            region.lo(0) <= xLo && xHi <= region.hi(0) &&
-            region.lo(1) <= yLo && yHi <= region.hi(1);
+            region.lo(0) <= zxLo && zxHi <= region.hi(0) &&
+            region.lo(1) <= zyLo && zyHi <= region.hi(1);
     }
 
     @Override
@@ -98,9 +104,14 @@ public class Box implements SpatialObject
         long rYLo = region.lo(1);
         long rXHi = region.hi(0);
         long rYHi = region.hi(1);
-        if (xLo <= rXLo && rXHi <= xHi && yLo <= rYLo && rYHi <= yHi) {
+        SpaceImpl space = (SpaceImpl) region.space();
+        long zxLo = space.appToZ(0, xLo);
+        long zxHi = space.appToZ(0, xHi);
+        long zyLo = space.appToZ(1, yLo);
+        long zyHi = space.appToZ(1, yHi);
+        if (zxLo <= rXLo && rXHi <= zxHi && zyLo <= rYLo && rYHi <= zyHi) {
             return RegionComparison.REGION_INSIDE_OBJECT;
-        } else if (rXHi < xLo || rXLo > xHi || rYHi < yLo || rYLo > yHi) {
+        } else if (rXHi < zxLo || rXLo > zxHi || rYHi < zyLo || rYLo > zyHi) {
             return RegionComparison.REGION_OUTSIDE_OBJECT;
         } else {
             return RegionComparison.REGION_OVERLAPS_OBJECT;
@@ -111,20 +122,20 @@ public class Box implements SpatialObject
     public void readFrom(ByteBuffer buffer)
     {
         id = buffer.getLong();
-        xLo = buffer.getLong();
-        xHi = buffer.getLong();
-        yLo = buffer.getLong();
-        yHi = buffer.getLong();
+        xLo = buffer.getDouble();
+        xHi = buffer.getDouble();
+        yLo = buffer.getDouble();
+        yHi = buffer.getDouble();
     }
 
     @Override
     public void writeTo(ByteBuffer buffer)
     {
         buffer.putLong(id);
-        buffer.putLong(xLo);
-        buffer.putLong(xHi);
-        buffer.putLong(yLo);
-        buffer.putLong(yHi);
+        buffer.putDouble(xLo);
+        buffer.putDouble(xHi);
+        buffer.putDouble(yLo);
+        buffer.putDouble(yHi);
     }
 
     // Box interface
@@ -146,7 +157,7 @@ public class Box implements SpatialObject
      *
      * @return The left boundary of this box.
      */
-    public long xLo()
+    public double xLo()
     {
         return xLo;
     }
@@ -156,7 +167,7 @@ public class Box implements SpatialObject
      *
      * @return The right boundary of this box.
      */
-    public long xHi()
+    public double xHi()
     {
         return xHi;
     }
@@ -166,7 +177,7 @@ public class Box implements SpatialObject
      *
      * @return The lower boundary of this box.
      */
-    public long yLo()
+    public double yLo()
     {
         return yLo;
     }
@@ -176,7 +187,7 @@ public class Box implements SpatialObject
      *
      * @return The upper boundary of this box.
      */
-    public long yHi()
+    public double yHi()
     {
         return yHi;
     }
@@ -190,7 +201,7 @@ public class Box implements SpatialObject
      * @param yLo The lower boundary of the box.
      * @param yHi The upper boundary of the box.
      */
-    public Box(long xLo, long xHi, long yLo, long yHi)
+    public Box(double xLo, double xHi, double yLo, double yHi)
     {
         this.xLo = xLo;
         this.xHi = xHi;
@@ -201,8 +212,8 @@ public class Box implements SpatialObject
     // Object state
 
     private long id = SpatialObjectIdGenerator.newId();
-    private long xLo;
-    private long xHi;
-    private long yLo;
-    private long yHi;
+    private double xLo;
+    private double xHi;
+    private double yLo;
+    private double yHi;
 }

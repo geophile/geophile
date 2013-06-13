@@ -9,5 +9,10 @@ public class SpatialObjectIdGenerator
         return idCounter.getAndIncrement();
     }
 
+    public static void reset(long maxIdSoFar)
+    {
+        idCounter.set(maxIdSoFar + 1);
+    }
+
     private static final AtomicLong idCounter = new AtomicLong(0);
 }

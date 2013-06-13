@@ -6,6 +6,7 @@
 
 package com.geophile.z.space;
 
+import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Space;
 import org.junit.Test;
 
@@ -18,7 +19,7 @@ public class SpaceTest
     {
         // Too few dimensions
         try {
-            new SpaceImpl(new int[]{}, null);
+            new SpaceImpl(applicationSpace(0, 1000), new int[]{}, null);
             fail();
         } catch (IllegalArgumentException e) {
             // expected
@@ -27,7 +28,7 @@ public class SpaceTest
         try {
             int[] dimensions = {5, 5, 5, 5, 5, 5, 5, 5, 5, 5};
             assertTrue(dimensions.length > Space.MAX_DIMENSIONS);
-            new SpaceImpl(dimensions, null);
+            new SpaceImpl(applicationSpace(10, 5), dimensions, null);
             fail();
         } catch (IllegalArgumentException e) {
             // expected
@@ -39,7 +40,7 @@ public class SpaceTest
     {
         // 10 x bits but 11 space bits
         try {
-            new SpaceImpl(new int[]{5, 5}, new int[]{0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0});
+            new SpaceImpl(applicationSpace(2, 1000), new int[]{5, 5}, new int[]{0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0});
             fail();
         } catch (IllegalArgumentException e) {
             // expected
@@ -51,7 +52,18 @@ public class SpaceTest
     {
         // 5 bits for each coordinate, but that's not what the interleave specifies.
         try {
-            new SpaceImpl(new int[]{5, 5}, new int[]{0, 1, 0, 1, 0, 1, 0, 1, 1, 1});
+            new SpaceImpl(applicationSpace(2, 1000), new int[]{5, 5}, new int[]{0, 1, 0, 1, 0, 1, 0, 1, 1, 1});
+            fail();
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+    }
+
+    @Test
+    public void zAndApplicationSpaceMismatch()
+    {
+        try {
+            new SpaceImpl(applicationSpace(3, 1000), new int[]{5, 5}, null);
             fail();
         } catch (IllegalArgumentException e) {
             // expected
@@ -61,7 +73,7 @@ public class SpaceTest
     @Test
     public void testDefaultInterleave()
     {
-        SpaceImpl space = new SpaceImpl(new int[]{3, 5}, null);
+        SpaceImpl space = new SpaceImpl(applicationSpace(2, 1000), new int[]{3, 5}, null);
         int[] interleave = space.interleave();
         assertEquals(0, interleave[0]);
         assertEquals(1, interleave[1]);
@@ -76,7 +88,7 @@ public class SpaceTest
     @Test
     public void test10()
     {
-        SpaceImpl space = new SpaceImpl(ints(10), null);
+        SpaceImpl space = new SpaceImpl(applicationSpace(1, 1000), ints(10), null);
         check(space, 0x0000000000000000L, longs(0x000));
         check(space, 0xffc0000000000000L, longs(0x3ff));
         check(space, 0xaa80000000000000L, longs(0x2aa));
@@ -86,7 +98,7 @@ public class SpaceTest
     @Test
     public void test10x10()
     {
-        SpaceImpl space = new SpaceImpl(ints(10, 10), null);
+        SpaceImpl space = new SpaceImpl(applicationSpace(2, 1000), ints(10, 10), null);
         check(space, 0x0000000000000000L, longs(0x000, 0x000));
         check(space, 0x5555500000000000L, longs(0x000, 0x3ff));
         check(space, 0xaaaaa00000000000L, longs(0x3ff, 0x000));
@@ -99,7 +111,7 @@ public class SpaceTest
     @Test
     public void test10x12()
     {
-        SpaceImpl space = new SpaceImpl(ints(10, 12), null);
+        SpaceImpl space = new SpaceImpl(applicationSpace(2, 4000), ints(10, 12), null);
         check(space, 0x0000000000000000L, longs(0x000, 0x000));
         check(space, 0x55555c0000000000L, longs(0x000, 0xfff));
         check(space, 0xaaaaa00000000000L, longs(0x3ff, 0x000));
@@ -112,7 +124,7 @@ public class SpaceTest
     @Test
     public void test10x10x10()
     {
-        SpaceImpl space = new SpaceImpl(ints(10, 10, 10), null);
+        SpaceImpl space = new SpaceImpl(applicationSpace(3, 1000), ints(10, 10, 10), null);
         check(space, 0x0000000000000000L, longs(0x000, 0x000, 0x000));
         check(space, 0x2492492400000000L, longs(0x000, 0x000, 0x3ff));
         check(space, 0x4924924800000000L, longs(0x000, 0x3ff, 0x000));
@@ -217,5 +229,29 @@ public class SpaceTest
     private void check(SpaceImpl space, long expected, long[] x)
     {
         assertEquals(SpaceImpl.z(expected, space.zBits()), space.shuffle(x));
+    }
+
+    private ApplicationSpace applicationSpace(final int dimensions, final int size)
+    {
+        return new ApplicationSpace()
+        {
+            @Override
+            public int dimensions()
+            {
+                return dimensions;
+            }
+
+            @Override
+            public double lo(int d)
+            {
+                return 0;
+            }
+
+            @Override
+            public double hi(int d)
+            {
+                return size;
+            }
+        };
     }
 }

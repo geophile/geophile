@@ -25,7 +25,7 @@ public abstract class JTSBase implements SpatialObject
     }
 
     @Override
-    public abstract long[] arbitraryPoint();
+    public abstract double[] arbitraryPoint();
 
     @Override
     public abstract int maxZ();

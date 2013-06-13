@@ -9,6 +9,7 @@ package com.geophile.z.spatialobject.d2;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
+import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.spatialobject.SpatialObjectIdGenerator;
 
 import java.nio.ByteBuffer;
@@ -25,8 +26,8 @@ public class Point implements SpatialObject
     public int hashCode()
     {
         long h =
-            (1000000087L * x) ^
-            (1000000093L * y);
+            (1000000087L * Double.doubleToLongBits(x)) ^
+            (1000000093L * Double.doubleToLongBits(y));
         return ((int) (h >>> 32)) ^ (int) h;
     }
 
@@ -51,9 +52,9 @@ public class Point implements SpatialObject
     }
 
     @Override
-    public long[] arbitraryPoint()
+    public double[] arbitraryPoint()
     {
-        return new long[]{x, y};
+        return new double[]{x, y};
     }
 
     @Override
@@ -76,9 +77,12 @@ public class Point implements SpatialObject
     @Override
     public boolean containedBy(Region region)
     {
+        SpaceImpl space = (SpaceImpl) region.space();
+        long zx = space.appToZ(0, x);
+        long zy = space.appToZ(1, y);
         return
-            region.lo(0) <= x && x <= region.hi(0) &&
-            region.lo(1) <= y && y <= region.hi(1);
+            region.lo(0) <= zx && zx <= region.hi(0) &&
+            region.lo(1) <= zy && zy <= region.hi(1);
     }
 
     @Override
@@ -88,9 +92,12 @@ public class Point implements SpatialObject
         long rYLo = region.lo(1);
         long rXHi = region.hi(0);
         long rYHi = region.hi(1);
-        if (region.isPoint() && rXLo == x && rYLo == y) {
+        SpaceImpl space = (SpaceImpl) region.space();
+        long zx = space.appToZ(0, x);
+        long zy = space.appToZ(1, y);
+        if (region.isPoint() && rXLo == zx && rYLo == zy) {
             return RegionComparison.REGION_INSIDE_OBJECT;
-        } else if (rXHi < x || rXLo > x || rYHi < y || rYLo > y) {
+        } else if (rXHi < zx || rXLo > zx || rYHi < zy || rYLo > zy) {
             return RegionComparison.REGION_OUTSIDE_OBJECT;
         } else {
             return RegionComparison.REGION_OVERLAPS_OBJECT;
@@ -101,14 +108,16 @@ public class Point implements SpatialObject
     public void readFrom(ByteBuffer buffer)
     {
         id = buffer.getLong();
-        x = buffer.getLong();
-        y = buffer.getLong();
+        x = buffer.getDouble();
+        y = buffer.getDouble();
     }
 
     @Override
     public void writeTo(ByteBuffer buffer)
     {
-        //To change body of implemented methods use File | Settings | File Templates.
+        buffer.putLong(id);
+        buffer.putDouble(x);
+        buffer.putDouble(y);
     }
 
     // Point interface
@@ -117,7 +126,7 @@ public class Point implements SpatialObject
      * Returns the point's x coordinate.
      * @return The point's x coordinate.
      */
-    public long x()
+    public double x()
     {
         return x;
     }
@@ -126,7 +135,7 @@ public class Point implements SpatialObject
      * Returns the point's y coordinate.
      * @return The point's y coordinate.
      */
-    public long y()
+    public double y()
     {
         return y;
     }
@@ -136,7 +145,7 @@ public class Point implements SpatialObject
      * @param x The x coordinate.
      * @param y The y coordinate.
      */
-    public Point(long x, long y)
+    public Point(double x, double y)
     {
         this.x = x;
         this.y = y;
@@ -145,6 +154,6 @@ public class Point implements SpatialObject
     // Object state
 
     private long id = SpatialObjectIdGenerator.newId();
-    private long x;
-    private long y;
+    private double x;
+    private double y;
 }

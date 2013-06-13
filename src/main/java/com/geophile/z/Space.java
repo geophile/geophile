@@ -21,14 +21,14 @@ public abstract class Space
      * @param size Specifies the number of cells along each dimension. The number of dimensions of the space is
      *             equal to the length of this array.
      */
-    public static Space newSpace(long ... size)
+    public static Space newSpace(ApplicationSpace applicationSpace, long ... size)
     {
-        return new SpaceImpl(size);
+        return new SpaceImpl(applicationSpace, size);
     }
 
     /**
      * Creates a {@link Space}, providing a greater degree of control over performance than
-     * {@link Space#newSpace(long...)}.
+     * {@link Space#newSpace(ApplicationSpace, long...)}.
      * The space has xBits.length dimensions. A coordinate of dimension d
      * must lie between 0 inclusive and 2**xBits[d] - 1 exclusive.
      * @param xBits Specifies the dimensions and extent of the space.
@@ -36,9 +36,9 @@ public abstract class Space
      *     0 <= d < 2**xBits.length. The more bits that are present for a given dimension earlier in the interleaving,
      *     the more the spatial index will be optimized for selectivity in that dimension.
      */
-    public static Space newSpace(int[] xBits, int[] interleave)
+    public static Space newSpace(ApplicationSpace applicationSpace, int[] xBits, int[] interleave)
     {
-        return new SpaceImpl(xBits, interleave);
+        return new SpaceImpl(applicationSpace, xBits, interleave);
     }
 
     /**

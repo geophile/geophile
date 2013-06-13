@@ -6,6 +6,7 @@
 
 package com.geophile.z.space;
 
+import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 
@@ -31,8 +32,12 @@ public class SpaceImpl extends Space
     {
         int maxRegions = zs.length;
         int zCount = 0;
-        long[] x = spatialObject.arbitraryPoint();
-        Region region = new Region(this, x, x, zBits);
+        double[] appPoint = spatialObject.arbitraryPoint();
+        long[] zPoint = new long[dimensions];
+        for (int d = 0; d < dimensions; d++) {
+            zPoint[d] = appToZ(d, appPoint[d]);
+        }
+        Region region = new Region(this, zPoint, zPoint, zBits);
         while (!spatialObject.containedBy(region)) {
             region.up();
         }
@@ -252,14 +257,23 @@ public class SpaceImpl extends Space
         return formatted;
     }
 
-    public SpaceImpl(long[] size)
+    public long appToZ(int d, double appCoord)
     {
-        this(log2(size), null);
+        return (long) (((appCoord - appLo[d]) / appRange[d]) * zRange[d]);
     }
 
-    public SpaceImpl(int[] xBits, int[] interleave)
+    public SpaceImpl(ApplicationSpace applicationSpace, long[] size)
     {
+        this(applicationSpace, log2(size), null);
+    }
+
+    public SpaceImpl(ApplicationSpace applicationSpace, int[] xBits, int[] interleave)
+    {
+        this.applicationSpace = applicationSpace;
         this.dimensions = xBits.length;
+        check(this.applicationSpace.dimensions() == this.dimensions,
+              "Space dimensions: %s != ApplicationSpace dimensions: %s",
+              this.dimensions, this.applicationSpace.dimensions());
         check(dimensions >= 1 && dimensions <= MAX_DIMENSIONS,
               "dimensions (%s) must be between 1 and %s", dimensions, MAX_DIMENSIONS);
         this.xBits = Arrays.copyOf(xBits, dimensions);
@@ -285,6 +299,16 @@ public class SpaceImpl extends Space
             }
             check(Arrays.equals(xBits, count), "interleave inconsistent with xBits");
         }
+        // z/app translation
+        appLo = new double[dimensions];
+        appRange = new double[dimensions];
+        zRange = new long[dimensions];
+        for (int d = 0; d < dimensions; d++) {
+            this.appLo[d] = applicationSpace.lo(d);
+            this.appRange[d] = applicationSpace.hi(d) - applicationSpace.lo(d);
+            this.zRange[d] = 1 << xBits[d];
+        }
+        // shuffle
         long[][][] shuffle = computeShuffleMasks();
         shuffle0 = shuffle[0];
         shuffle1 = shuffle[1];
@@ -412,12 +436,17 @@ public class SpaceImpl extends Space
 
     // Object state
 
+    final ApplicationSpace applicationSpace;
     // The 'x' prefix refers to coordinates. The 'z' prefix refers to z values.
     final int dimensions;
     final int[] interleave;
     final int[] xBits;
     final int[] xBytes;
     final int zBits;
+    // Translation to/from application space
+    final double[] appLo;
+    final double[] appRange;
+    final long[] zRange;
     // For shuffling
     private final long[][] shuffle0;
     private final long[][] shuffle1;

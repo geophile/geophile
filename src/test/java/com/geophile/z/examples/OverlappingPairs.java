@@ -6,10 +6,7 @@
 
 package com.geophile.z.examples;
 
-import com.geophile.z.Pair;
-import com.geophile.z.Space;
-import com.geophile.z.SpatialIndex;
-import com.geophile.z.SpatialJoin;
+import com.geophile.z.*;
 import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;
@@ -28,7 +25,7 @@ public class OverlappingPairs
 
     private void run() throws IOException, InterruptedException
     {
-        Space space = Space.newSpace(SPACE_X, SPACE_Y);
+        Space space = Space.newSpace(APPLICATION_SPACE, SPACE_X, SPACE_Y);
         // Load spatial indexes with boxes
         SpatialIndex<Box> left = SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
         SpatialIndex<Box> right = SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
@@ -61,6 +58,32 @@ public class OverlappingPairs
     private static final int N_BOXES = 1_000_000;
     private static final int BOX_WIDTH = 2;
     private static final int BOX_HEIGHT = 2;
+    private static final ApplicationSpace APPLICATION_SPACE =
+        new ApplicationSpace()
+        {
+            @Override
+            public int dimensions()
+            {
+                return 2;
+            }
+
+            @Override
+            public double lo(int d)
+            {
+                return 0;
+            }
+
+            @Override
+            public double hi(int d)
+            {
+                switch (d) {
+                    case 0: return SPACE_X;
+                    case 1: return SPACE_Y;
+                }
+                assert false;
+                return Double.NaN;
+            }
+        };
     private static final SpatialJoinFilter<Box, Box> BOX_OVERLAP =
         new SpatialJoinFilter<Box, Box>()
         {

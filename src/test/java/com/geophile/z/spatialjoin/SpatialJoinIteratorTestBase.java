@@ -12,6 +12,7 @@
 
 package com.geophile.z.spatialjoin;
 
+import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Pair;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialJoin;
@@ -166,7 +167,33 @@ public abstract class SpatialJoinIteratorTestBase
     protected static final int TRIALS = 1; // 50;
     protected static final int NX = 1_000_000;
     protected static final int NY = 1_000_000;
-    private static final Space SPACE = Space.newSpace(NX, NY);
+    private static final ApplicationSpace APP_SPACE =
+        new ApplicationSpace()
+        {
+            @Override
+            public int dimensions()
+            {
+                return 2;
+            }
+
+            @Override
+            public double lo(int d)
+            {
+                return 0;
+            }
+
+            @Override
+            public double hi(int d)
+            {
+                switch (d) {
+                    case 0: return NX;
+                    case 1: return NY;
+                }
+                assert false;
+                return Double.NaN;
+            }
+        };
+    private static final Space SPACE = Space.newSpace(APP_SPACE, NX, NY);
     private static final long SEED = 123456789L;
     private static int testIdGenerator = 0;
 

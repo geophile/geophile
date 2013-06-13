@@ -6,10 +6,7 @@
 
 package com.geophile;
 
-import com.geophile.z.Pair;
-import com.geophile.z.SpatialIndex;
-import com.geophile.z.SpatialJoin;
-import com.geophile.z.SpatialObject;
+import com.geophile.z.*;
 import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
@@ -198,7 +195,28 @@ public class SpatialIndexTest
                 return c;
             }
         };
-    private static final SpaceImpl SPACE = new SpaceImpl(new int[]{10, 10}, null);
+    private static final ApplicationSpace APP_SPACE =
+        new ApplicationSpace()
+        {
+            @Override
+            public int dimensions()
+            {
+                return 2;
+            }
+
+            @Override
+            public double lo(int d)
+            {
+                return 0;
+            }
+
+            @Override
+            public double hi(int d)
+            {
+                return 1000;
+            }
+        };
+    private static final SpaceImpl SPACE = new SpaceImpl(APP_SPACE, new int[]{10, 10}, null);
     private static final SpatialJoinFilter<Box, Point> FILTER = new SpatialJoinFilter<Box, Point>()
     {
         @Override

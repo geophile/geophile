@@ -30,7 +30,7 @@ public interface SpatialObject
      * Returns the coordinates of an arbitrary point inside this spatial object.
      * @return The coordinates of an arbitrary point inside this spatial object.
      */
-    long[] arbitraryPoint();
+    double[] arbitraryPoint();
 
     /**
      * Returns the maximum number of z-values to be used in approximating this object.

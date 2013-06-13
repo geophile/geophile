@@ -6,6 +6,8 @@
 
 package com.geophile.z.space;
 
+import com.geophile.z.Space;
+
 import java.util.Arrays;
 
 /**
@@ -37,6 +39,15 @@ public class Region
     }
 
     // Region interface
+
+    /**
+     * Returns this region's {@link com.geophile.z.Space}.
+     * @return This region's {@link com.geophile.z.Space}.
+     */
+    public Space space()
+    {
+        return space;
+    }
 
     /**
      * Returns the region's lower bound in the dth dimension.
