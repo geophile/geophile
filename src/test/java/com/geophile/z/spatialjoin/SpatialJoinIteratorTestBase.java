@@ -12,7 +12,6 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Pair;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialJoin;
@@ -27,28 +26,12 @@ import static org.junit.Assert.assertEquals;
 
 public abstract class SpatialJoinIteratorTestBase
 {
-    protected abstract void checkEquals(Object expected, Object actual);
-
-    protected abstract boolean verify();
-
-    protected void test(TestInput leftInput, TestInput rightInput, SpatialJoin.Duplicates duplicates)
+    protected final void test(TestInput leftInput, TestInput rightInput, SpatialJoin.Duplicates duplicates)
         throws IOException, InterruptedException
     {
         this.leftInput = leftInput;
         this.rightInput = rightInput;
         this.duplicates = duplicates;
-        boolean trace =
-            false;
-/*
-                nLeft == 1 &&
-                maxLeftXSize == 10_000 && maxLeftYSize == 10_000 &&
-                nRight == 100_000 &&
-                maxRightXSize == 1 && maxRightYSize == 1;
-            if (!trace) continue;
-            if (trace) {
-                enableLogging(Level.FINE);
-            }
-*/
         Map<Pair<Box, Box>, Integer> actual = null;
         Set<Pair<Box, Box>> expected = null;
         try {
@@ -81,7 +64,7 @@ public abstract class SpatialJoinIteratorTestBase
                         }
                     }
                 }
-                if (trace) {
+                if (trace()) {
                     assert expected != null;
                     print("expected");
                     for (Pair<Box, Box> pair : expected) {
@@ -111,18 +94,22 @@ public abstract class SpatialJoinIteratorTestBase
             if (expected.size() == 0) {
                 print("%s\taccuracy = EMPTY RESULT", describeTest());
             } else {
-                double accuracy = testStats.overlapCount / testStats.filterCount;
+                double accuracy = (double) testStats.overlapCount / testStats.filterCount;
                 print("%s\taccuracy = %s", describeTest(), accuracy);
             }
         }
     }
 
+    protected abstract void checkEquals(Object expected, Object actual);
+
+    protected abstract boolean verify();
+
     private String describeTest()
     {
-        return String.format("test# %s - duplicates = %s" +
+        return String.format("duplicates = %s\t" +
                              "LEFT: n = %s, max sizes = (%s, %s)\t" +
                              "RIGHT: n = %s, max sizes = (%s, %s)\t",
-                             testId, duplicates,
+                             duplicates,
                              leftInput.boxes().size(), leftInput.maxXSize(), leftInput.maxYSize(),
                              rightInput.boxes().size(), rightInput.maxXSize(), rightInput.maxYSize());
     }
@@ -143,63 +130,49 @@ public abstract class SpatialJoinIteratorTestBase
     {
         long start = System.currentTimeMillis();
         boolean singleCell = maxXSize == 1 && maxYSize == 1;
-        TestInput input = new TestInput(SPACE, maxXSize, maxYSize, singleCell);
+        TestInput input = new TestInput(space(), maxXSize, maxYSize, singleCell);
         for (int i = 0; i < n; i++) {
-            input.addBox(randomBox(maxXSize, maxYSize));
+            input.addBox(testBox(maxXSize, maxYSize));
         }
         long stop = System.currentTimeMillis();
         testStats.loadTimeMsec += stop - start;
         return input;
     }
 
-    protected abstract Box randomBox(int maxXSize, int maxYSize);
+    protected abstract Space space();
 
-    protected void enableLogging(Level level)
+    protected abstract Box testBox(int maxXSize, int maxYSize);
+
+    protected Level logLevel()
     {
-        Logger.getLogger("").setLevel(level);
+        return Level.WARNING;
+    }
+
+    protected boolean trace()
+    {
+        return false;
+    }
+
+    protected void enableLogging()
+    {
+        Logger.getLogger("").setLevel(logLevel());
     }
 
     protected boolean printSummary()
     {
-        return Logger.getLogger("").getLevel().intValue() >= Level.WARNING.intValue();
+        return false;
+    }
+
+    protected void resetRandom()
+    {
+        random = new Random(SEED);
     }
 
     protected static final int TRIALS = 1; // 50;
-    protected static final int NX = 1_000_000;
-    protected static final int NY = 1_000_000;
-    private static final ApplicationSpace APP_SPACE =
-        new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return 2;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                return 0;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                switch (d) {
-                    case 0: return NX;
-                    case 1: return NY;
-                }
-                assert false;
-                return Double.NaN;
-            }
-        };
-    private static final Space SPACE = Space.newSpace(APP_SPACE, NX, NY);
     private static final long SEED = 123456789L;
-    private static int testIdGenerator = 0;
 
     private final TestFilter FILTER = new TestFilter();
-    protected final Random random = new Random(SEED);
-    private final int testId = testIdGenerator++;
+    protected Random random = new Random(SEED);
     private TestInput leftInput;
     private TestInput rightInput;
     private SpatialJoin.Duplicates duplicates;

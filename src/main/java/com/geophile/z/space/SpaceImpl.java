@@ -16,6 +16,33 @@ import java.util.Queue;
 
 public class SpaceImpl extends Space
 {
+    // Object interface
+
+    @Override
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder();
+        // application space
+        buffer.append("application space: (");
+        for (int d = 0; d < dimensions; d++) {
+            if (d != 0) {
+                buffer.append(", ");
+            }
+            buffer.append(applicationSpace.lo(d));
+            buffer.append(':');
+            buffer.append(applicationSpace.hi(d));
+        }
+        buffer.append(")  xBits: ");
+        // xBits
+        for (int d = 0; d < dimensions; d++) {
+            if (d != 0) {
+                buffer.append(", ");
+            }
+            buffer.append(xBits[d]);
+        }
+        return buffer.toString();
+    }
+
     // SpaceImpl interface
 
     public int dimensions()
@@ -259,12 +286,7 @@ public class SpaceImpl extends Space
 
     public long appToZ(int d, double appCoord)
     {
-        return (long) (((appCoord - appLo[d]) / appRange[d]) * zRange[d]);
-    }
-
-    public SpaceImpl(ApplicationSpace applicationSpace, long[] size)
-    {
-        this(applicationSpace, log2(size), null);
+        return (long) (((appCoord - appLo[d]) / appWidth[d]) * zRange[d]);
     }
 
     public SpaceImpl(ApplicationSpace applicationSpace, int[] xBits, int[] interleave)
@@ -301,11 +323,11 @@ public class SpaceImpl extends Space
         }
         // z/app translation
         appLo = new double[dimensions];
-        appRange = new double[dimensions];
+        appWidth = new double[dimensions];
         zRange = new long[dimensions];
         for (int d = 0; d < dimensions; d++) {
             this.appLo[d] = applicationSpace.lo(d);
-            this.appRange[d] = applicationSpace.hi(d) - applicationSpace.lo(d);
+            this.appWidth[d] = applicationSpace.hi(d) - applicationSpace.lo(d);
             this.zRange[d] = 1 << xBits[d];
         }
         // shuffle
@@ -400,32 +422,6 @@ public class SpaceImpl extends Space
         }
     }
 
-    private static int ceilLog2(long x)
-    {
-        int log2;
-        // Loop won't work if x = 0x8000000000000000L
-        if (x == 0x8000000000000000L) {
-            log2 = 63;
-        } else {
-            log2 = 0;
-            long p = 1;
-            while (p < x) {
-                log2++;
-                p <<= 1;
-            }
-        }
-        return log2;
-    }
-
-    private static int[] log2(long ... x)
-    {
-        int[] log2 = new int[x.length];
-        for (int d = 0; d < x.length; d++) {
-            log2[d] = ceilLog2(x[d]);
-        }
-        return log2;
-    }
-
     // Class state
 
     public static final int LENGTH_BITS = 6;
@@ -445,7 +441,7 @@ public class SpaceImpl extends Space
     final int zBits;
     // Translation to/from application space
     final double[] appLo;
-    final double[] appRange;
+    final double[] appWidth;
     final long[] zRange;
     // For shuffling
     private final long[][] shuffle0;

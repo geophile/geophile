@@ -17,20 +17,21 @@ import com.geophile.z.space.SpaceImpl;
 public abstract class Space
 {
     /**
-     * Creates a {@link Space}. A coordinate of dimension d must lie between 0 inclusive and size[d] exclusive.
-     * @param size Specifies the number of cells along each dimension. The number of dimensions of the space is
-     *             equal to the length of this array.
+     * Creates a {@link Space}.
+     * The space has xBits.length dimensions. A coordinate of dimension d
+     * must lie between 0 inclusive and 2**xBits[d] exclusive.
+     * @param xBits Specifies the number of bits of resolution along each dimension.
      */
-    public static Space newSpace(ApplicationSpace applicationSpace, long ... size)
+    public static Space newSpace(ApplicationSpace applicationSpace, int ... xBits)
     {
-        return new SpaceImpl(applicationSpace, size);
+        return newSpace(applicationSpace, xBits, null);
     }
 
     /**
      * Creates a {@link Space}, providing a greater degree of control over performance than
-     * {@link Space#newSpace(ApplicationSpace, long...)}.
+     * {@link Space#newSpace(ApplicationSpace, int...)}.
      * The space has xBits.length dimensions. A coordinate of dimension d
-     * must lie between 0 inclusive and 2**xBits[d] - 1 exclusive.
+     * must lie between 0 inclusive and 2**xBits[d] exclusive.
      * @param xBits Specifies the dimensions and extent of the space.
      * @param interleave Specifies the how bits of coordinates are interleaved. 0 <= interleave[i] < 2**xBits[d],
      *     0 <= d < 2**xBits.length. The more bits that are present for a given dimension earlier in the interleaving,

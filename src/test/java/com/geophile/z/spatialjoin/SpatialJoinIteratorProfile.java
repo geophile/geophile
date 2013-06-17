@@ -12,6 +12,8 @@
 
 package com.geophile.z.spatialjoin;
 
+import com.geophile.z.ApplicationSpace;
+import com.geophile.z.Space;
 import com.geophile.z.SpatialJoin;
 import com.geophile.z.spatialobject.d2.Box;
 
@@ -45,7 +47,13 @@ public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
     }
 
     @Override
-    protected Box randomBox(int xSize, int ySize)
+    protected Space space()
+    {
+        return SPACE;
+    }
+
+    @Override
+    protected Box testBox(int xSize, int ySize)
     {
         long xLo = random.nextInt(NX - xSize + 1);
         long xHi = xLo + xSize - 1;
@@ -65,4 +73,34 @@ public class SpatialJoinIteratorProfile extends SpatialJoinIteratorTestBase
     {
         return false;
     }
+
+    private static final int NX = 1_000_000;
+    private static final int NY = 1_000_000;
+    private static final ApplicationSpace APP_SPACE =
+        new ApplicationSpace()
+        {
+            @Override
+            public int dimensions()
+            {
+                return 2;
+            }
+
+            @Override
+            public double lo(int d)
+            {
+                return 0;
+            }
+
+            @Override
+            public double hi(int d)
+            {
+                switch (d) {
+                    case 0: return NX;
+                    case 1: return NY;
+                }
+                assert false;
+                return Double.NaN;
+            }
+        };
+    private static final Space SPACE = Space.newSpace(APP_SPACE, NX, NY);
 }
