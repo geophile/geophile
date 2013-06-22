@@ -28,24 +28,24 @@ public class PointsInBox
     {
         Space space = Space.newSpace(APPLICATION_SPACE, SPACE_X, SPACE_Y);
         // Load spatial index with points
-        SpatialIndex<Point> points = SpatialIndex.newSpatialIndex(space, new TreeIndex<Point>());
+        SpatialIndex points = SpatialIndex.newSpatialIndex(space, new TreeIndex());
         for (int i = 0; i < N_POINTS; i++) {
             points.add(randomPoint());
         }
         // Run queries
         for (int q = 0; q < N_QUERIES; q++) {
             // Load spatial index with query box
-            SpatialIndex<Box> box = SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
+            SpatialIndex box = SpatialIndex.newSpatialIndex(space, new TreeIndex());
             Box query = randomBox();
             box.add(query);
             // Create Iterator over spatial join output
-            Iterator<Pair<Box, Point>> iterator =
+            Iterator<Pair> iterator =
                 SpatialJoin.newSpatialJoin(BOX_CONTAINS_POINT, SpatialJoinImpl.Duplicates.EXCLUDE)
                            .iterator(box, points);
             // Print points contained in box
             System.out.println(String.format("Points inside %s", query));
             while (iterator.hasNext()) {
-                Pair<Box, Point> pointInBox = iterator.next();
+                Pair pointInBox = iterator.next();
                 System.out.println(String.format("    %s", pointInBox.right()));
             }
         }
@@ -99,12 +99,14 @@ public class PointsInBox
                 return Double.NaN;
             }
         };
-    private static final SpatialJoinFilter<Box, Point> BOX_CONTAINS_POINT =
-        new SpatialJoinFilter<Box, Point>()
+    private static final SpatialJoinFilter BOX_CONTAINS_POINT =
+        new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(Box box, Point point)
+            public boolean overlap(SpatialObject x, SpatialObject y)
             {
+                Box box= (Box) x;
+                Point point = (Point) y;
                 return
                     box.xLo() <= point.x() && point.x() <= box.xHi() &&
                     box.yLo() <= point.y() && point.y() <= box.yHi();

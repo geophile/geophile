@@ -4,12 +4,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile;
+package com.geophile.z.space;
 
 import com.geophile.z.*;
 import com.geophile.z.index.treeindex.TreeIndex;
-import com.geophile.z.space.SpaceImpl;
-import com.geophile.z.space.SpatialIndexImpl;
 import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
@@ -27,8 +25,8 @@ public class SpatialIndexTest
     @Test
     public void testRetrieval() throws IOException, InterruptedException
     {
-        TreeIndex<Point> index = new TreeIndex<>();
-        spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
+        TreeIndex index = new TreeIndex();
+        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.add(new Point(x, y));
@@ -63,8 +61,8 @@ public class SpatialIndexTest
     @Test
     public void testRemoveAll() throws IOException, InterruptedException
     {
-        TreeIndex<Point> index = new TreeIndex<>();
-        spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
+        TreeIndex index = new TreeIndex();
+        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.add(new Point(x, y));
@@ -105,8 +103,8 @@ public class SpatialIndexTest
     @Test
     public void testRemoveSome() throws IOException, InterruptedException
     {
-        TreeIndex<Point> index = new TreeIndex<>();
-        spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
+        TreeIndex index = new TreeIndex();
+        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.add(new Point(x, y));
@@ -149,18 +147,46 @@ public class SpatialIndexTest
         }
     }
 
+    @Test
+    public void spatialIdGeneratorTest() throws IOException, InterruptedException
+    {
+        TreeIndex index = new TreeIndex();
+        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        // pX: expected id is X
+        Point p1 = new Point(1, 1);
+        spatialIndex.add(p1);
+        assertEquals(1, p1.id());
+        Point p2 = new Point(2, 2);
+        spatialIndex.add(p2);
+        assertEquals(2, p2.id());
+        Point p3 = new Point(3, 3);
+        spatialIndex.add(p3);
+        assertEquals(3, p3.id());
+        // Creating a new SpatialIndexImpl restores the id generator
+        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Point q1 = new Point(1, 1);
+        spatialIndex.add(q1);
+        assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 1, q1.id());
+        Point q2 = new Point(2, 2);
+        spatialIndex.add(q2);
+        assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 2, q2.id());
+        Point q3 = new Point(3, 3);
+        spatialIndex.add(q3);
+        assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 3, q3.id());
+    }
+
     private void test(int xLo, int xHi, int yLo, int yHi, Filter filter) throws IOException, InterruptedException
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
-        TreeIndex<Box> boxTreeIndex = new TreeIndex<>();
-        SpatialIndex<Box> query = new SpatialIndexImpl<>(SPACE, boxTreeIndex, SpatialIndex.Options.DEFAULT);
+        TreeIndex boxTreeIndex = new TreeIndex();
+        SpatialIndex query = new SpatialIndexImpl(SPACE, boxTreeIndex, SpatialIndex.Options.DEFAULT);
         query.add(box);
-        Iterator<Pair<Box, Point>> iterator =
+        Iterator<Pair> iterator =
             SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
         List<Point> actual = new ArrayList<>();
         Point point;
         while (iterator.hasNext()) {
-            point = iterator.next().right();
+            point = (Point) iterator.next().right();
             if (!actual.contains(point)) {
                 actual.add(point);
             }
@@ -217,18 +243,20 @@ public class SpatialIndexTest
             }
         };
     private static final SpaceImpl SPACE = new SpaceImpl(APP_SPACE, new int[]{10, 10}, null);
-    private static final SpatialJoinFilter<Box, Point> FILTER = new SpatialJoinFilter<Box, Point>()
+    private static final SpatialJoinFilter FILTER = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(Box b, Point p)
+        public boolean overlap(SpatialObject x, SpatialObject y)
         {
+            Box b = (Box) x;
+            Point p = (Point) y;
             return
                 b.xLo() <= p.x() && p.x() <= b.xHi() &&
                 b.yLo() <= p.y() && p.y() <= b.yHi();
         }
     };
 
-    private SpatialIndex<Point> spatialIndex;
+    private SpatialIndex spatialIndex;
 
     private static interface Filter
     {

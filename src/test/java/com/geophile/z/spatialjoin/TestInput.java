@@ -2,6 +2,7 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.index.treeindex.TreeIndex;
 import com.geophile.z.spatialobject.d2.Box;
 
@@ -17,12 +18,12 @@ public class TestInput
         spatialIndex.add(box);
     }
 
-    public List<Box> boxes()
+    public List<SpatialObject> boxes()
     {
         return boxes;
     }
 
-    public SpatialIndex<Box> spatialIndex()
+    public SpatialIndex spatialIndex()
     {
         return spatialIndex;
     }
@@ -43,14 +44,14 @@ public class TestInput
         this.boxes = new ArrayList<>();
         this.spatialIndex = SpatialIndex.newSpatialIndex
             (space,
-             new TreeIndex<Box>(),
+             new TreeIndex(),
              singleCell ? SpatialIndex.Options.SINGLE_CELL : SpatialIndex.Options.DEFAULT);
         this.maxXSize = maxXSize;
         this.maxYSize = maxYSize;
     }
 
-    private final List<Box> boxes;
-    private final SpatialIndex<Box> spatialIndex;
+    private final List<SpatialObject> boxes;
+    private final SpatialIndex spatialIndex;
     private final int maxXSize;
     private final int maxYSize;
 }

@@ -13,10 +13,9 @@ import java.io.IOException;
 
 /**
  * A SpatialIndex organizes a set of {@link SpatialObject}s for the efficient execution of spatial searches.
- * @param <SPATIAL_OBJECT> The type of {@link SpatialObject} contained by this spatial index.
  */
 
-public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
+public abstract class SpatialIndex
 {
     /**
      * Returns the {@link com.geophile.z.Space} associated with this SpatialIndex.
@@ -31,14 +30,14 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
      * Adds the given spatial object to the index.
      * @param spatialObject The object to be added.
      */
-    public abstract void add(SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException;
+    public abstract void add(SpatialObject spatialObject) throws IOException, InterruptedException;
 
     /**
      * Removes the given spatial object from the index.
      * @param spatialObject The object to be removed.
      * @return true if spatialObject was found and removed, false otherwise
      */
-    public abstract boolean remove(SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException;
+    public abstract boolean remove(SpatialObject spatialObject) throws IOException, InterruptedException;
 
     /**
      * Creates a SpatialIndex. The index
@@ -47,9 +46,7 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
      * @param space The {@link Space} containing the {@link SpatialObject}s to be indexed.
      * @param index The {@link Index} that will store the indexed {@link SpatialObject}s.
      */
-    public static <SPATIAL_OBJECT extends SpatialObject> SpatialIndex<SPATIAL_OBJECT> newSpatialIndex
-        (Space space, Index<SPATIAL_OBJECT> index)
-        throws IOException, InterruptedException
+    public static SpatialIndex newSpatialIndex(Space space, Index index) throws IOException, InterruptedException
     {
         return newSpatialIndex(space, index, Options.DEFAULT);
     }
@@ -61,16 +58,15 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
      * @param space The {@link Space} containing the {@link SpatialObject}s to be indexed.
      * @param index The {@link Index} that will store the indexed {@link SpatialObject}s.
      */
-    public static <SPATIAL_OBJECT extends SpatialObject> SpatialIndex<SPATIAL_OBJECT> newSpatialIndex
-        (Space space, Index<SPATIAL_OBJECT> index, Options options)
+    public static SpatialIndex newSpatialIndex(Space space, Index index, Options options)
         throws IOException, InterruptedException
     {
-        return new SpatialIndexImpl<>((SpaceImpl) space, index, options);
+        return new SpatialIndexImpl((SpaceImpl) space, index, options);
     }
 
     // For use by subclasses
 
-    protected SpatialIndex(SpaceImpl space, Index<SPATIAL_OBJECT> index, Options options)
+    protected SpatialIndex(SpaceImpl space, Index index, Options options)
     {
         this.space = space;
         this.index = index;
@@ -80,7 +76,7 @@ public abstract class SpatialIndex<SPATIAL_OBJECT extends SpatialObject>
     // Object state
 
     protected final SpaceImpl space;
-    protected final Index<SPATIAL_OBJECT> index;
+    protected final Index index;
     protected final Options options;
 
     // Inner classes

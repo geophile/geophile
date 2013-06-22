@@ -12,10 +12,7 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.ApplicationSpace;
-import com.geophile.z.Pair;
-import com.geophile.z.Space;
-import com.geophile.z.SpatialJoin;
+import com.geophile.z.*;
 import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
@@ -32,11 +29,11 @@ public class SelfJoinTest extends SpatialJoinIteratorTestBase
     @Test
     public void selfJoin() throws IOException, InterruptedException
     {
-        SpatialJoinFilter<Box, Box> filter =
-            new SpatialJoinFilter<Box, Box>()
+        SpatialJoinFilter filter =
+            new SpatialJoinFilter()
             {
                 @Override
-                public boolean overlap(Box a, Box b)
+                public boolean overlap(SpatialObject a, SpatialObject b)
                 {
                     return a.equalTo(b);
                 }
@@ -44,13 +41,13 @@ public class SelfJoinTest extends SpatialJoinIteratorTestBase
         for (int maxXSize : MAX_SIZES) {
             for (int maxYSize : MAX_SIZES) {
                 TestInput input = loadBoxes(COUNT, maxXSize, maxYSize);
-                Set<Box> actual = new HashSet<>();
-                Iterator<Pair<Box, Box>> iterator =
+                Set<SpatialObject> actual = new HashSet<>();
+                Iterator<Pair> iterator =
                     SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE)
                                .iterator(input.spatialIndex(), input.spatialIndex());
                 while (iterator.hasNext()) {
-                    Pair<Box, Box> pair = iterator.next();
-                    Box box = pair.left();
+                    Pair pair = iterator.next();
+                    SpatialObject box = pair.left();
                     assertTrue(box.equalTo(pair.right()));
                     actual.add(box);
                 }

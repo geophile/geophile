@@ -20,6 +20,8 @@ import java.nio.ByteBuffer;
 
 public interface SpatialObject
 {
+    void id(long id);
+
     /**
      * Returns the identifier, which must be unique within the containing {@link com.geophile.z.SpatialIndex}.
      * @return This object's unique identifier.

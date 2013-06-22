@@ -3,16 +3,8 @@ package com.geophile.z.spatialobject.jts;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.geophile.z.spatialobject.SpatialObjectIdGenerator;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.WKBWriter;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 public class JTSPoint extends JTSBase
 {

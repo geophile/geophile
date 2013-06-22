@@ -26,13 +26,13 @@ public class CursorTest
         }
     }
 
-    private void testCursor(Index<Point> index, int n) throws IOException, InterruptedException
+    private void testCursor(Index index, int n) throws IOException, InterruptedException
     {
-        Cursor<Point> cursor;
+        Cursor cursor;
         int expectedKey;
         int expectedLastKey;
         boolean expectedEmpty;
-        Record<Point> entry;
+        Record entry;
         // Full cursor
         {
             cursor = index.cursor(0L);
@@ -165,9 +165,9 @@ public class CursorTest
         }
     }
 
-    private Index<Point> testIndex(int n) throws IOException, InterruptedException
+    private Index testIndex(int n) throws IOException, InterruptedException
     {
-        Index<Point> index = new TreeIndex<>();
+        Index index = new TreeIndex();
         assertTrue(GAP > 1);
         // Populate map with keys 0, GAP, ..., GAP * (n - 1)
         for (int i = 0; i < n; i++) {
@@ -177,7 +177,7 @@ public class CursorTest
         return index;
     }
 
-    private long key(Record<Point> entry)
+    private long key(Record entry)
     {
         return entry.key().z();
     }

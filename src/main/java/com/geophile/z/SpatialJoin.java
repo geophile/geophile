@@ -20,12 +20,9 @@ import java.util.Iterator;
  * <li> Invoke {@link SpatialJoin#iterator(SpatialIndex, SpatialIndex)}.
  * </ol>
  * The resulting {@link java.util.Iterator} provides access to spatial join results.
- *
- * @param <LEFT>
- * @param <RIGHT>
  */
 
-public abstract class SpatialJoin<LEFT extends SpatialObject, RIGHT extends SpatialObject>
+public abstract class SpatialJoin
 {
     /**
      * Create a new SpatialJoin object.
@@ -43,15 +40,12 @@ public abstract class SpatialJoin<LEFT extends SpatialObject, RIGHT extends Spat
      *                   <li> One or both of the spatial indexes being joined contains point objects, (occupying
      *                      a single grid cell of the Space).
      *                   </ul>
-     * @param <LEFT> The type of {@link SpatialObject} on the left side of the join.
-     * @param <RIGHT> The type of {@link SpatialObject} on the right side of the join.
      * @return A SpatialJoin object that can be used for any number of possibly concurrent spatial joins, all
      * of which will use the given filter, and with the specified handling of duplicates.
      */
-    public static <LEFT extends SpatialObject, RIGHT extends SpatialObject>
-        SpatialJoin<LEFT, RIGHT> newSpatialJoin(SpatialJoinFilter<LEFT, RIGHT> filter, Duplicates duplicates)
+    public static SpatialJoin newSpatialJoin(SpatialJoinFilter filter, Duplicates duplicates)
     {
-        return new SpatialJoinImpl<>(filter, duplicates);
+        return new SpatialJoinImpl(filter, duplicates);
     }
 
     /**
@@ -62,8 +56,7 @@ public abstract class SpatialJoin<LEFT extends SpatialObject, RIGHT extends Spat
      * @param rightSpatialIndex The other spatial join input.
      * @return An {@link java.util.Iterator} providing access to spatial join results.
      */
-    public abstract Iterator<Pair<LEFT, RIGHT>> iterator(SpatialIndex<LEFT> leftSpatialIndex,
-                                                         SpatialIndex<RIGHT> rightSpatialIndex)
+    public abstract Iterator<Pair> iterator(SpatialIndex leftSpatialIndex, SpatialIndex rightSpatialIndex)
         throws IOException, InterruptedException;
 
     /**

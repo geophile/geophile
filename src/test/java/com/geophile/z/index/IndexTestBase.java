@@ -22,7 +22,7 @@ public abstract class IndexTestBase
     @Test
     public void test() throws Exception
     {
-        Index<TestSpatialObject> index = newIndex();
+        Index index = newIndex();
         for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
             for (int copies = 1; copies <= 8; copies++) {
                 load(index, nObjects, copies);
@@ -33,9 +33,9 @@ public abstract class IndexTestBase
         }
     }
 
-    protected abstract Index<TestSpatialObject> newIndex() throws Exception;
+    protected abstract Index newIndex() throws Exception;
 
-    private void load(Index<TestSpatialObject> index, int nObjects, int zCount)
+    private void load(Index index, int nObjects, int zCount)
         throws IOException, InterruptedException
     {
         /*
@@ -60,12 +60,12 @@ public abstract class IndexTestBase
         }
     }
 
-    private void checkContents(Index<TestSpatialObject> index, int nObjects, int zCount, Set<Long> removedIds)
+    private void checkContents(Index index, int nObjects, int zCount, Set<Long> removedIds)
         throws IOException, InterruptedException
     {
         Set<Long> presentIds = new HashSet<>();
-        Cursor<TestSpatialObject> cursor = index.cursor(SpaceImpl.Z_MIN);
-        Record<TestSpatialObject> record;
+        Cursor cursor = index.cursor(SpaceImpl.Z_MIN);
+        Record record;
         List<List<Long>> zById = new ArrayList<>();
         for (long id = 0; id < nObjects; id++) {
             zById.add(new ArrayList<Long>());
@@ -91,7 +91,7 @@ public abstract class IndexTestBase
         }
     }
 
-    private void removeAll(Index<TestSpatialObject> index, int nObjects, int zCount)
+    private void removeAll(Index index, int nObjects, int zCount)
         throws IOException, InterruptedException
     {
         Set<Long> removedIds = new HashSet<>();
@@ -111,7 +111,7 @@ public abstract class IndexTestBase
         }
     }
 
-    private void checkRetrieval(Index<TestSpatialObject> index, int nObjects, int zCount)
+    private void checkRetrieval(Index index, int nObjects, int zCount)
         throws IOException, InterruptedException
     {
         // Expected
@@ -122,8 +122,8 @@ public abstract class IndexTestBase
                 allKeys.put(key, null);
             }
         }
-        Cursor<TestSpatialObject> cursor;
-        Record<TestSpatialObject> record;
+        Cursor cursor;
+        Record record;
         Iterator<SpatialObjectKey> expected;
         SpatialObjectKey start;
         int count;

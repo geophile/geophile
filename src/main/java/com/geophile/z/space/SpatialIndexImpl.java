@@ -13,14 +13,16 @@ import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
 import com.geophile.z.index.SpatialObjectKey;
+import com.geophile.z.spatialobject.SpatialObjectIdState;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.geophile.z.space.SpaceImpl.formatZ;
 
-public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends SpatialIndex<SPATIAL_OBJECT>
+public class SpatialIndexImpl extends SpatialIndex
 {
     // Object interface
 
@@ -32,8 +34,9 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
 
     // SpatialIndex interface
 
-    public void add(SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException
+    public void add(SpatialObject spatialObject) throws IOException, InterruptedException
     {
+        spatialObject.id(nextSoid());
         long[] zs = decompose(spatialObject);
         for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
             index.add(zs[i], spatialObject);
@@ -46,7 +49,7 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
         }
     }
 
-    public boolean remove(SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException
+    public boolean remove(SpatialObject spatialObject) throws IOException, InterruptedException
     {
         boolean found;
         long[] zs = decompose(spatialObject);
@@ -78,15 +81,17 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
         return singleCell;
     }
 
-    public Index<SPATIAL_OBJECT> index()
+    public Index index()
     {
         return index;
     }
 
-    public SpatialIndexImpl(SpaceImpl space, Index<SPATIAL_OBJECT> index, Options options)
+    public SpatialIndexImpl(SpaceImpl space, Index index, Options options)
+        throws IOException, InterruptedException
     {
         super(space, index, options);
         singleCell = options == Options.SINGLE_CELL;
+        restoreIdGenerator();
     }
 
     // For use by this class
@@ -102,12 +107,12 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
         return zs;
     }
 
-    long soid(long z, SPATIAL_OBJECT spatialObject) throws IOException, InterruptedException
+    private long soid(long z, SpatialObject spatialObject) throws IOException, InterruptedException
     {
         long soid = UNKNOWN;
-        Cursor<SPATIAL_OBJECT> cursor = index.cursor(z);
+        Cursor cursor = index.cursor(z);
         while (soid == UNKNOWN) {
-            Record<SPATIAL_OBJECT> record = cursor.next();
+            Record record = cursor.next();
             if (record != null) {
                 SpatialObjectKey key = record.key();
                 if (key.z() == z) {
@@ -124,13 +129,45 @@ public class SpatialIndexImpl<SPATIAL_OBJECT extends SpatialObject> extends Spat
         return soid;
     }
 
+    private long nextSoid() throws IOException, InterruptedException
+    {
+        long soid = idGenerator.getAndIncrement();
+        if (soid == maxReservedSoid) {
+            updateMaxReservedSoid();
+        }
+        return soid;
+    }
+
+    private void restoreIdGenerator() throws IOException, InterruptedException
+    {
+        Cursor cursor = index.cursor(SpatialObjectIdState.Z_MAX_RESERVED);
+        try {
+            Record record = cursor.next();
+            maxReservedSoid = record.eof() ? 0 : record.key().soid();
+            idGenerator.set(maxReservedSoid + 1);
+            updateMaxReservedSoid();
+        } finally {
+            cursor.close();
+        }
+    }
+
+    private void updateMaxReservedSoid() throws IOException, InterruptedException
+    {
+        index.remove(SpatialObjectIdState.Z_MAX_RESERVED, maxReservedSoid);
+        maxReservedSoid += SOID_RESERVATION_BLOCK_SIZE;
+        index.add(SpatialObjectIdState.Z_MAX_RESERVED, new SpatialObjectIdState(maxReservedSoid));
+    }
+
     // Class state
 
     private static final Logger LOG = Logger.getLogger(SpatialIndexImpl.class.getName());
     private static final long UNKNOWN = -2L;
     private static final long MISSING = -1L;
+    static final long SOID_RESERVATION_BLOCK_SIZE = 1_000_000L;
 
     // Object state
 
     private final boolean singleCell;
+    private final AtomicLong idGenerator = new AtomicLong();
+    private volatile long maxReservedSoid;
 }

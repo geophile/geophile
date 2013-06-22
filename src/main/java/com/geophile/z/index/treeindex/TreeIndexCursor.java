@@ -16,18 +16,18 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Cursor<SPATIAL_OBJECT>
+public class TreeIndexCursor extends Cursor
 {
     // Cursor interface
 
     @Override
-    public Record<SPATIAL_OBJECT> next() throws IOException, InterruptedException
+    public Record next() throws IOException, InterruptedException
     {
         return neighbor(true);
     }
 
     @Override
-    public Record<SPATIAL_OBJECT> previous() throws IOException, InterruptedException
+    public Record previous() throws IOException, InterruptedException
     {
         return neighbor(false);
     }
@@ -42,7 +42,7 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
 
     // TreeIndexCursor interface
 
-    public TreeIndexCursor(TreeMap<SpatialObjectKey, SPATIAL_OBJECT> tree, SpatialObjectKey key)
+    public TreeIndexCursor(TreeMap<SpatialObjectKey, SpatialObject> tree, SpatialObjectKey key)
     {
         this.tree = tree;
         this.startAt = key;
@@ -50,7 +50,7 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
 
     // For use by this class
 
-    private Record<SPATIAL_OBJECT> neighbor(boolean forwardMove) throws IOException, InterruptedException
+    private Record neighbor(boolean forwardMove) throws IOException, InterruptedException
     {
         switch (state()) {
             case NEVER_USED:
@@ -66,7 +66,7 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
                 return current();
         }
         if (treeIterator.hasNext()) {
-            Map.Entry<SpatialObjectKey, SPATIAL_OBJECT> neighbor = treeIterator.next();
+            Map.Entry<SpatialObjectKey, SpatialObject> neighbor = treeIterator.next();
             current(neighbor.getKey().z(), neighbor.getValue());
             state(State.IN_USE);
             startAt = neighbor.getKey();
@@ -87,8 +87,8 @@ public class TreeIndexCursor<SPATIAL_OBJECT extends SpatialObject> extends Curso
 
     // Object state
 
-    private final TreeMap<SpatialObjectKey, SPATIAL_OBJECT> tree;
+    private final TreeMap<SpatialObjectKey, SpatialObject> tree;
     private SpatialObjectKey startAt;
     private boolean forward;
-    private Iterator<Map.Entry<SpatialObjectKey, SPATIAL_OBJECT>> treeIterator;
+    private Iterator<Map.Entry<SpatialObjectKey, SpatialObject>> treeIterator;
 }

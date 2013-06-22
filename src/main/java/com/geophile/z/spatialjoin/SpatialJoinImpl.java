@@ -15,22 +15,20 @@ import com.geophile.z.space.SpatialIndexImpl;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class SpatialJoinImpl<LEFT extends SpatialObject, RIGHT extends SpatialObject> extends SpatialJoin<LEFT, RIGHT>
+public class SpatialJoinImpl extends SpatialJoin
 {
-    public SpatialJoinImpl(SpatialJoinFilter<LEFT, RIGHT> filter, Duplicates duplicates)
+    public SpatialJoinImpl(SpatialJoinFilter filter, Duplicates duplicates)
     {
         this.filter = filter;
         this.duplicates = duplicates;
     }
 
-    public Iterator<Pair<LEFT, RIGHT>> iterator(SpatialIndex<LEFT> leftSpatialIndex,
-                                                SpatialIndex<RIGHT> rightSpatialIndex)
+    public Iterator<Pair> iterator(SpatialIndex leftSpatialIndex, SpatialIndex rightSpatialIndex)
         throws IOException, InterruptedException
     {
-        Iterator<Pair<LEFT, RIGHT>> iterator =
-            new SpatialJoinIterator<>((SpatialIndexImpl<LEFT>) leftSpatialIndex,
-                                      (SpatialIndexImpl<RIGHT>) rightSpatialIndex,
-                                      filter);
+        Iterator<Pair> iterator =
+            new SpatialJoinIterator((SpatialIndexImpl) leftSpatialIndex, (SpatialIndexImpl) rightSpatialIndex,
+                                    filter);
         if (duplicates == Duplicates.EXCLUDE) {
             iterator = new DuplicateEliminatingIterator<>(iterator);
         }
@@ -44,6 +42,6 @@ public class SpatialJoinImpl<LEFT extends SpatialObject, RIGHT extends SpatialOb
 
     public static final String SINGLE_CELL_OPTIMIZATION_PROPERTY = "singlecellopt";
 
-    private final SpatialJoinFilter<LEFT, RIGHT> filter;
+    private final SpatialJoinFilter filter;
     private final Duplicates duplicates;
 }

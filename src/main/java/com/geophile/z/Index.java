@@ -31,11 +31,9 @@ import java.io.IOException;
  * Access to Index contents is accomplished using a {@link com.geophile.z.index.Cursor}, obtained by
  * {@link Index#cursor(long)}.
  *
- * @param <SPATIAL_OBJECT> The type of {@link com.geophile.z.SpatialObject} contained by this index.
- *
  */
 
-public interface Index<SPATIAL_OBJECT extends SpatialObject>
+public interface Index
 {
     /**
      * Indicates whether this index does blind updates.
@@ -50,7 +48,7 @@ public interface Index<SPATIAL_OBJECT extends SpatialObject>
      * @throws DuplicateSpatialObjectException if (z, spatialObject.id()) is already present. This exception cannot
      *         be thrown by an index that does blind updates.
      */
-    void add(long z, SPATIAL_OBJECT spatialObject)
+    void add(long z, SpatialObject spatialObject)
         throws IOException, InterruptedException, DuplicateSpatialObjectException;
 
     /**
@@ -68,7 +66,7 @@ public interface Index<SPATIAL_OBJECT extends SpatialObject>
      * @param z A z-value
      * @return A {@link com.geophile.z.index.Cursor} postioned at the given z-value.
      */
-    Cursor<SPATIAL_OBJECT> cursor(long z) throws IOException, InterruptedException;
+    Cursor cursor(long z) throws IOException, InterruptedException;
 
     /**
      * Returns an index key comprising the given z-value, and -1 in place of the spatial object's id.

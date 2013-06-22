@@ -263,8 +263,8 @@ public class SpaceImpl extends Space
     public static String formatZ(long z)
     {
         String formatted;
-        if (z == -1L) {
-            formatted = "EOF";
+        if (z < 0) {
+            formatted = Long.toString(z);
         } else {
             int length = length(z);
             int significantDigits = (length + 3) / 4;

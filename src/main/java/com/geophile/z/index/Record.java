@@ -2,7 +2,7 @@ package com.geophile.z.index;
 
 import com.geophile.z.SpatialObject;
 
-public class Record<SPATIAL_OBJECT extends SpatialObject>
+public class Record
 {
     // Object interface
 
@@ -19,7 +19,7 @@ public class Record<SPATIAL_OBJECT extends SpatialObject>
         return key;
     }
 
-    public SPATIAL_OBJECT spatialObject()
+    public SpatialObject spatialObject()
     {
         return spatialObject;
     }
@@ -29,7 +29,7 @@ public class Record<SPATIAL_OBJECT extends SpatialObject>
         return key == null && spatialObject == null;
     }
 
-    public void copyTo(Record<SPATIAL_OBJECT> record)
+    public void copyTo(Record record)
     {
         if (eof()) {
             record.setEOF();
@@ -39,7 +39,7 @@ public class Record<SPATIAL_OBJECT extends SpatialObject>
         }
     }
 
-    public void set(long z, SPATIAL_OBJECT spatialObject)
+    public void set(long z, SpatialObject spatialObject)
     {
         this.key = SpatialObjectKey.key(z, spatialObject.id());
         this.spatialObject = spatialObject;
@@ -54,5 +54,5 @@ public class Record<SPATIAL_OBJECT extends SpatialObject>
     // Object state
 
     private SpatialObjectKey key;
-    private SPATIAL_OBJECT spatialObject;
+    private SpatialObject spatialObject;
 }

@@ -322,7 +322,7 @@ exit ot, and we're done:
 */
 
 
-class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_OBJECT extends SpatialObject>
+class SpatialJoinInput
 {
     // Object interface
 
@@ -354,7 +354,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
                 long topZ = nest.peek().key().z();
                 assert SpaceImpl.contains(topZ, current.key().z());
             }
-            Record<THIS_SPATIAL_OBJECT> currentCopy = new Record<>();
+            Record currentCopy = new Record();
             current.copyTo(currentCopy);
             nest.push(currentCopy);
             cursor.next().copyTo(current);
@@ -368,46 +368,43 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     public void exitZ()
     {
         assert !nest.isEmpty();
-        Record<THIS_SPATIAL_OBJECT> top = nest.pop();
+        Record top = nest.pop();
         that.generateSpatialJoinOutput(top.spatialObject());
         log("exit");
     }
 
-    public void generateSpatialJoinOutput(THAT_SPATIAL_OBJECT thatSpatialObject)
+    public void generateSpatialJoinOutput(SpatialObject thatSpatialObject)
     {
-        for (Record<THIS_SPATIAL_OBJECT> thisRecord : nest) {
+        for (Record thisRecord : nest) {
             spatialJoinOutput.add(thisRecord.spatialObject(), thatSpatialObject);
         }
     }
 
-    public Record<THIS_SPATIAL_OBJECT> nestTop()
+    public Record nestTop()
     {
         return nest.peek();
     }
 
-    public Record<THIS_SPATIAL_OBJECT> nestBottom()
+    public Record nestBottom()
     {
         return nest.peekLast();
     }
 
-    public final void otherInput(SpatialJoinInput<THAT_SPATIAL_OBJECT, THIS_SPATIAL_OBJECT> that)
+    public final void otherInput(SpatialJoinInput that)
     {
         this.that = that;
     }
 
-    public static <THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_OBJECT extends SpatialObject>
-        SpatialJoinInput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> newSpatialJoinInput(
-            SpatialIndexImpl<THIS_SPATIAL_OBJECT> spatialIndex,
-            SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput)
+    public static SpatialJoinInput newSpatialJoinInput(SpatialIndexImpl spatialIndex,
+                                                       SpatialJoinOutput spatialJoinOutput)
             throws IOException, InterruptedException
     {
-        return new SpatialJoinInput<>(spatialIndex, spatialJoinOutput);
+        return new SpatialJoinInput(spatialIndex, spatialJoinOutput);
     }
 
     // For use by this package
 
-    static <SPATIAL_OBJECT extends SpatialObject> Cursor<SPATIAL_OBJECT> newCursor
-        (SpatialIndexImpl<SPATIAL_OBJECT> spatialIndex) throws IOException, InterruptedException
+    static Cursor newCursor(SpatialIndexImpl spatialIndex) throws IOException, InterruptedException
     {
         return spatialIndex.index().cursor(SpaceImpl.Z_MIN);
     }
@@ -447,9 +444,9 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     {
         if (LOG.isLoggable(Level.FINE)) {
             StringBuilder buffer = new StringBuilder();
-            Iterator<Record<THIS_SPATIAL_OBJECT>> nestScan = nest.descendingIterator();
+            Iterator<Record> nestScan = nest.descendingIterator();
             while (nestScan.hasNext()) {
-                Record<THIS_SPATIAL_OBJECT> record = nestScan.next();
+                Record record = nestScan.next();
                 buffer.append(' ');
                 buffer.append(formatZ(record.key().z()));
             }
@@ -471,7 +468,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
         while (zCandidate > zLowerBound) {
             SpatialObjectKey key = SpatialObjectKey.keyLowerBound(zCandidate);
             cursor.goTo(key);
-            Record<THIS_SPATIAL_OBJECT> ancestor = cursor.next();
+            Record ancestor = cursor.next();
             if (!ancestor.eof() && ancestor.key().z() == zCandidate) {
                 ancestor.copyTo(current);
             }
@@ -491,7 +488,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
     private boolean currentOverlapsOtherNest()
     {
         boolean overlap = false;
-        Record<THAT_SPATIAL_OBJECT> thatNestTop = that.nestTop();
+        Record thatNestTop = that.nestTop();
         if (thatNestTop != null) {
             long thisCurrentZ = current.key().z();
             overlap =
@@ -511,8 +508,7 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
         return String.format("sjinput(%s)", id);
     }
 
-    private SpatialJoinInput(SpatialIndexImpl<THIS_SPATIAL_OBJECT> spatialIndex,
-                             SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput)
+    private SpatialJoinInput(SpatialIndexImpl spatialIndex, SpatialJoinOutput spatialJoinOutput)
         throws IOException, InterruptedException
     {
         this.cursor = newCursor(spatialIndex);
@@ -537,13 +533,13 @@ class SpatialJoinInput<THIS_SPATIAL_OBJECT extends SpatialObject, THAT_SPATIAL_O
 
     private final int id = idGenerator.getAndIncrement();
     private final boolean singleCell;
-    private SpatialJoinInput<THAT_SPATIAL_OBJECT, THIS_SPATIAL_OBJECT> that;
-    private final SpatialJoinOutput<THIS_SPATIAL_OBJECT, THAT_SPATIAL_OBJECT> spatialJoinOutput;
+    private SpatialJoinInput that;
+    private final SpatialJoinOutput spatialJoinOutput;
     // nest contains z-values that have been entered but not exited. current is the next z-value to enter,
     // and cursor contains later z-values.
-    private final Deque<Record<THIS_SPATIAL_OBJECT>> nest = new ArrayDeque<>();
-    private final Cursor<THIS_SPATIAL_OBJECT> cursor;
-    private final Record<THIS_SPATIAL_OBJECT> current = new Record<>();
+    private final Deque<Record> nest = new ArrayDeque<>();
+    private final Cursor cursor;
+    private final Record current = new Record();
     private final boolean singleCellOptimization;
     private final Counters counters = Counters.forThread();
 }

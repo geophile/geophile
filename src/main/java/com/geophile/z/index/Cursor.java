@@ -10,11 +10,11 @@ import com.geophile.z.SpatialObject;
 
 import java.io.IOException;
 
-public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
+public abstract class Cursor
 {
-    public abstract Record<SPATIAL_OBJECT> next() throws IOException, InterruptedException;
+    public abstract Record next() throws IOException, InterruptedException;
 
-    public abstract Record<SPATIAL_OBJECT> previous() throws IOException, InterruptedException;
+    public abstract Record previous() throws IOException, InterruptedException;
 
     public abstract void goTo(SpatialObjectKey key) throws IOException, InterruptedException;
 
@@ -24,12 +24,12 @@ public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
         state = State.DONE;
     }
 
-    public final Record<SPATIAL_OBJECT> current() throws IOException, InterruptedException
+    public final Record current() throws IOException, InterruptedException
     {
         return current;
     }
 
-    protected final void current(long z, SPATIAL_OBJECT spatialObject)
+    protected final void current(long z, SpatialObject spatialObject)
     {
         current.set(z, spatialObject);
     }
@@ -46,7 +46,7 @@ public abstract class Cursor<SPATIAL_OBJECT extends SpatialObject>
 
     // Object state
 
-    private final Record<SPATIAL_OBJECT> current = new Record<>();
+    private final Record current = new Record();
     private State state = State.NEVER_USED;
 
     // Inner classes

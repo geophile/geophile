@@ -10,7 +10,6 @@ import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import com.geophile.z.space.SpaceImpl;
-import com.geophile.z.spatialobject.SpatialObjectIdGenerator;
 
 import java.nio.ByteBuffer;
 
@@ -44,6 +43,12 @@ public class Point implements SpatialObject
     }
 
     // SpatialObject interface
+
+    @Override
+    public void id(long id)
+    {
+        this.id = id;
+    }
 
     @Override
     public long id()
@@ -153,7 +158,7 @@ public class Point implements SpatialObject
 
     // Object state
 
-    private long id = SpatialObjectIdGenerator.newId();
+    private long id;
     private double x;
     private double y;
 }

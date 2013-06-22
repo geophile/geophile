@@ -6,7 +6,6 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
 import com.geophile.z.index.SpatialObjectKey;
@@ -15,15 +14,15 @@ import com.geophile.z.space.SpatialIndexImpl;
 
 import java.io.IOException;
 
-class Ancestors<SPATIAL_OBJECT extends SpatialObject>
+class Ancestors
 {
-    public Record<SPATIAL_OBJECT> find(long z) throws IOException, InterruptedException
+    public Record find(long z) throws IOException, InterruptedException
     {
-        Record<SPATIAL_OBJECT> record;
+        Record record;
         int level = SpaceImpl.length(z);
         record = records[level];
         if (record == null) {
-            record = new Record<>();
+            record = new Record();
             records[level] = record;
         }
         if (record.key() == null || record.key().z() != z) {
@@ -37,14 +36,14 @@ class Ancestors<SPATIAL_OBJECT extends SpatialObject>
         return !record.eof() && record.key().z() == z ? record : null;
     }
 
-    public Ancestors(SpatialIndexImpl<SPATIAL_OBJECT> index) throws IOException, InterruptedException
+    public Ancestors(SpatialIndexImpl index) throws IOException, InterruptedException
     {
         this.cursor = SpatialJoinInput.newCursor(index);
     }
 
     // Object state
 
-    private final Cursor<SPATIAL_OBJECT> cursor;
-    private final Record<SPATIAL_OBJECT>[] records = new Record[SpaceImpl.MAX_Z_BITS];
+    private final Cursor cursor;
+    private final Record[] records = new Record[SpaceImpl.MAX_Z_BITS];
     private final Counters counters = Counters.forThread();
 }

@@ -2,11 +2,9 @@ package com.geophile.z;
 
 /**
  * A pair of overlapping {@link SpatialObject}s, obtained via spatial join.
- * @param <LEFT> The {@link SpatialObject} on the left side of a Pair.
- * @param <RIGHT> The {@link SpatialObject} on the right side of a Pair.
  */
 
-public class Pair<LEFT extends SpatialObject, RIGHT extends SpatialObject>
+public class Pair
 {
     // Object interface
 
@@ -21,7 +19,7 @@ public class Pair<LEFT extends SpatialObject, RIGHT extends SpatialObject>
     {
         boolean eq = false;
         if (o != null && o instanceof Pair) {
-            Pair<LEFT, RIGHT> that = (Pair<LEFT, RIGHT>) o;
+            Pair that = (Pair) o;
             eq = this.left.equals(that.left) && this.right.equals(that.right);
         }
         return eq;
@@ -39,7 +37,7 @@ public class Pair<LEFT extends SpatialObject, RIGHT extends SpatialObject>
      * The left side of the Pair.
      * @return The left side of the Pair.
      */
-    public LEFT left()
+    public SpatialObject left()
     {
         return left;
     }
@@ -48,12 +46,12 @@ public class Pair<LEFT extends SpatialObject, RIGHT extends SpatialObject>
      * The right side of the Pair.
      * @return The right side of the Pair.
      */
-    public RIGHT right()
+    public SpatialObject right()
     {
         return right;
     }
 
-    public Pair(LEFT left, RIGHT right)
+    public Pair(SpatialObject left, SpatialObject right)
     {
         this.left = left;
         this.right = right;
@@ -61,6 +59,6 @@ public class Pair<LEFT extends SpatialObject, RIGHT extends SpatialObject>
 
     // Object state
 
-    private final LEFT left;
-    private final RIGHT right;
+    private final SpatialObject left;
+    private final SpatialObject right;
 }

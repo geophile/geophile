@@ -27,19 +27,19 @@ public class OverlappingPairs
     {
         Space space = Space.newSpace(APPLICATION_SPACE, SPACE_X, SPACE_Y);
         // Load spatial indexes with boxes
-        SpatialIndex<Box> left = SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
-        SpatialIndex<Box> right = SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
+        SpatialIndex left = SpatialIndex.newSpatialIndex(space, new TreeIndex());
+        SpatialIndex right = SpatialIndex.newSpatialIndex(space, new TreeIndex());
         for (int i = 0; i < N_BOXES; i++) {
             left.add(randomBox());
             right.add(randomBox());
         }
         // Find overlapping pairs
-        Iterator<Pair<Box, Box>> iterator =
+        Iterator<Pair> iterator =
             SpatialJoin.newSpatialJoin(BOX_OVERLAP, SpatialJoinImpl.Duplicates.EXCLUDE).iterator(left, right);
         // Print points contained in box
         System.out.println("Overlapping pairs");
         while (iterator.hasNext()) {
-            Pair<Box, Box> overlappingPair = iterator.next();
+            Pair overlappingPair = iterator.next();
             System.out.println(String.format("    %s", overlappingPair));
         }
     }
@@ -84,13 +84,13 @@ public class OverlappingPairs
                 return Double.NaN;
             }
         };
-    private static final SpatialJoinFilter<Box, Box> BOX_OVERLAP =
-        new SpatialJoinFilter<Box, Box>()
+    private static final SpatialJoinFilter BOX_OVERLAP =
+        new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(Box a, Box b)
+            public boolean overlap(SpatialObject a, SpatialObject b)
             {
-                return a.overlap(b);
+                return ((Box)a).overlap(((Box)b));
             }
         };
 

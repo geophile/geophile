@@ -14,8 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObject>
-    implements Iterator<Pair<LEFT, RIGHT>>
+class SpatialJoinIterator implements Iterator<Pair>
 {
     // Object interface
 
@@ -36,9 +35,9 @@ class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObjec
     }
 
     @Override
-    public Pair<LEFT, RIGHT> next()
+    public Pair next()
     {
-        Pair<LEFT, RIGHT> next;
+        Pair next;
         ensurePending();
         if (pending.isEmpty()) {
             throw new NoSuchElementException();
@@ -59,30 +58,30 @@ class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObjec
 
     // SpatialJoinIterator interface
 
-    public SpatialJoinIterator(SpatialIndexImpl<LEFT> leftSpatialIndex,
-                               SpatialIndexImpl<RIGHT> rightSpatialIndex,
-                               final SpatialJoinFilter<LEFT, RIGHT> filter) throws IOException, InterruptedException
+    public SpatialJoinIterator(SpatialIndexImpl leftSpatialIndex,
+                               SpatialIndexImpl rightSpatialIndex,
+                               final SpatialJoinFilter filter) throws IOException, InterruptedException
     {
-        SpatialJoinOutput<LEFT, RIGHT> pendingLeftRight =
-            new SpatialJoinOutput<LEFT, RIGHT>()
+        SpatialJoinOutput pendingLeftRight =
+            new SpatialJoinOutput()
             {
                 @Override
-                public void add(LEFT left, RIGHT right)
+                public void add(SpatialObject left, SpatialObject right)
                 {
                     if (filter.overlap(left, right)) {
-                        pending.add(new Pair<>(left, right));
+                        pending.add(new Pair(left, right));
                     }
                 }
             };
         left = SpatialJoinInput.newSpatialJoinInput(leftSpatialIndex, pendingLeftRight);
-        SpatialJoinOutput<RIGHT, LEFT> pendingRightLeft =
-            new SpatialJoinOutput<RIGHT, LEFT>()
+        SpatialJoinOutput pendingRightLeft =
+            new SpatialJoinOutput()
             {
                 @Override
-                public void add(RIGHT right, LEFT left)
+                public void add(SpatialObject right, SpatialObject left)
                 {
                     if (filter.overlap(left, right)) {
-                        pending.add(new Pair<>(left, right));
+                        pending.add(new Pair(left, right));
                     }
                 }
             };
@@ -150,7 +149,7 @@ class SpatialJoinIterator<LEFT extends SpatialObject, RIGHT extends SpatialObjec
     // Object state
 
     private final String name = String.format("sj(%s)", idGenerator.getAndIncrement());
-    private final SpatialJoinInput<LEFT, RIGHT> left;
-    private final SpatialJoinInput<RIGHT, LEFT> right;
-    private final Queue<Pair<LEFT, RIGHT>> pending = new ArrayDeque<>();
+    private final SpatialJoinInput left;
+    private final SpatialJoinInput right;
+    private final Queue<Pair> pending = new ArrayDeque<>();
 }

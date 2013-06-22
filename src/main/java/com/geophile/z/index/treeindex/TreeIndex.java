@@ -20,10 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * TreeIndex implements the {@link com.geophile.z.Index} interface in terms of a {@link java.util.TreeMap}.
  * A TreeIndex is not safe for use for simultaneous use by multiple threads.
- * @param <SPATIAL_OBJECT>
  */
 
-public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SPATIAL_OBJECT>
+public class TreeIndex implements Index
 {
     // Object interface
 
@@ -43,9 +42,9 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     }
 
     @Override
-    public void add(long z, SPATIAL_OBJECT spatialObject)
+    public void add(long z, SpatialObject spatialObject)
     {
-        SPATIAL_OBJECT replaced = tree.put(key(z, spatialObject.id()), spatialObject);
+        SpatialObject replaced = tree.put(key(z, spatialObject.id()), spatialObject);
         if (replaced != null) {
             throw new DuplicateSpatialObjectException(replaced);
         }
@@ -55,10 +54,10 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     public boolean remove(long z, long soid)
     {
         boolean removed = false;
-        Iterator<Map.Entry<SpatialObjectKey, SPATIAL_OBJECT>> zScan =
+        Iterator<Map.Entry<SpatialObjectKey, SpatialObject>> zScan =
             tree.tailMap(key(z, soid)).entrySet().iterator();
         if (zScan.hasNext()) {
-            Map.Entry<SpatialObjectKey, SPATIAL_OBJECT> entry = zScan.next();
+            Map.Entry<SpatialObjectKey, SpatialObject> entry = zScan.next();
             if (entry.getKey().z() == z) {
                 SpatialObjectKey key = entry.getKey();
                 assert key.z() == z : key;
@@ -72,9 +71,9 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     }
 
     @Override
-    public Cursor<SPATIAL_OBJECT> cursor(long z)
+    public Cursor cursor(long z)
     {
-        return new TreeIndexCursor<>(tree, key(z));
+        return new TreeIndexCursor(tree, key(z));
     }
 
     @Override
@@ -101,5 +100,5 @@ public class TreeIndex<SPATIAL_OBJECT extends SpatialObject> implements Index<SP
     // Object state
 
     private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
-    private final TreeMap<SpatialObjectKey, SPATIAL_OBJECT> tree = new TreeMap<>();
+    private final TreeMap<SpatialObjectKey, SpatialObject> tree = new TreeMap<>();
 }

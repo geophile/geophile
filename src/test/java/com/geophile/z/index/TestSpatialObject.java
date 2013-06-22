@@ -11,6 +11,11 @@ import static org.junit.Assert.fail;
 public class TestSpatialObject implements SpatialObject
 {
     @Override
+    public void id(long id)
+    {
+    }
+
+    @Override
     public long id()
     {
         return id;

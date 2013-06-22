@@ -13,8 +13,8 @@ import com.geophile.z.index.TestSpatialObject;
 public class TreeIndexTest extends IndexTestBase
 {
     @Override
-    protected Index<TestSpatialObject> newIndex()
+    protected Index newIndex()
     {
-        return new TreeIndex<>();
+        return new TreeIndex();
     }
 }

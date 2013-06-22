@@ -68,9 +68,6 @@ public class SpatialObjectKey implements Comparable<SpatialObjectKey>
 
     public static SpatialObjectKey key(long z, long soid)
     {
-        if (soid < 0) {
-            throw new IllegalArgumentException(String.format("SpatialObject id must be non-negative: %s", soid));
-        }
         return new SpatialObjectKey(z, soid);
     }
 

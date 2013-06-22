@@ -15,6 +15,7 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.Pair;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;
 
 import java.io.IOException;
@@ -32,17 +33,17 @@ public abstract class SpatialJoinIteratorTestBase
         this.leftInput = leftInput;
         this.rightInput = rightInput;
         this.duplicates = duplicates;
-        Map<Pair<Box, Box>, Integer> actual = null;
-        Set<Pair<Box, Box>> expected = null;
+        Map<Pair, Integer> actual;
+        Set<Pair> expected = null;
         try {
             long start = System.nanoTime();
-            Iterator<Pair<Box, Box>> joinScan =
+            Iterator<Pair> joinScan =
                 SpatialJoin.newSpatialJoin(FILTER, duplicates)
                            .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
             // Actual
             actual = new HashMap<>();
             while (joinScan.hasNext()) {
-                Pair<Box, Box> pair = joinScan.next();
+                Pair pair = joinScan.next();
                 if (verify()) {
                     Integer count = actual.get(pair);
                     if (count == null) {
@@ -57,21 +58,21 @@ public abstract class SpatialJoinIteratorTestBase
             if (verify()) {
                 // Expected
                 expected = new HashSet<>();
-                for (Box a : leftInput.boxes()) {
-                    for (Box b : rightInput.boxes()) {
+                for (SpatialObject a : leftInput.boxes()) {
+                    for (SpatialObject b : rightInput.boxes()) {
                         if (overlaps(a, b)) {
-                            expected.add(new Pair<>(a, b));
+                            expected.add(new Pair(a, b));
                         }
                     }
                 }
                 if (trace()) {
                     assert expected != null;
                     print("expected");
-                    for (Pair<Box, Box> pair : expected) {
+                    for (Pair pair : expected) {
                         print("    %s", pair);
                     }
                     print("actual");
-                    for (Map.Entry<Pair<Box, Box>, Integer> entry : actual.entrySet()) {
+                    for (Map.Entry<Pair, Integer> entry : actual.entrySet()) {
                         print("    %s: %s", entry.getKey(), entry.getValue());
                     }
                 }
@@ -119,8 +120,10 @@ public abstract class SpatialJoinIteratorTestBase
         System.out.println(String.format(template, args));
     }
 
-    private boolean overlaps(Box a, Box b)
+    private boolean overlaps(SpatialObject x, SpatialObject y)
     {
+        Box a = (Box) x;
+        Box b = (Box) y;
         return
             a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
             a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
@@ -178,13 +181,13 @@ public abstract class SpatialJoinIteratorTestBase
     private SpatialJoin.Duplicates duplicates;
     protected TestStats testStats = new TestStats();
 
-    private final class TestFilter implements SpatialJoinFilter<Box, Box>
+    private final class TestFilter implements SpatialJoinFilter
     {
         @Override
-        public boolean overlap(Box x, Box y)
+        public boolean overlap(SpatialObject x, SpatialObject y)
         {
             testStats.filterCount++;
-            boolean overlap = x.overlap(y);
+            boolean overlap = ((Box)x).overlap(((Box)y));
             if (overlap) {
                 testStats.overlapCount++;
             }

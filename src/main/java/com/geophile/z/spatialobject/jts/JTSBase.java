@@ -4,7 +4,6 @@ import com.geophile.z.SpatialObject;
 import com.geophile.z.SpatialObjectException;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.geophile.z.spatialobject.SpatialObjectIdGenerator;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -17,6 +16,12 @@ import java.nio.ByteBuffer;
 public abstract class JTSBase implements SpatialObject
 {
     // SpatialObject interface
+
+    @Override
+    public void id(long id)
+    {
+        this.id = id;
+    }
 
     @Override
     public final long id()
@@ -156,7 +161,7 @@ public abstract class JTSBase implements SpatialObject
 
     // Object state
 
-    private final long id = SpatialObjectIdGenerator.newId();
+    private long id;
     protected Geometry geometry;
     // Bounding box (z space coordinates)
     protected long xLo;
