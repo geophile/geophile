@@ -148,7 +148,7 @@ public class SpatialIndexTest
     }
 
     @Test
-    public void spatialIdGeneratorTest() throws IOException, InterruptedException
+    public void spatialIdGeneratorRestore() throws IOException, InterruptedException
     {
         TreeIndex index = new TreeIndex();
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
@@ -166,13 +166,33 @@ public class SpatialIndexTest
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         Point q0 = new Point(0, 0);
         spatialIndex.add(q0);
-        assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 0, q0.id());
+        assertEquals(SpatialIndexImpl.soidReservationBlockSize() + 0, q0.id());
         Point q1 = new Point(1, 1);
         spatialIndex.add(q1);
-        assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 1, q1.id());
+        assertEquals(SpatialIndexImpl.soidReservationBlockSize() + 1, q1.id());
         Point q2 = new Point(2, 2);
         spatialIndex.add(q2);
-        assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 2, q2.id());
+        assertEquals(SpatialIndexImpl.soidReservationBlockSize() + 2, q2.id());
+    }
+
+    @Test
+    public void spatialIdGeneratorTracking() throws IOException, InterruptedException
+    {
+        final int SOID_RESERVATION_BLOCK_SIZE = 3;
+        System.setProperty(SpatialIndexImpl.SOID_RESERVALTION_BLOCK_SIZE_PROPERTY,
+                           Integer.toString(SOID_RESERVATION_BLOCK_SIZE));
+        TreeIndex index = new TreeIndex();
+        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoid());
+        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoidStored());
+        spatialIndex.add(new Point(0, 0));
+        spatialIndex.add(new Point(1, 1));
+        spatialIndex.add(new Point(2, 2));
+        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoid());
+        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoidStored());
+        spatialIndex.add(new Point(3, 3));
+        assertEquals(SOID_RESERVATION_BLOCK_SIZE * 2, spatialIndex.firstUnreservedSoid());
+        assertEquals(SOID_RESERVATION_BLOCK_SIZE * 2, spatialIndex.firstUnreservedSoidStored());
     }
 
     private void test(int xLo, int xHi, int yLo, int yHi, Filter filter) throws IOException, InterruptedException
@@ -256,7 +276,7 @@ public class SpatialIndexTest
         }
     };
 
-    private SpatialIndex spatialIndex;
+    private SpatialIndexImpl spatialIndex;
 
     private static interface Filter
     {

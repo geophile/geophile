@@ -94,6 +94,29 @@ public class SpatialIndexImpl extends SpatialIndex
         restoreIdGenerator();
     }
 
+    // For use by this package (testing)
+
+    long firstUnreservedSoid()
+    {
+        return firstUnreservedSoid;
+    }
+
+    long firstUnreservedSoidStored() throws IOException, InterruptedException
+    {
+        Cursor cursor = index.cursor(SpatialObjectIdState.Z_MAX_RESERVED);
+        try {
+            Record record = cursor.next();
+            return record.eof() ? 0 : record.key().soid();
+        } finally {
+            cursor.close();
+        }
+    }
+
+    static long soidReservationBlockSize()
+    {
+        return Long.getLong(SOID_RESERVALTION_BLOCK_SIZE_PROPERTY, SOID_RESERVATION_BLOCK_SIZE);
+    }
+
     // For use by this class
 
     private long[] decompose(SpatialObject spatialObject)
@@ -154,7 +177,7 @@ public class SpatialIndexImpl extends SpatialIndex
     private void reserveMoreSoids() throws IOException, InterruptedException
     {
         index.remove(SpatialObjectIdState.Z_MAX_RESERVED, firstUnreservedSoid);
-        firstUnreservedSoid += SOID_RESERVATION_BLOCK_SIZE;
+        firstUnreservedSoid += soidReservationBlockSize();
         index.add(SpatialObjectIdState.Z_MAX_RESERVED, new SpatialObjectIdState(firstUnreservedSoid));
     }
 
@@ -163,7 +186,8 @@ public class SpatialIndexImpl extends SpatialIndex
     private static final Logger LOG = Logger.getLogger(SpatialIndexImpl.class.getName());
     private static final long UNKNOWN = -2L;
     private static final long MISSING = -1L;
-    static final long SOID_RESERVATION_BLOCK_SIZE = 1_000_000L;
+    private static final long SOID_RESERVATION_BLOCK_SIZE = 1_000_000L;
+    static final String SOID_RESERVALTION_BLOCK_SIZE_PROPERTY = "soidReservationBlockSize";
 
     // Object state
 
