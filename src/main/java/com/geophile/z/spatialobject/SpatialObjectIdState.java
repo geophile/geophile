@@ -31,7 +31,7 @@ public class SpatialObjectIdState implements SpatialObject
     @Override
     public long id()
     {
-        return maxSoid;
+        return firstUnreservedSoid;
     }
 
     @Override
@@ -80,9 +80,9 @@ public class SpatialObjectIdState implements SpatialObject
 
     // SpatialObjectIdState interface
 
-    public SpatialObjectIdState(long maxSoid)
+    public SpatialObjectIdState(long firstUnreservedSoid)
     {
-        this.maxSoid = maxSoid;
+        this.firstUnreservedSoid = firstUnreservedSoid;
     }
 
     // Class state
@@ -91,5 +91,5 @@ public class SpatialObjectIdState implements SpatialObject
 
     // Object state
 
-    private final long maxSoid;
+    private final long firstUnreservedSoid;
 }

@@ -153,26 +153,26 @@ public class SpatialIndexTest
         TreeIndex index = new TreeIndex();
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         // pX: expected id is X
+        Point p0 = new Point(0, 0);
+        spatialIndex.add(p0);
+        assertEquals(0, p0.id());
         Point p1 = new Point(1, 1);
         spatialIndex.add(p1);
         assertEquals(1, p1.id());
         Point p2 = new Point(2, 2);
         spatialIndex.add(p2);
         assertEquals(2, p2.id());
-        Point p3 = new Point(3, 3);
-        spatialIndex.add(p3);
-        assertEquals(3, p3.id());
         // Creating a new SpatialIndexImpl restores the id generator
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Point q0 = new Point(0, 0);
+        spatialIndex.add(q0);
+        assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 0, q0.id());
         Point q1 = new Point(1, 1);
         spatialIndex.add(q1);
         assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 1, q1.id());
         Point q2 = new Point(2, 2);
         spatialIndex.add(q2);
         assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 2, q2.id());
-        Point q3 = new Point(3, 3);
-        spatialIndex.add(q3);
-        assertEquals(SpatialIndexImpl.SOID_RESERVATION_BLOCK_SIZE + 3, q3.id());
     }
 
     private void test(int xLo, int xHi, int yLo, int yHi, Filter filter) throws IOException, InterruptedException

@@ -132,8 +132,8 @@ public class SpatialIndexImpl extends SpatialIndex
     private long nextSoid() throws IOException, InterruptedException
     {
         long soid = idGenerator.getAndIncrement();
-        if (soid == maxReservedSoid) {
-            updateMaxReservedSoid();
+        if (soid == firstUnreservedSoid) {
+            reserveMoreSoids();
         }
         return soid;
     }
@@ -143,19 +143,19 @@ public class SpatialIndexImpl extends SpatialIndex
         Cursor cursor = index.cursor(SpatialObjectIdState.Z_MAX_RESERVED);
         try {
             Record record = cursor.next();
-            maxReservedSoid = record.eof() ? 0 : record.key().soid();
-            idGenerator.set(maxReservedSoid + 1);
-            updateMaxReservedSoid();
+            firstUnreservedSoid = record.eof() ? 0 : record.key().soid();
+            idGenerator.set(firstUnreservedSoid);
+            reserveMoreSoids();
         } finally {
             cursor.close();
         }
     }
 
-    private void updateMaxReservedSoid() throws IOException, InterruptedException
+    private void reserveMoreSoids() throws IOException, InterruptedException
     {
-        index.remove(SpatialObjectIdState.Z_MAX_RESERVED, maxReservedSoid);
-        maxReservedSoid += SOID_RESERVATION_BLOCK_SIZE;
-        index.add(SpatialObjectIdState.Z_MAX_RESERVED, new SpatialObjectIdState(maxReservedSoid));
+        index.remove(SpatialObjectIdState.Z_MAX_RESERVED, firstUnreservedSoid);
+        firstUnreservedSoid += SOID_RESERVATION_BLOCK_SIZE;
+        index.add(SpatialObjectIdState.Z_MAX_RESERVED, new SpatialObjectIdState(firstUnreservedSoid));
     }
 
     // Class state
@@ -169,5 +169,5 @@ public class SpatialIndexImpl extends SpatialIndex
 
     private final boolean singleCell;
     private final AtomicLong idGenerator = new AtomicLong();
-    private volatile long maxReservedSoid;
+    private volatile long firstUnreservedSoid;
 }
