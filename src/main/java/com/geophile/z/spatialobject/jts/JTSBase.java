@@ -4,7 +4,6 @@ import com.geophile.z.SpatialObject;
 import com.geophile.z.SpatialObjectException;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
@@ -18,7 +17,7 @@ public abstract class JTSBase implements SpatialObject
     // SpatialObject interface
 
     @Override
-    public void id(long id)
+    public final void id(long id)
     {
         this.id = id;
     }
@@ -77,45 +76,13 @@ public abstract class JTSBase implements SpatialObject
         }
     }
 
-    protected void ensureBoundingBox()
-    {
-        if (!boundingBoxAvailable) {
-            assert geometry != null;
-            Envelope envelope = geometry.getEnvelopeInternal();
-            xLo = 0;
-            xHi = 0;
-            yLo = 0;
-            yHi = 0;
-/*
-            xLo = envelope.getMinX();
-            xHi = envelope.getMaxX();
-            yLo = envelope.getMinY();
-            yHi = envelope.getMaxY();
-*/
-            boundingBoxAvailable = true;
-        }
-    }
-
     protected JTSBase(Geometry geometry)
     {
         this.geometry = geometry;
     }
 
-    // For use by this class
-
-    private IO io()
+    protected void read(ByteBuffer input)
     {
-        return THREAD_IO.get();
-    }
-
-    private void read(ByteBuffer input)
-    {
-        // bounding box
-        xLo = input.getLong();
-        xHi = input.getLong();
-        yLo = input.getLong();
-        yHi = input.getLong();
-        boundingBoxAvailable = true;
         // WKB
         int size = input.getInt();
         wkb = new byte[size];
@@ -124,19 +91,20 @@ public abstract class JTSBase implements SpatialObject
         geometry = null;
     }
 
-    private void write(ByteBuffer output) throws IOException
+    protected void write(ByteBuffer output) throws IOException
     {
-        // bounding box
-        ensureBoundingBox();
-        output.putLong(xLo);
-        output.putLong(xHi);
-        output.putLong(yLo);
-        output.putLong(yHi);
         // WKB
         ensureWKB();
         output.putInt(wkb.length);
         output.put(wkb);
         // geometry: nothing to do
+    }
+
+    // For use by this class
+
+    private IO io()
+    {
+        return THREAD_IO.get();
     }
 
     private void ensureWKB()
@@ -163,14 +131,9 @@ public abstract class JTSBase implements SpatialObject
 
     private long id;
     protected Geometry geometry;
-    // Bounding box (z space coordinates)
-    protected long xLo;
-    protected long xHi;
-    protected long yLo;
-    protected long yHi;
     // Well Known Binary representation, (i.e., serialized)
     private byte[] wkb;
-    // Derivation of state:
+    // Derivation of state (bounding boxes handled by subclass JTSBaseWithBoundingBox):
     // - New spatial object:
     //    - Start with geometry
     //    - Generate bounding box on addition to index.
@@ -178,9 +141,7 @@ public abstract class JTSBase implements SpatialObject
     // - Read spatial object from index:
     //    - Start with bounding box and wkb.
     //    - Generate geometry lazily.
-    // Absence of geometry, wkb indicated by null. For bounding-box, need a boolean variable.
-    private boolean boundingBoxAvailable;
-    
+
     // Inner classes
     
     private static class IO

@@ -3,22 +3,40 @@ package com.geophile.z.spatialobject.jts;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.vividsolutions.jts.geom.Coordinate;
+import com.geophile.z.space.SpaceImpl;
 import com.vividsolutions.jts.geom.Point;
 
 public class JTSPoint extends JTSBase
 {
+    // Object interface
+
+    @Override
+    public String toString()
+    {
+        return geometry.toString();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return geometry.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj != null && obj instanceof JTSPoint && geometry.equals(((JTSPoint)obj).geometry);
+    }
+
     // SpatialObject interface (not implemented by JTSBase)
 
     @Override
     public double[] arbitraryPoint()
     {
         double[] point = new double[2];
-        Coordinate coord = point().getCoordinate();
-/*
-        point[0] = coord.x;
-        point[1] = coord.y;
-*/
+        Point jtsPoint = point();
+        point[0] = jtsPoint.getX();
+        point[1] = jtsPoint.getY();
         return point;
     }
 
@@ -42,7 +60,6 @@ public class JTSPoint extends JTSBase
     @Override
     public boolean containedBy(Region region)
     {
-        ensureBoundingBox();
         Point point = point();
         return
             region.lo(0) <= point.getX() && point.getX() <= region.hi(0) &&
@@ -53,7 +70,17 @@ public class JTSPoint extends JTSBase
     public RegionComparison compare(Region region)
     {
         Point point = point();
-        return null; // region.isPoint() && region.lo(0) == point.getX() && region.lo(1) == point.getY();
+        SpaceImpl space = (SpaceImpl) region.space();
+        long pX = space.appToZ(0, point.getX());
+        long pY = space.appToZ(1, point.getY());
+        long rXLo = region.lo(0);
+        long rYLo = region.lo(1);
+        return
+            region.isPoint() && rXLo == pX && rYLo == pY
+            ? RegionComparison.REGION_INSIDE_OBJECT
+            : rXLo <= pX && pX <= region.hi(0) && rYLo <= pY && pY <= region.hi(1)
+              ? RegionComparison.REGION_OVERLAPS_OBJECT
+              : RegionComparison.REGION_OUTSIDE_OBJECT;
     }
 
     // JTSPoint interface
@@ -63,9 +90,7 @@ public class JTSPoint extends JTSBase
         super(point);
     }
 
-    // For use by this class
-
-    private Point point()
+    public Point point()
     {
         ensureGeometry();
         return (Point) geometry;
