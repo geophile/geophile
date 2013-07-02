@@ -12,11 +12,7 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.Pair;
-import com.geophile.z.Space;
-import com.geophile.z.SpatialJoin;
-import com.geophile.z.SpatialObject;
-import com.geophile.z.spatialobject.d2.Box;
+import com.geophile.z.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -27,7 +23,10 @@ import static org.junit.Assert.assertEquals;
 
 public abstract class SpatialJoinIteratorTestBase
 {
-    protected final void test(TestInput leftInput, TestInput rightInput, SpatialJoin.Duplicates duplicates)
+    protected final void test(TestInput leftInput,
+                              TestInput rightInput,
+                              SpatialJoinFilter filter,
+                              SpatialJoin.Duplicates duplicates)
         throws IOException, InterruptedException
     {
         this.leftInput = leftInput;
@@ -38,7 +37,7 @@ public abstract class SpatialJoinIteratorTestBase
         try {
             long start = System.nanoTime();
             Iterator<Pair> joinScan =
-                SpatialJoin.newSpatialJoin(FILTER, duplicates)
+                SpatialJoin.newSpatialJoin(filter, duplicates)
                            .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
             // Actual
             actual = new HashMap<>();
@@ -58,15 +57,14 @@ public abstract class SpatialJoinIteratorTestBase
             if (verify()) {
                 // Expected
                 expected = new HashSet<>();
-                for (SpatialObject a : leftInput.boxes()) {
-                    for (SpatialObject b : rightInput.boxes()) {
-                        if (overlaps(a, b)) {
+                for (SpatialObject a : leftInput.spatialObjects()) {
+                    for (SpatialObject b : rightInput.spatialObjects()) {
+                        if (overlap(a, b)) {
                             expected.add(new Pair(a, b));
                         }
                     }
                 }
                 if (trace()) {
-                    assert expected != null;
                     print("expected");
                     for (Pair pair : expected) {
                         print("    %s", pair);
@@ -103,6 +101,8 @@ public abstract class SpatialJoinIteratorTestBase
 
     protected abstract void checkEquals(Object expected, Object actual);
 
+    protected abstract boolean overlap(SpatialObject x, SpatialObject y);
+
     protected abstract boolean verify();
 
     private String describeTest()
@@ -111,8 +111,8 @@ public abstract class SpatialJoinIteratorTestBase
                              "LEFT: n = %s, max sizes = (%s, %s)\t" +
                              "RIGHT: n = %s, max sizes = (%s, %s)\t",
                              duplicates,
-                             leftInput.boxes().size(), leftInput.maxXSize(), leftInput.maxYSize(),
-                             rightInput.boxes().size(), rightInput.maxXSize(), rightInput.maxYSize());
+                             leftInput.spatialObjects().size(), leftInput.maxXSize(), leftInput.maxYSize(),
+                             rightInput.spatialObjects().size(), rightInput.maxXSize(), rightInput.maxYSize());
     }
 
     protected void print(String template, Object... args)
@@ -120,31 +120,64 @@ public abstract class SpatialJoinIteratorTestBase
         System.out.println(String.format(template, args));
     }
 
-    private boolean overlaps(SpatialObject x, SpatialObject y)
-    {
-        Box a = (Box) x;
-        Box b = (Box) y;
-        return
-            a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
-            a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
-    }
-
-    protected TestInput loadBoxes(int n, int maxXSize, int maxYSize) throws IOException, InterruptedException
+    protected final TestInput load(Side side, int n, int maxXSize, int maxYSize) throws IOException, InterruptedException
     {
         long start = System.currentTimeMillis();
         boolean singleCell = maxXSize == 1 && maxYSize == 1;
         TestInput input = new TestInput(space(), maxXSize, maxYSize, singleCell);
         for (int i = 0; i < n; i++) {
-            input.addBox(testBox(maxXSize, maxYSize));
+            input.add(
+                side == Side.LEFT
+                ? newLeftObject(maxXSize, maxYSize)
+                : newRightObject(maxXSize, maxYSize));
         }
         long stop = System.currentTimeMillis();
         testStats.loadTimeMsec += stop - start;
         return input;
     }
 
+    protected static ApplicationSpace appSpace(final double xLo, final double xHi, final double yLo, final double yHi)
+    {
+        return new ApplicationSpace()
+        {
+            @Override
+            public int dimensions()
+            {
+                return 2;
+            }
+
+            @Override
+            public double lo(int d)
+            {
+                switch (d) {
+                    case 0: return xLo;
+                    case 1: return yLo;
+                }
+                assert false;
+                return Double.NaN;
+            }
+
+            @Override
+            public double hi(int d)
+            {
+                switch (d) {
+                    case 0: return xHi;
+                    case 1: return yHi;
+                }
+                assert false;
+                return Double.NaN;
+            }
+        };
+    }
+
     protected abstract Space space();
 
-    protected abstract Box testBox(int maxXSize, int maxYSize);
+    protected abstract SpatialObject newLeftObject(int maxXSize, int maxYSize);
+
+    protected SpatialObject newRightObject(int maxXSize, int maxYSize)
+    {
+        return newLeftObject(maxXSize, maxYSize);
+    }
 
     protected Level logLevel()
     {
@@ -171,27 +204,13 @@ public abstract class SpatialJoinIteratorTestBase
         random = new Random(SEED);
     }
 
-    protected static final int TRIALS = 1; // 50;
     private static final long SEED = 123456789L;
 
-    private final TestFilter FILTER = new TestFilter();
     protected Random random = new Random(SEED);
     private TestInput leftInput;
     private TestInput rightInput;
     private SpatialJoin.Duplicates duplicates;
     protected TestStats testStats = new TestStats();
 
-    private final class TestFilter implements SpatialJoinFilter
-    {
-        @Override
-        public boolean overlap(SpatialObject x, SpatialObject y)
-        {
-            testStats.filterCount++;
-            boolean overlap = ((Box)x).overlap(((Box)y));
-            if (overlap) {
-                testStats.overlapCount++;
-            }
-            return overlap;
-        }
-    }
+    protected enum Side { LEFT, RIGHT }
 }

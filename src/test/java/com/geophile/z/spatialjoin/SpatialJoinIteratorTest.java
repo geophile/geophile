@@ -9,6 +9,7 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
@@ -44,13 +45,13 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
 */
                             for (int trial = 0; trial < TRIALS; trial++) {
                                 if (trial == 0 || nLeft < nRight) {
-                                    leftInput = loadBoxes(nLeft, maxLeftXSize, maxLeftYSize);
+                                    leftInput = load(Side.LEFT, nLeft, maxLeftXSize, maxLeftYSize);
                                 }
                                 if (trial == 0 || nRight <= nLeft) {
-                                    rightInput = loadBoxes(nRight, maxRightXSize, maxRightYSize);
+                                    rightInput = load(Side.RIGHT, nRight, maxRightXSize, maxRightYSize);
                                 }
-                                test(leftInput, rightInput, SpatialJoin.Duplicates.INCLUDE);
-                                test(leftInput, rightInput, SpatialJoin.Duplicates.EXCLUDE);
+                                test(leftInput, rightInput, filter, SpatialJoin.Duplicates.INCLUDE);
+                                test(leftInput, rightInput, filter, SpatialJoin.Duplicates.EXCLUDE);
                             }
                         }
                     }
@@ -66,7 +67,7 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     }
 
     @Override
-    protected Box testBox(int maxXSize, int maxYSize)
+    protected Box newLeftObject(int maxXSize, int maxYSize)
     {
         int nx = (int) (appSpace.hi(0) - appSpace.lo(0));
         long xLo = random.nextInt(nx - maxXSize);
@@ -89,39 +90,14 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
         return true;
     }
 
-    private ApplicationSpace appSpace(final double xLo, final double xHi, final double yLo, final double yHi)
+    @Override
+    protected boolean overlap(SpatialObject x, SpatialObject y)
     {
-        appSpace = new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return 2;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                switch (d) {
-                    case 0: return xLo;
-                    case 1: return yLo;
-                }
-                assert false;
-                return Double.NaN;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                switch (d) {
-                    case 0: return xHi;
-                    case 1: return yHi;
-                }
-                assert false;
-                return Double.NaN;
-            }
-        };
-        return appSpace;
+        Box a = (Box) x;
+        Box b = (Box) y;
+        return
+            a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
+            a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
     }
 
     private static final int MAX_COUNT = 100_000; // 1_000_000;
@@ -131,6 +107,20 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     private static final int NY = 1_000_000;
     private static final int X_BITS = 20;
     private static final int Y_BITS = 20;
+    private static final int TRIALS = 1; // 50;
     private Space space;
     private ApplicationSpace appSpace;
+    private final SpatialJoinFilter filter = new SpatialJoinFilter()
+    {
+        @Override
+        public boolean overlap(SpatialObject x, SpatialObject y)
+        {
+            testStats.filterCount++;
+            boolean overlap = ((Box) x).overlap(((Box) y));
+            if (overlap) {
+                testStats.overlapCount++;
+            }
+            return overlap;
+        }
+    };
 }

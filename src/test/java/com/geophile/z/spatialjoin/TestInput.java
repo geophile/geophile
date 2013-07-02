@@ -4,7 +4,6 @@ import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.treeindex.TreeIndex;
-import com.geophile.z.spatialobject.d2.Box;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,15 +11,15 @@ import java.util.List;
 
 public class TestInput
 {
-    public void addBox(Box box) throws IOException, InterruptedException
+    public void add(SpatialObject spatialObject) throws IOException, InterruptedException
     {
-        boxes.add(box);
-        spatialIndex.add(box);
+        spatialObjects.add(spatialObject);
+        spatialIndex.add(spatialObject);
     }
 
-    public List<SpatialObject> boxes()
+    public List<SpatialObject> spatialObjects()
     {
-        return boxes;
+        return spatialObjects;
     }
 
     public SpatialIndex spatialIndex()
@@ -41,7 +40,7 @@ public class TestInput
     public TestInput(Space space, int maxXSize, int maxYSize, boolean singleCell)
         throws IOException, InterruptedException
     {
-        this.boxes = new ArrayList<>();
+        this.spatialObjects = new ArrayList<>();
         this.spatialIndex = SpatialIndex.newSpatialIndex
             (space,
              new TreeIndex(),
@@ -50,7 +49,7 @@ public class TestInput
         this.maxYSize = maxYSize;
     }
 
-    private final List<SpatialObject> boxes;
+    private final List<SpatialObject> spatialObjects;
     private final SpatialIndex spatialIndex;
     private final int maxXSize;
     private final int maxYSize;

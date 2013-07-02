@@ -1,42 +1,24 @@
 package com.geophile.z.spatialobject.jts;
 
+import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import com.geophile.z.space.SpaceImpl;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 
 public class JTSPoint extends JTSBase
 {
-    // Object interface
-
-    @Override
-    public String toString()
-    {
-        return geometry.toString();
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return geometry.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        return obj != null && obj instanceof JTSPoint && geometry.equals(((JTSPoint)obj).geometry);
-    }
-
     // SpatialObject interface (not implemented by JTSBase)
 
     @Override
     public double[] arbitraryPoint()
     {
         double[] point = new double[2];
-        Point jtsPoint = point();
-        point[0] = jtsPoint.getX();
-        point[1] = jtsPoint.getY();
+        Coordinate coordinate = point().getCoordinate();
+        point[0] = coordinate.x;
+        point[1] = coordinate.y;
         return point;
     }
 
@@ -85,9 +67,9 @@ public class JTSPoint extends JTSBase
 
     // JTSPoint interface
 
-    public JTSPoint(Point point)
+    public JTSPoint(Space space, Point point)
     {
-        super(point);
+        super(space, point);
     }
 
     public Point point()

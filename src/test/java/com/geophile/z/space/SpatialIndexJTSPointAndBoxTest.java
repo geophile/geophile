@@ -236,7 +236,7 @@ public class SpatialIndexJTSPointAndBoxTest
 
     private JTSPoint point(double x, double y)
     {
-        return new JTSPoint(factory.createPoint(new Coordinate(x, y)));
+        return new JTSPoint(SPACE, factory.createPoint(new Coordinate(x, y)));
     }
 
     private static final int SEED = 123456;

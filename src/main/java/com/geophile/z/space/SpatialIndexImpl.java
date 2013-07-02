@@ -65,12 +65,12 @@ public class SpatialIndexImpl extends SpatialIndex
         }
         // Do the first removal, getting the spatial object id.
         long soid = soid(zSmallest, spatialObject);
-        if (found = soid != MISSING) {
+        if (found = (soid != MISSING)) {
             // Remove everything else with the same soid.
             for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
                 long z = zs[i];
                 boolean removed = index.remove(z, soid);
-                assert removed;
+                assert index.blindUpdates() || removed;
             }
         }
         return found;

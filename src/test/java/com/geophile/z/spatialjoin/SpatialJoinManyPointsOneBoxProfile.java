@@ -78,7 +78,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestB
     }
 
     @Override
-    protected Box testBox(int xSize, int ySize)
+    protected Box newLeftObject(int xSize, int ySize)
     {
         long xLo = random.nextInt(NX - xSize + 1);
         long xHi = xLo + xSize - 1;
@@ -100,6 +100,16 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestB
     }
 
     @Override
+    protected boolean overlap(SpatialObject x, SpatialObject y)
+    {
+        Box a = (Box) x;
+        Box b = (Box) y;
+        return
+            a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
+            a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
+    }
+
+    @Override
     protected boolean printSummary()
     {
         return false;
@@ -117,7 +127,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestB
     protected SpatialIndex loadOneBox(int maxXSize, int maxYSize) throws IOException, InterruptedException
     {
         SpatialIndex index = SpatialIndex.newSpatialIndex(space(), new TreeIndex(), SpatialIndex.Options.DEFAULT);
-        index.add(testBox(maxXSize, maxYSize));
+        index.add(newLeftObject(maxXSize, maxYSize));
         return index;
     }
 
@@ -127,7 +137,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestB
         int y = random.nextInt(NY);
         return
             USE_JTS
-            ? new JTSPoint(factory.createPoint(new Coordinate(x, y)))
+            ? new JTSPoint(SPACE, factory.createPoint(new Coordinate(x, y)))
             : new Point(x, y);
     }
 
@@ -135,33 +145,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestB
     private static final int NY = 1_000_000;
     private static final int LOG_NX = 20;
     private static final int LOG_NY = 20;
-    private static final ApplicationSpace APP_SPACE =
-        new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return 2;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                return 0;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                switch (d) {
-                    case 0: return NX;
-                    case 1: return NY;
-                }
-                assert false;
-                return Double.NaN;
-            }
-        };
-    private static final Space SPACE = Space.newSpace(APP_SPACE, LOG_NX, LOG_NY);
+    private static final Space SPACE = Space.newSpace(appSpace(0, NX, 0, NY), LOG_NX, LOG_NY);
     private static final SpatialJoinFilter FILTER =
         USE_JTS
         ? new TestFilterJTS()

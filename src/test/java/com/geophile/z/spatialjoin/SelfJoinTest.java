@@ -40,7 +40,7 @@ public class SelfJoinTest extends SpatialJoinIteratorTestBase
             };
         for (int maxXSize : MAX_SIZES) {
             for (int maxYSize : MAX_SIZES) {
-                TestInput input = loadBoxes(COUNT, maxXSize, maxYSize);
+                TestInput input = load(Side.LEFT, COUNT, maxXSize, maxYSize);
                 Set<SpatialObject> actual = new HashSet<>();
                 Iterator<Pair> iterator =
                     SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE)
@@ -51,7 +51,7 @@ public class SelfJoinTest extends SpatialJoinIteratorTestBase
                     assertTrue(box.equalTo(pair.right()));
                     actual.add(box);
                 }
-                assertEquals(new HashSet<>(input.boxes()), actual);
+                assertEquals(new HashSet<>(input.spatialObjects()), actual);
             }
         }
     }
@@ -63,7 +63,7 @@ public class SelfJoinTest extends SpatialJoinIteratorTestBase
     }
 
     @Override
-    protected Box testBox(int maxXSize, int maxYSize)
+    protected Box newLeftObject(int maxXSize, int maxYSize)
     {
         long xLo = random.nextInt(NX - maxXSize);
         long xHi = xLo + (maxXSize == 1 ? 0 : random.nextInt(maxXSize));
@@ -79,43 +79,26 @@ public class SelfJoinTest extends SpatialJoinIteratorTestBase
     }
 
     @Override
+    protected boolean overlap(SpatialObject x, SpatialObject y)
+    {
+        Box a = (Box) x;
+        Box b = (Box) y;
+        return
+            a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
+            a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
+    }
+
+    @Override
     protected boolean verify()
     {
         return true;
     }
 
-    private static final ApplicationSpace APP_SPACE =
-        new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return 2;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                return 0;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                switch (d) {
-                    case 0: return NX;
-                    case 1: return NY;
-                }
-                assert false;
-                return Double.NaN;
-            }
-        };
-
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
     private static final int LOG_NX = 20;
     private static final int LOG_NY = 20;
-    private static final Space SPACE = Space.newSpace(APP_SPACE, LOG_NX, LOG_NY);
+    private static final Space SPACE = Space.newSpace(appSpace(0, NX, 0, NY), LOG_NX, LOG_NY);
     private static final int COUNT = 10_000;
     private static final int[] MAX_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
 }

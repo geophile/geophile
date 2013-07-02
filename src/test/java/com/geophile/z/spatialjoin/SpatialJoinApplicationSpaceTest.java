@@ -15,6 +15,7 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
@@ -33,7 +34,7 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinIteratorTestBase
         TestInput data = loadData(100);
         for (int trial = 0; trial < TRIALS; trial++) {
             TestInput query = loadQuery();
-            test(query, data, SpatialJoin.Duplicates.EXCLUDE);
+            test(query, data, filter, SpatialJoin.Duplicates.EXCLUDE);
         }
     }
 
@@ -44,7 +45,7 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinIteratorTestBase
     }
 
     @Override
-    protected Box testBox(int maxXSize, int maxYSize)
+    protected Box newLeftObject(int maxXSize, int maxYSize)
     {
         long xLo = random.nextInt(APP_SPACE_WIDTH - maxXSize);
         long xHi = xLo + (maxXSize == 1 ? 0 : random.nextInt(maxXSize));
@@ -63,6 +64,16 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinIteratorTestBase
     protected boolean verify()
     {
         return true;
+    }
+
+    @Override
+    protected boolean overlap(SpatialObject x, SpatialObject y)
+    {
+        Box a = (Box) x;
+        Box b = (Box) y;
+        return
+            a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
+            a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
     }
 
     @Override
@@ -86,7 +97,7 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinIteratorTestBase
             for (int j = 0; j < n; j++) {
                 double x = APP_SPACE_LO + i * gridCellSize + random.nextInt(gridCellSize);
                 double y = APP_SPACE_LO + j * gridCellSize + random.nextInt(gridCellSize);
-                input.addBox(new Box(x, x, y, y));
+                input.add(new Box(x, x, y, y));
             }
         }
         return input;
@@ -101,34 +112,15 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinIteratorTestBase
         double xHi = xLo + xSize;
         double yLo = APP_SPACE_LO + random.nextInt(APP_SPACE_WIDTH - ySize);
         double yHi = yLo + ySize;
-        input.addBox(new Box(xLo, xHi, yLo, yHi));
+        input.add(new Box(xLo, xHi, yLo, yHi));
         return input;
     }
 
-    private static final ApplicationSpace APPLICATION_SPACE =
-        new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return 2;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                return APP_SPACE_LO;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                return APP_SPACE_HI;
-            }
-        };
-
     private static final double APP_SPACE_LO = 1_000_000.0;
     private static final double APP_SPACE_HI = 2_000_000.0;
+    private static final ApplicationSpace APPLICATION_SPACE =
+        appSpace(APP_SPACE_LO, APP_SPACE_HI, APP_SPACE_LO, APP_SPACE_HI);
+
     private static final int APP_SPACE_WIDTH = (int) (APP_SPACE_HI - APP_SPACE_LO);
     private static final int GRID_RESOLUTION = 100;
     private static final int GRID_CELL_WIDTH = APP_SPACE_WIDTH / GRID_RESOLUTION; // 10,000
@@ -137,4 +129,17 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinIteratorTestBase
     private static final int TRIALS = 100;
 
     private Space space;
+    private final SpatialJoinFilter filter = new SpatialJoinFilter()
+    {
+        @Override
+        public boolean overlap(SpatialObject x, SpatialObject y)
+        {
+            testStats.filterCount++;
+            boolean overlap = ((Box) x).overlap(((Box) y));
+            if (overlap) {
+                testStats.overlapCount++;
+            }
+            return overlap;
+        }
+    };
 }

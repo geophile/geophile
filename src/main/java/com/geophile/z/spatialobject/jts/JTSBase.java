@@ -1,9 +1,11 @@
 package com.geophile.z.spatialobject.jts;
 
+import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.SpatialObjectException;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
+import com.geophile.z.space.SpaceImpl;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
@@ -14,6 +16,31 @@ import java.nio.ByteBuffer;
 
 public abstract class JTSBase implements SpatialObject
 {
+    // Object interface
+
+    @Override
+    public final String toString()
+    {
+        return geometry.toString();
+    }
+
+    @Override
+    public final int hashCode()
+    {
+        if (!hashCodeKnown) {
+            hashCode = geometry.getEnvelopeInternal().hashCode();
+            hashCodeKnown = true;
+        }
+        return hashCode;
+    }
+
+    @Override
+    public final boolean equals(Object obj)
+    {
+        // Relies on Geometry.equals(Geometry), which does not override Object.equals(Object).
+        return this == obj || obj != null && obj instanceof JTSBase && geometry.equals(((JTSBase)obj).geometry);
+    }
+
     // SpatialObject interface
 
     @Override
@@ -32,7 +59,10 @@ public abstract class JTSBase implements SpatialObject
     public abstract double[] arbitraryPoint();
 
     @Override
-    public abstract int maxZ();
+    public int maxZ()
+    {
+        return MAX_Z;
+    }
 
     @Override
     public abstract boolean equalTo(SpatialObject that);
@@ -57,7 +87,7 @@ public abstract class JTSBase implements SpatialObject
 
     // JTSBase interface
 
-    public final Geometry jtsObject()
+    public final Geometry geometry()
     {
         return geometry;
     }
@@ -76,8 +106,9 @@ public abstract class JTSBase implements SpatialObject
         }
     }
 
-    protected JTSBase(Geometry geometry)
+    protected JTSBase(Space space, Geometry geometry)
     {
+        this.space = (SpaceImpl) space;
         this.geometry = geometry;
     }
 
@@ -117,6 +148,7 @@ public abstract class JTSBase implements SpatialObject
 
     // Class state
 
+    private static final int MAX_Z = 8;
     private static final ThreadLocal<IO> THREAD_IO =
         new ThreadLocal<IO>()
         {
@@ -130,6 +162,11 @@ public abstract class JTSBase implements SpatialObject
     // Object state
 
     private long id;
+    // Caching of hashCode
+    private boolean hashCodeKnown = false;
+    private int hashCode;
+    //
+    protected SpaceImpl space;
     protected Geometry geometry;
     // Well Known Binary representation, (i.e., serialized)
     private byte[] wkb;
