@@ -23,7 +23,8 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     public void test() throws IOException, InterruptedException
     {
         // print(space.toString());
-        this.space = Space.newSpace(appSpace(0, NX, 0, NY), X_BITS, Y_BITS);
+        appSpace = appSpace(0, NX, 0, NY);
+        this.space = Space.newSpace(appSpace, X_BITS, Y_BITS);
         TestInput leftInput = null;
         TestInput rightInput = null;
         for (int nLeft : COUNTS) {
@@ -88,6 +89,12 @@ public class SpatialJoinIteratorTest extends SpatialJoinIteratorTestBase
     protected boolean verify()
     {
         return true;
+    }
+
+    @Override
+    protected boolean printSummary()
+    {
+        return false;
     }
 
     @Override

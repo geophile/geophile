@@ -74,7 +74,7 @@ public abstract class SpatialJoinIteratorJTSTestBase extends SpatialJoinIterator
     @Override
     protected final boolean printSummary()
     {
-        return true;
+        return false;
     }
 
     @Override
