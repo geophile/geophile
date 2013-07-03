@@ -33,11 +33,10 @@ public class SpatialJoinIteratorLineStringTest extends SpatialJoinIteratorTestBa
     {
         enableLogging();
         this.space = Space.newSpace(appSpace(0, NX, 0, NY), X_BITS, Y_BITS);
-        int n = (int) Math.sqrt(COUNT);
-        TestInput leftInput = load(Side.LEFT, n, X_MAX_SEGMENT_DISTANCE, Y_MAX_SEGMENT_DISTANCE);
+        TestInput leftInput = load(Side.LEFT, COUNT, X_MAX_SEGMENT_DISTANCE, Y_MAX_SEGMENT_DISTANCE);
         TestInput rightInput;
         for (int trial = 0; trial < TRIALS; trial++) {
-            rightInput = load(Side.RIGHT, n, X_MAX_SEGMENT_DISTANCE, Y_MAX_SEGMENT_DISTANCE);
+            rightInput = load(Side.RIGHT, COUNT, X_MAX_SEGMENT_DISTANCE, Y_MAX_SEGMENT_DISTANCE);
             test(leftInput, rightInput, filter, SpatialJoin.Duplicates.EXCLUDE);
         }
     }
@@ -106,16 +105,16 @@ public class SpatialJoinIteratorLineStringTest extends SpatialJoinIteratorTestBa
     }
 
 
-    private static final int COUNT = 1_000_000;
+    private static final int COUNT = 10_000;
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
     private static final int X_BITS = 20;
     private static final int Y_BITS = 20;
-    private static final int TRIALS = 50;
+    private static final int TRIALS = 20;
     // max x-distance between two successive points of the same linestring.
-    private static final int X_MAX_SEGMENT_DISTANCE = 10_000;
+    private static final int X_MAX_SEGMENT_DISTANCE = 1_000;
     // max y-distance between two successive points of the same linestring.
-    private static final int Y_MAX_SEGMENT_DISTANCE = 10_000;
+    private static final int Y_MAX_SEGMENT_DISTANCE = 1_000;
     private Space space;
     private ApplicationSpace appSpace = appSpace(0, NX, 0, NY);
     private final GeometryFactory factory = new GeometryFactory();

@@ -94,7 +94,7 @@ public abstract class SpatialJoinIteratorTestBase
                 print("%s\taccuracy = EMPTY RESULT", describeTest());
             } else {
                 double accuracy = (double) testStats.overlapCount / testStats.filterCount;
-                print("%s\taccuracy = %s", describeTest(), accuracy);
+                print("%s\tcount = %s\taccuracy = %s", describeTest(), actual.size(), accuracy);
             }
         }
     }
