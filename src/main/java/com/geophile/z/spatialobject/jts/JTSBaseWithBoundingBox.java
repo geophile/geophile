@@ -12,8 +12,6 @@ import com.geophile.z.space.RegionComparison;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
-import java.nio.ByteBuffer;
-
 public abstract class JTSBaseWithBoundingBox extends JTSBase
 {
     // SpatialObject interface
@@ -48,27 +46,6 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
     }
 
     // For use by subclasses
-
-    @Override
-    protected void read(ByteBuffer input)
-    {
-        xLo = input.getLong();
-        xHi = input.getLong();
-        yLo = input.getLong();
-        yHi = input.getLong();
-        super.read(input);
-    }
-
-    @Override
-    protected void write(ByteBuffer output)
-    {
-        ensureBoundingBox();
-        output.putLong(xLo);
-        output.putLong(xHi);
-        output.putLong(yLo);
-        output.putLong(yHi);
-        super.write(output);
-    }
 
     protected JTSBaseWithBoundingBox(Space space, Geometry geometry)
     {
