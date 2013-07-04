@@ -10,7 +10,6 @@ import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 // A SpatialObject that is stored in an index to track the maximum reserved spatial object id. A spatial index record
@@ -69,12 +68,12 @@ public class SpatialObjectIdState implements SpatialObject
     }
 
     @Override
-    public void readFrom(ByteBuffer buffer) throws IOException
+    public void readFrom(ByteBuffer buffer)
     {
     }
 
     @Override
-    public void writeTo(ByteBuffer buffer) throws IOException
+    public void writeTo(ByteBuffer buffer)
     {
     }
 

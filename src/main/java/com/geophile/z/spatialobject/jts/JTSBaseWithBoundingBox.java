@@ -12,7 +12,6 @@ import com.geophile.z.space.RegionComparison;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public abstract class JTSBaseWithBoundingBox extends JTSBase
@@ -61,7 +60,7 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
     }
 
     @Override
-    protected void write(ByteBuffer output) throws IOException
+    protected void write(ByteBuffer output)
     {
         ensureBoundingBox();
         output.putLong(xLo);

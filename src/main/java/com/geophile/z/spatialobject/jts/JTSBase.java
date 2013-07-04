@@ -11,7 +11,6 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public abstract class JTSBase implements SpatialObject
@@ -74,13 +73,13 @@ public abstract class JTSBase implements SpatialObject
     public abstract RegionComparison compare(Region region);
 
     @Override
-    public final void readFrom(ByteBuffer buffer) throws IOException
+    public final void readFrom(ByteBuffer buffer)
     {
         read(buffer);
     }
 
     @Override
-    public void writeTo(ByteBuffer buffer) throws IOException
+    public void writeTo(ByteBuffer buffer)
     {
         write(buffer);
     }
@@ -122,7 +121,7 @@ public abstract class JTSBase implements SpatialObject
         geometry = null;
     }
 
-    protected void write(ByteBuffer output) throws IOException
+    protected void write(ByteBuffer output)
     {
         // WKB
         ensureWKB();

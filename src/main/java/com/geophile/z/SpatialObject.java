@@ -64,7 +64,7 @@ public interface SpatialObject
      */
     RegionComparison compare(Region region);
 
-    void readFrom(ByteBuffer buffer) throws IOException;
+    void readFrom(ByteBuffer buffer);
 
-    void writeTo(ByteBuffer buffer) throws IOException;
+    void writeTo(ByteBuffer buffer);
 }
