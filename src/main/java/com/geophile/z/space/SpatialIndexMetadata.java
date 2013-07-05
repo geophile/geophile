@@ -4,20 +4,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.spatialobject;
+package com.geophile.z.space;
 
 import com.geophile.z.SpatialObject;
-import com.geophile.z.space.Region;
-import com.geophile.z.space.RegionComparison;
+import com.geophile.z.index.SpatialObjectKey;
 
 import java.nio.ByteBuffer;
 
 // A SpatialObject that is stored in an index to track the maximum reserved spatial object id. A spatial index record
-// is (z, soid, spatial object). z = SpatialObjectIdState.Z_MAX_RESERVED. soid is the maximum soid reserved so far,
-// for the index containing this record. SpatialObjectIdState is the spatial object, serializing to a zero-length
+// is (z, soid, spatial object). z = SpatialIndexMetadata.Z_MAX_RESERVED. soid is the maximum soid reserved so far,
+// for the index containing this record. SpatialIndexMetadata is the spatial object, serializing to a zero-length
 // byte array.
 
-public class SpatialObjectIdState implements SpatialObject
+public class SpatialIndexMetadata implements SpatialObject
 {
     // SpatialObject interface
 
@@ -30,7 +29,7 @@ public class SpatialObjectIdState implements SpatialObject
     @Override
     public long id()
     {
-        return firstUnreservedSoid;
+        return ID;
     }
 
     @Override
@@ -50,7 +49,7 @@ public class SpatialObjectIdState implements SpatialObject
     @Override
     public boolean equalTo(SpatialObject that)
     {
-        return that != null && that instanceof SpatialObjectIdState;
+        return that != null && that instanceof SpatialIndexMetadata;
     }
 
     @Override
@@ -70,25 +69,38 @@ public class SpatialObjectIdState implements SpatialObject
     @Override
     public void readFrom(ByteBuffer buffer)
     {
+        firstUnreservedSoid = buffer.getLong();
     }
 
     @Override
     public void writeTo(ByteBuffer buffer)
     {
+        buffer.putLong(firstUnreservedSoid);
     }
 
-    // SpatialObjectIdState interface
+    // SpatialIndexMetadata interface
 
-    public SpatialObjectIdState(long firstUnreservedSoid)
+    public long firstUnreservedSoid()
+    {
+        return firstUnreservedSoid;
+    }
+
+    public SpatialIndexMetadata(long firstUnreservedSoid)
     {
         this.firstUnreservedSoid = firstUnreservedSoid;
     }
 
+    public SpatialIndexMetadata()
+    {}
+
     // Class state
 
-    public static final long Z_MAX_RESERVED = -1L;
+    private static final long ID = -1L;
+    public static final SpatialObjectKey SPATIAL_INDEX_METADATA_KEY = SpatialObjectKey.key(-1L, ID);
+    public static final int SPATIAL_INDEX_METADATA_TYPE_ID = -1;
 
     // Object state
 
-    private final long firstUnreservedSoid;
+    // Spatial object id generation
+    private long firstUnreservedSoid;
 }

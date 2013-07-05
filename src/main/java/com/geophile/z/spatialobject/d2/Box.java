@@ -214,6 +214,9 @@ public class Box implements SpatialObject
         this.yHi = yHi;
     }
 
+    public Box()
+    {}
+
     // Object state
 
     private long id;

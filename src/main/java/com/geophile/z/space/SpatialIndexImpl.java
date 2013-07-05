@@ -13,7 +13,6 @@ import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
 import com.geophile.z.index.SpatialObjectKey;
-import com.geophile.z.spatialobject.SpatialObjectIdState;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
@@ -103,10 +102,9 @@ public class SpatialIndexImpl extends SpatialIndex
 
     long firstUnreservedSoidStored() throws IOException, InterruptedException
     {
-        Cursor cursor = index.cursor(SpatialObjectIdState.Z_MAX_RESERVED);
+        Cursor cursor = index.cursor(SpatialIndexMetadata.SPATIAL_INDEX_METADATA_KEY.z());
         try {
-            Record record = cursor.next();
-            return record.eof() ? 0 : record.key().soid();
+            return firstUnreservedSoid(cursor.next());
         } finally {
             cursor.close();
         }
@@ -163,10 +161,9 @@ public class SpatialIndexImpl extends SpatialIndex
 
     private void restoreIdGenerator() throws IOException, InterruptedException
     {
-        Cursor cursor = index.cursor(SpatialObjectIdState.Z_MAX_RESERVED);
+        Cursor cursor = index.cursor(SpatialIndexMetadata.SPATIAL_INDEX_METADATA_KEY.z());
         try {
-            Record record = cursor.next();
-            firstUnreservedSoid = record.eof() ? 0 : record.key().soid();
+            firstUnreservedSoid = firstUnreservedSoid(cursor.next());
             idGenerator.set(firstUnreservedSoid);
             reserveMoreSoids();
         } finally {
@@ -176,9 +173,21 @@ public class SpatialIndexImpl extends SpatialIndex
 
     private void reserveMoreSoids() throws IOException, InterruptedException
     {
-        index.remove(SpatialObjectIdState.Z_MAX_RESERVED, firstUnreservedSoid);
+        long metadataZ = SpatialIndexMetadata.SPATIAL_INDEX_METADATA_KEY.z();
+        long metadataSoid = SpatialIndexMetadata.SPATIAL_INDEX_METADATA_KEY.soid();
+        index.remove(metadataZ, metadataSoid);
         firstUnreservedSoid += soidReservationBlockSize();
-        index.add(SpatialObjectIdState.Z_MAX_RESERVED, new SpatialObjectIdState(firstUnreservedSoid));
+        index.add(metadataZ, new SpatialIndexMetadata(firstUnreservedSoid));
+    }
+
+    private long firstUnreservedSoid(Record metadataRecord)
+    {
+        long firstUnreservedSoid = 0;
+        if (!metadataRecord.eof()) {
+            SpatialIndexMetadata metadata = (SpatialIndexMetadata) metadataRecord.spatialObject();
+            firstUnreservedSoid = metadata.firstUnreservedSoid();
+        }
+        return firstUnreservedSoid;
     }
 
     // Class state

@@ -9,7 +9,6 @@ package com.geophile.z;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**

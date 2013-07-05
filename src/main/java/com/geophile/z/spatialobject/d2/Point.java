@@ -156,6 +156,9 @@ public class Point implements SpatialObject
         this.y = y;
     }
 
+    public Point()
+    {}
+
     // Object state
 
     private long id;
