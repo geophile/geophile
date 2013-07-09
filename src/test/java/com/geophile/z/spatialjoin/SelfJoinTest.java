@@ -69,7 +69,7 @@ public class SelfJoinTest extends SpatialJoinTestBase
     @Override
     protected boolean printSummary()
     {
-        return true;
+        return false;
     }
 
     @Override

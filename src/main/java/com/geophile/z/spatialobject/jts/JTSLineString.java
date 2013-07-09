@@ -19,6 +19,7 @@ public class JTSLineString extends JTSBaseWithBoundingBox
     public double[] arbitraryPoint()
     {
         double[] point = new double[2];
+        ensureGeometry();
         Coordinate coordinate = lineString().getCoordinate();
         point[0] = coordinate.x;
         point[1] = coordinate.y;
@@ -29,6 +30,7 @@ public class JTSLineString extends JTSBaseWithBoundingBox
     public boolean equalTo(SpatialObject that)
     {
         boolean eq = false;
+        ensureGeometry();
         if (that != null && that instanceof JTSLineString) {
             LineString thatLineString = ((JTSLineString) that).lineString();
             eq = lineString().equals(thatLineString);
@@ -42,6 +44,9 @@ public class JTSLineString extends JTSBaseWithBoundingBox
     {
         super(space, lineString);
     }
+
+    public JTSLineString()
+    {}
 
     // For use by this class
 

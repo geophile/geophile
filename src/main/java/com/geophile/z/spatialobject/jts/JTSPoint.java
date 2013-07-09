@@ -67,14 +67,17 @@ public class JTSPoint extends JTSBase
 
     // JTSPoint interface
 
-    public JTSPoint(Space space, Point point)
-    {
-        super(space, point);
-    }
-
     public Point point()
     {
         ensureGeometry();
         return (Point) geometry;
     }
+
+    public JTSPoint(Space space, Point point)
+    {
+        super(point);
+    }
+
+    public JTSPoint()
+    {}
 }

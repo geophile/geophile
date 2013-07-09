@@ -15,7 +15,6 @@ package com.geophile.z.spatialobject.jts;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 
 public class JTSPolygon extends JTSBaseWithBoundingBox
@@ -26,6 +25,7 @@ public class JTSPolygon extends JTSBaseWithBoundingBox
     public double[] arbitraryPoint()
     {
         double[] point = new double[2];
+        ensureGeometry();
         Coordinate coordinate = polygon().getCoordinate();
         point[0] = coordinate.x;
         point[1] = coordinate.y;
@@ -36,6 +36,7 @@ public class JTSPolygon extends JTSBaseWithBoundingBox
     public boolean equalTo(SpatialObject that)
     {
         boolean eq = false;
+        ensureGeometry();
         if (that != null && that instanceof JTSPolygon) {
             Polygon thatPolygon = ((JTSPolygon) that).polygon();
             eq = polygon().equals(thatPolygon);
@@ -49,6 +50,9 @@ public class JTSPolygon extends JTSBaseWithBoundingBox
     {
         super(space, polygon);
     }
+
+    public JTSPolygon()
+    {}
 
     // For use by this class
 

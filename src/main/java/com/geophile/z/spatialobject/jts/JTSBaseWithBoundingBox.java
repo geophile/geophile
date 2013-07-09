@@ -9,6 +9,7 @@ package com.geophile.z.spatialobject.jts;
 import com.geophile.z.Space;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
+import com.geophile.z.space.SpaceImpl;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -49,7 +50,15 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
 
     protected JTSBaseWithBoundingBox(Space space, Geometry geometry)
     {
-        super(space, geometry);
+        super(geometry);
+        this.space = (SpaceImpl) space;
+    }
+
+    // For deserialization
+    protected JTSBaseWithBoundingBox()
+    {
+        super(null);
+        this.space = null;
     }
 
     // For use by this class
@@ -63,6 +72,7 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
     {
         if (!boundingBoxAvailable()) {
             assert geometry != null;
+            assert space != null;
             Envelope envelope = geometry.getEnvelopeInternal();
             xLo = space.appToZ(0, envelope.getMinX());
             xHi = space.appToZ(0, envelope.getMaxX());
@@ -74,6 +84,9 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
 
     // Object state
 
+    // space is needed only to compute bounding box for decomposition. So it isn't needed after deserialization,
+    // because decomopsition happened before serialization.
+    private final SpaceImpl space;
     // Bounding box is in geophile space, not app space
     protected long xLo = 0L;
     protected long xHi = -1L;
