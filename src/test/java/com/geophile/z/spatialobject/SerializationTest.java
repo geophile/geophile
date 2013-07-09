@@ -12,6 +12,7 @@ import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
+import com.geophile.z.spatialobject.jts.JTSCollection;
 import com.geophile.z.spatialobject.jts.JTSLineString;
 import com.geophile.z.spatialobject.jts.JTSPoint;
 import com.geophile.z.spatialobject.jts.JTSPolygon;
@@ -36,6 +37,7 @@ public class SerializationTest
         SERIALIZER.register(3, JTSPoint.class);
         SERIALIZER.register(4, JTSLineString.class);
         SERIALIZER.register(5, JTSPolygon.class);
+        SERIALIZER.register(6, JTSCollection.class);
     }
 
     @Test
@@ -94,6 +96,16 @@ public class SerializationTest
         coords[2] = new Coordinate(345, 678);
         coords[3] = coords[0];
         test(new JTSPolygon(SPACE, FACTORY.createPolygon(FACTORY.createLinearRing(coords), null)));
+    }
+
+    @Test
+    public void testJTSCollection()
+    {
+        Coordinate[] coords = new Coordinate[3];
+        coords[0] = new Coordinate(123, 456);
+        coords[1] = new Coordinate(789, 12);
+        coords[2] = new Coordinate(345, 678);
+        test(new JTSCollection(SPACE, FACTORY.createMultiPoint(coords)));
     }
 
     private void test(SpatialObject original)

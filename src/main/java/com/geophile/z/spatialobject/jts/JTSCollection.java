@@ -4,20 +4,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-
 package com.geophile.z.spatialobject.jts;
 
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.GeometryCollection;
 
-public class JTSPolygon extends JTSBaseWithBoundingBox
+public class JTSCollection extends JTSBaseWithBoundingBox
 {
     // SpatialObject interface (not implemented by JTSBase)
 
@@ -26,7 +20,7 @@ public class JTSPolygon extends JTSBaseWithBoundingBox
     {
         double[] point = new double[2];
         ensureGeometry();
-        Coordinate coordinate = polygon().getCoordinate();
+        Coordinate coordinate = geometryCollection().getCoordinate();
         point[0] = coordinate.x;
         point[1] = coordinate.y;
         return point;
@@ -37,27 +31,27 @@ public class JTSPolygon extends JTSBaseWithBoundingBox
     {
         boolean eq = false;
         ensureGeometry();
-        if (that != null && that instanceof JTSPolygon) {
-            Polygon thatPolygon = ((JTSPolygon) that).polygon();
-            eq = polygon().equals(thatPolygon);
+        if (that != null && that instanceof JTSCollection) {
+            GeometryCollection thatGeometryCollection = ((JTSCollection) that).geometryCollection();
+            eq = geometryCollection().equals(thatGeometryCollection);
         }
         return eq;
     }
 
-    // JTSPolygon interface
+    // JTSLineString interface
 
-    public JTSPolygon(Space space, Polygon polygon)
+    public JTSCollection(Space space, GeometryCollection geometryCollection)
     {
-        super(space, polygon);
+        super(space, geometryCollection);
     }
 
-    public JTSPolygon()
+    public JTSCollection()
     {}
 
     // For use by this class
 
-    private Polygon polygon()
+    private GeometryCollection geometryCollection()
     {
-        return (Polygon) geometry;
+        return (GeometryCollection) geometry;
     }
 }

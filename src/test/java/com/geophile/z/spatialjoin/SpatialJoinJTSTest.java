@@ -75,6 +75,21 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
         }
     }
 
+    @Test
+    public void testManyMultiPointOnePolygon() throws IOException, InterruptedException
+    {
+        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
+        JTSMultiPointGenerator dataGenerator = new JTSMultiPointGenerator(SPACE, FACTORY, random, 1000, 1000);
+        TestInput dataInput = newTestInput(COUNT, dataGenerator);
+        for (int boxSize : BOX_SIZES) {
+            for (int trial = 0; trial < TRIALS; trial++) {
+                JTSSquareGenerator queryGenerator = new JTSSquareGenerator(SPACE, FACTORY, random, boxSize);
+                TestInput queryInput = newTestInput(1, queryGenerator);
+                testJoin(spatialJoin, queryInput, dataInput);
+            }
+        }
+    }
+
     @Override
     protected boolean overlap(SpatialObject s, SpatialObject t)
     {
@@ -90,7 +105,7 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     @Override
     protected final boolean printSummary()
     {
-        return false;
+        return true;
     }
 
     @Override
