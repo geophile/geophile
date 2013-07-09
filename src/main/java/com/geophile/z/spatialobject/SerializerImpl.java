@@ -54,6 +54,7 @@ public class SerializerImpl extends Serializer
     @Override
     public void register(int typeId, Class<? extends SpatialObject> spatialObjectClass)
     {
+        assert typeId >= 0 || spatialObjectClass == SpatialIndexMetadata.class;
         Class<? extends SpatialObject> klass = typeIdToClass.get(typeId);
         if (klass == null) {
             typeIdToClass.put(typeId, spatialObjectClass);

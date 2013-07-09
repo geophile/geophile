@@ -1,17 +1,19 @@
-package com.geophile.z.spatialjoin;
+package com.geophile.z.spatialjoin2;
 
-import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.index.treeindex.TreeIndex;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/** @deprecated */
 public class TestInput
 {
+    public String toString()
+    {
+        return String.format("%s: %s", spatialObjects.size(), description);
+    }
+
     public void add(SpatialObject spatialObject) throws IOException, InterruptedException
     {
         spatialObjects.add(spatialObject);
@@ -28,30 +30,18 @@ public class TestInput
         return spatialIndex;
     }
 
-    public int maxXSize()
-    {
-        return maxXSize;
-    }
-
-    public int maxYSize()
-    {
-        return maxYSize;
-    }
-
-    public TestInput(Space space, int maxXSize, int maxYSize, boolean singleCell)
+    public TestInput(SpatialIndex spatialIndex, String description)
         throws IOException, InterruptedException
     {
+        this.description = description;
         this.spatialObjects = new ArrayList<>();
-        this.spatialIndex = SpatialIndex.newSpatialIndex
-            (space,
-             new TreeIndex(),
-             singleCell ? SpatialIndex.Options.SINGLE_CELL : SpatialIndex.Options.DEFAULT);
-        this.maxXSize = maxXSize;
-        this.maxYSize = maxYSize;
+        this.spatialIndex = spatialIndex;
+        for (SpatialObject spatialObject : spatialObjects) {
+            spatialIndex.add(spatialObject);
+        }
     }
 
+    private final String description;
     private final List<SpatialObject> spatialObjects;
     private final SpatialIndex spatialIndex;
-    private final int maxXSize;
-    private final int maxYSize;
 }

@@ -22,10 +22,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.spatialjoin;
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+package com.geophile.z.spatialjoin2;
 
 import com.geophile.z.*;
 import com.geophile.z.index.treeindex.TreeIndex;
+import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import com.geophile.z.spatialobject.jts.JTSPoint;
@@ -36,8 +43,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Random;
 
-/** @deprecated */
-public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestBase
+public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
 {
     private static final boolean USE_JTS = Boolean.getBoolean("jts");
 
@@ -48,19 +54,19 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestB
 
     private void run() throws IOException, InterruptedException
     {
-        random = new Random(12345);
+        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(FILTER, SpatialJoin.Duplicates.INCLUDE);
         final int TRIALS = 100_000;
         final int N_POINTS = 1_000_000;
         final int QUERY_X_SIZE = NX / 100;
         final int QUERY_Y_SIZE = NY / 100;
         SpatialIndex rightInput = loadPoints(N_POINTS);
+        BoxGenerator boxGenerator = new BoxGenerator(APP_SPACE, random, QUERY_X_SIZE, QUERY_Y_SIZE);
         long totalOutputCount = 0;
         long totalMsec = 0;
         for (int trial = 0; trial < TRIALS; trial++) {
-            SpatialIndex leftInput = loadOneBox(QUERY_X_SIZE, QUERY_Y_SIZE);
+            SpatialIndex leftInput = loadOneBox(boxGenerator);
             long start = System.currentTimeMillis();
-            Iterator<Pair> joinScan = SpatialJoin.newSpatialJoin(FILTER, SpatialJoin.Duplicates.INCLUDE)
-                                                 .iterator(leftInput, rightInput);
+            Iterator<Pair> joinScan = spatialJoin.iterator(leftInput, rightInput);
             while (joinScan.hasNext()) {
                 joinScan.next();
                 totalOutputCount++;
@@ -70,34 +76,6 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestB
         }
         print("average output size: %s", (double) totalOutputCount / TRIALS);
         print("average join msec: %s", (double) totalMsec / TRIALS);
-    }
-
-    @Override
-    protected Space space()
-    {
-        return SPACE;
-    }
-
-    @Override
-    protected Box newLeftObject(int xSize, int ySize)
-    {
-        long xLo = random.nextInt(NX - xSize + 1);
-        long xHi = xLo + xSize - 1;
-        long yLo = random.nextInt(NY - ySize + 1);
-        long yHi = yLo + ySize - 1;
-        return new Box(xLo, xHi, yLo, yHi);
-    }
-
-    @Override
-    protected void checkEquals(Object expected, Object actual)
-    {
-        assert expected.equals(actual);
-    }
-
-    @Override
-    protected boolean verify()
-    {
-        return false;
     }
 
     @Override
@@ -111,24 +89,42 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestB
     }
 
     @Override
+    protected boolean verify()
+    {
+        return false;
+    }
+
+    @Override
+    protected boolean trace()
+    {
+        return false;
+    }
+
+    @Override
     protected boolean printSummary()
     {
         return false;
     }
 
+    @Override
+    protected void checkEquals(Object expected, Object actual)
+    {
+        assert expected.equals(actual);
+    }
+
     protected SpatialIndex loadPoints(int n) throws IOException, InterruptedException
     {
-        SpatialIndex index = SpatialIndex.newSpatialIndex(space(), new TreeIndex(), SpatialIndex.Options.SINGLE_CELL);
+        SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex(), SpatialIndex.Options.SINGLE_CELL);
         for (int i = 0; i < n; i++) {
             index.add(testPoint());
         }
         return index;
     }
 
-    protected SpatialIndex loadOneBox(int maxXSize, int maxYSize) throws IOException, InterruptedException
+    protected SpatialIndex loadOneBox(BoxGenerator boxGenerator) throws IOException, InterruptedException
     {
-        SpatialIndex index = SpatialIndex.newSpatialIndex(space(), new TreeIndex(), SpatialIndex.Options.DEFAULT);
-        index.add(newLeftObject(maxXSize, maxYSize));
+        SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex(), SpatialIndex.Options.DEFAULT);
+        index.add(boxGenerator.newSpatialObject());
         return index;
     }
 
@@ -146,13 +142,14 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinIteratorTestB
     private static final int NY = 1_000_000;
     private static final int LOG_NX = 20;
     private static final int LOG_NY = 20;
-    private static final Space SPACE = Space.newSpace(appSpace(0, NX, 0, NY), LOG_NX, LOG_NY);
+    private static final ApplicationSpace APP_SPACE = appSpace(0, NX, 0, NY);
+    private static final Space SPACE = Space.newSpace(APP_SPACE, LOG_NX, LOG_NY);
     private static final SpatialJoinFilter FILTER =
         USE_JTS
         ? new TestFilterJTS()
         : new TestFilter();
 
-    private Random random;
+    private final Random random = new Random(12345);
     private final GeometryFactory factory = new GeometryFactory();
 
     private static final class TestFilter implements SpatialJoinFilter

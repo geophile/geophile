@@ -135,7 +135,8 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinIteratorTestBase
         public boolean overlap(SpatialObject x, SpatialObject y)
         {
             testStats.filterCount++;
-            boolean overlap = ((Box) x).overlap(((Box) y));
+            assert false;
+            boolean overlap = false; // ((Box) x).overlap(((Box) y));
             if (overlap) {
                 testStats.overlapCount++;
             }

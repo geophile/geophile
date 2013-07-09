@@ -18,7 +18,6 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialJoin;
 import com.geophile.z.SpatialObject;
@@ -27,6 +26,7 @@ import com.geophile.z.spatialobject.d2.Box;
 import java.io.IOException;
 import java.util.Random;
 
+/** @deprecated */
 public class SpatialJoinManyPointsOneBox extends SpatialJoinIteratorTestBase
 {
     public static void main(String[] args) throws IOException, InterruptedException
@@ -138,7 +138,8 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinIteratorTestBase
         public boolean overlap(SpatialObject x, SpatialObject y)
         {
             testStats.filterCount++;
-            boolean overlap = ((Box) x).overlap(((Box) y));
+            assert false;
+            boolean overlap = false; // ((Box) x).overlap(((Box) y));
             if (overlap) {
                 testStats.overlapCount++;
             }

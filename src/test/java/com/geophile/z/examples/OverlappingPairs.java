@@ -90,7 +90,8 @@ public class OverlappingPairs
             @Override
             public boolean overlap(SpatialObject a, SpatialObject b)
             {
-                return ((Box)a).overlap(((Box)b));
+                assert false;
+                return false; // ((Box)a).overlap(((Box)b));
             }
         };
 

@@ -19,8 +19,7 @@ public class SpatialJoinImpl extends SpatialJoin
 {
     public SpatialJoinImpl(SpatialJoinFilter filter, Duplicates duplicates)
     {
-        this.filter = filter;
-        this.duplicates = duplicates;
+        super(filter, duplicates);
     }
 
     public Iterator<Pair> iterator(SpatialIndex leftSpatialIndex, SpatialIndex rightSpatialIndex)
@@ -41,7 +40,4 @@ public class SpatialJoinImpl extends SpatialJoin
     }
 
     public static final String SINGLE_CELL_OPTIMIZATION_PROPERTY = "singlecellopt";
-
-    private final SpatialJoinFilter filter;
-    private final Duplicates duplicates;
 }

@@ -224,7 +224,7 @@ public abstract class SpatialIndexTestBase
         assertEquals(expected, actual);
     }
 
-    public abstract Index newIndex();
+    public abstract Index newIndex() throws IOException, InterruptedException;
 
     private static final int SEED = 123456;
     private static final int X_MAX = 1000;

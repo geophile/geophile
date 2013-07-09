@@ -33,7 +33,7 @@ public abstract class IndexTestBase
         }
     }
 
-    protected abstract Index newIndex() throws Exception;
+    protected abstract Index newIndex() throws IOException, InterruptedException;
 
     private void load(Index index, int nObjects, int zCount)
         throws IOException, InterruptedException

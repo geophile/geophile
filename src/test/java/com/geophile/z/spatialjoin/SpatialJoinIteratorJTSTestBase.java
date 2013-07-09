@@ -37,6 +37,7 @@ import java.util.logging.Level;
 
 import static org.junit.Assert.assertEquals;
 
+/** @deprecated */
 public abstract class SpatialJoinIteratorJTSTestBase extends SpatialJoinIteratorTestBase
 {
     @Test

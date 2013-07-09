@@ -59,6 +59,16 @@ public abstract class SpatialJoin
     public abstract Iterator<Pair> iterator(SpatialIndex leftSpatialIndex, SpatialIndex rightSpatialIndex)
         throws IOException, InterruptedException;
 
+    public final SpatialJoinFilter filter()
+    {
+        return filter;
+    }
+
+    public final Duplicates duplicates()
+    {
+        return duplicates;
+    }
+
     /**
      * Specifies duplicate-handling behavior for spatial joins.
      */
@@ -77,4 +87,17 @@ public abstract class SpatialJoin
          */
         EXCLUDE
     }
+
+    // For use by subclasses
+
+    protected SpatialJoin(SpatialJoinFilter filter, Duplicates duplicates)
+    {
+        this.filter = filter;
+        this.duplicates = duplicates;
+    }
+
+    // Object state
+
+    protected final SpatialJoinFilter filter;
+    protected final Duplicates duplicates;
 }

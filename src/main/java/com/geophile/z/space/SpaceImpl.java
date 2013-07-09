@@ -291,7 +291,7 @@ public class SpaceImpl extends Space
 
     public SpaceImpl(ApplicationSpace applicationSpace, int[] xBits, int[] interleave)
     {
-        this.applicationSpace = applicationSpace;
+        super(applicationSpace);
         this.dimensions = xBits.length;
         check(this.applicationSpace.dimensions() == this.dimensions,
               "Space dimensions: %s != ApplicationSpace dimensions: %s",
@@ -432,7 +432,6 @@ public class SpaceImpl extends Space
 
     // Object state
 
-    final ApplicationSpace applicationSpace;
     // The 'x' prefix refers to coordinates. The 'z' prefix refers to z values.
     final int dimensions;
     final int[] interleave;

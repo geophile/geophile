@@ -10,31 +10,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.spatialjoin;
+package com.geophile.z.spatialjoin2;
 
-import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Space;
-import com.geophile.z.SpatialJoin;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.jts.JTSLineString;
+import com.geophile.z.spatialobject.jts.JTSPolygon;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import org.junit.Test;
 
-import java.io.IOException;
-import java.util.logging.Level;
+import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-
-/** @deprecated */
-public class SpatialJoinIteratorLineStringTest extends SpatialJoinIteratorJTSTestBase
+public class JTSLineStringGenerator extends SpatialObjectGenerator
 {
     @Override
-    protected JTSLineString newLeftObject(int maxXSize, int maxYSize)
+    public SpatialObject newSpatialObject()
     {
-        int nx = (int) (appSpace.hi(0) - appSpace.lo(0));
-        int ny = (int) (appSpace.hi(1) - appSpace.lo(1));
-        Coordinate[] coords = new Coordinate[3];
         int c = 0;
         long x = random.nextInt(nx);
         long y = random.nextInt(ny);
@@ -43,8 +34,8 @@ public class SpatialJoinIteratorLineStringTest extends SpatialJoinIteratorJTSTes
             long xNew;
             long yNew;
             do {
-                xNew = x - maxXSize + random.nextInt(2 * maxXSize);
-                yNew = y - maxYSize + random.nextInt(2 * maxYSize);
+                xNew = x - maxX + random.nextInt(2 * maxX);
+                yNew = y - maxY + random.nextInt(2 * maxY);
             } while (!(xNew >= 0 && xNew < nx && yNew >= 0 && yNew < ny));
             coords[c++] = new Coordinate(xNew, yNew);
             x = xNew;
@@ -52,4 +43,29 @@ public class SpatialJoinIteratorLineStringTest extends SpatialJoinIteratorJTSTes
         }
         return new JTSLineString(space, factory.createLineString(coords));
     }
+
+    @Override
+    public String description()
+    {
+        return String.format("JTSLineString(%s, %s)", maxX, maxY);
+    }
+
+    public JTSLineStringGenerator(Space space, GeometryFactory factory, Random random, int maxX, int maxY)
+    {
+        super(space.applicationSpace(), random);
+        this.space = space;
+        this.factory = factory;
+        this.nx = (int) (appSpace.hi(0) - appSpace.lo(0));
+        this.ny = (int) (appSpace.hi(1) - appSpace.lo(1));
+        this.maxX = maxX;
+        this.maxY = maxY;
+    }
+
+    private final Space space;
+    private final GeometryFactory factory;
+    private final int nx;
+    private final int ny;
+    private final int maxX;
+    private final int maxY;
+    Coordinate[] coords = new Coordinate[3];
 }

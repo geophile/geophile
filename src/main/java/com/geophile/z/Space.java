@@ -16,6 +16,11 @@ import com.geophile.z.space.SpaceImpl;
 
 public abstract class Space
 {
+    public final ApplicationSpace applicationSpace()
+    {
+        return applicationSpace;
+    }
+
     /**
      * Creates a {@link Space}.
      * The space has xBits.length dimensions. A coordinate of dimension d
@@ -46,4 +51,11 @@ public abstract class Space
      * The maximum number of dimensions of a Space.
      */
     public static final int MAX_DIMENSIONS = 6;
+
+    protected Space(ApplicationSpace applicationSpace)
+    {
+        this.applicationSpace = applicationSpace;
+    }
+
+    protected ApplicationSpace applicationSpace;
 }

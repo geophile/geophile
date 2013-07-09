@@ -10,26 +10,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
+package com.geophile.z.spatialjoin2;
 
-package com.geophile.z.spatialjoin;
-
+import com.geophile.z.Space;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.jts.JTSPolygon;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 
-/** @deprecated */
-public class SpatialJoinIteratorPolygonTest extends SpatialJoinIteratorJTSTestBase
+import java.util.Random;
+
+public class JTSPolygonGenerator extends SpatialObjectGenerator
 {
     @Override
-    protected JTSPolygon newLeftObject(int maxXSize, int maxYSize)
+    public SpatialObject newSpatialObject()
     {
-        int nx = (int) (appSpace.hi(0) - appSpace.lo(0));
-        int ny = (int) (appSpace.hi(1) - appSpace.lo(1));
         Coordinate[] coords = new Coordinate[4];
         int c = 0;
         long x = random.nextInt(nx);
@@ -39,8 +35,8 @@ public class SpatialJoinIteratorPolygonTest extends SpatialJoinIteratorJTSTestBa
             long xNew;
             long yNew;
             do {
-                xNew = x - maxXSize + random.nextInt(2 * maxXSize);
-                yNew = y - maxYSize + random.nextInt(2 * maxYSize);
+                xNew = x - maxX + random.nextInt(2 * maxX);
+                yNew = y - maxY + random.nextInt(2 * maxY);
             } while (!(xNew >= 0 && xNew < nx && yNew >= 0 && yNew < ny));
             coords[c++] = new Coordinate(xNew, yNew);
             x = xNew;
@@ -50,4 +46,29 @@ public class SpatialJoinIteratorPolygonTest extends SpatialJoinIteratorJTSTestBa
         LinearRing ring = factory.createLinearRing(coords);
         return new JTSPolygon(space, factory.createPolygon(ring, null));
     }
+
+    @Override
+    public String description()
+    {
+        return String.format("JTSPolygon(%s, %s)", maxX, maxY);
+    }
+
+    public JTSPolygonGenerator(Space space, GeometryFactory factory, Random random, int maxX, int maxY)
+    {
+        super(space.applicationSpace(), random);
+        this.space = space;
+        this.factory = factory;
+        this.nx = (int) (appSpace.hi(0) - appSpace.lo(0));
+        this.ny = (int) (appSpace.hi(1) - appSpace.lo(1));
+        this.maxX = maxX;
+        this.maxY = maxY;
+    }
+
+    private final Space space;
+    private final GeometryFactory factory;
+    private final int nx;
+    private final int ny;
+    private final int maxX;
+    private final int maxY;
+    Coordinate[] coords = new Coordinate[3];
 }
