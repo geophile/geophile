@@ -7,7 +7,7 @@ JTS_POINT="-Djts=true"
 JVM_OPTIONS="-ea -Djava.util.logging.config.file=$GEOPHILE_DIR/src/main/resources/logging.properties $JTS_POINT"
 CLASSPATH="$JDK_HOME/jre/lib/rt.jar:$GEOPHILE_DIR/target/test-classes:$GEOPHILE_DIR/target/classes:$JTS_JAR"
 
-MAIN=com.geophile.z.spatialjoin2.SpatialJoinManyPointsOneBoxProfile
+MAIN=com.geophile.z.spatialjoin.SpatialJoinManyPointsOneBoxProfile
 
 # $JDK_HOME/bin/java $JVM_OPTIONS -classpath $CLASSPATH $MAIN
 collect -j on -J "$JVM_OPTIONS -cp $CLASSPATH " $JDK_HOME/bin/java $MAIN

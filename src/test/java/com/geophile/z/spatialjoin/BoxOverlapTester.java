@@ -1,4 +1,4 @@
-package com.geophile.z.spatialjoin2;
+package com.geophile.z.spatialjoin;
 
 import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;

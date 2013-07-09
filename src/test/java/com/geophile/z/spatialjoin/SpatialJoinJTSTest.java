@@ -22,11 +22,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.spatialjoin2;
+package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
 import com.geophile.z.index.treeindex.TreeIndex;
-import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.junit.Test;
 

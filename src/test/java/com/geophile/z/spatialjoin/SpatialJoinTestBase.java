@@ -1,7 +1,6 @@
-package com.geophile.z.spatialjoin2;
+package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
-import com.geophile.z.index.treeindex.TreeIndex;
 
 import java.io.IOException;
 import java.util.*;

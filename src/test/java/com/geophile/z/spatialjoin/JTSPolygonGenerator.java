@@ -10,7 +10,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.spatialjoin2;
+package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
