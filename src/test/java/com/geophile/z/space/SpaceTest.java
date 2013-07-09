@@ -231,27 +231,14 @@ public class SpaceTest
         assertEquals(SpaceImpl.z(expected, space.zBits()), space.shuffle(x));
     }
 
-    private ApplicationSpace applicationSpace(final int dimensions, final int size)
+    private ApplicationSpace applicationSpace(int dimensions, int size)
     {
-        return new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return dimensions;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                return 0;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                return size;
-            }
-        };
+        double[] lo = new double[dimensions];
+        double[] hi = new double[dimensions];
+        for (int d = 0; d < dimensions; d++) {
+            lo[d] = 0;
+            hi[d] = size;
+        }
+        return ApplicationSpace.newApplicationSpace(lo, hi);
     }
 }

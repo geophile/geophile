@@ -74,31 +74,7 @@ public class PointsInBox
     private static final int BOX_HEIGHT = 2_000;
     private static final int N_QUERIES = 5;
     private static final ApplicationSpace APPLICATION_SPACE =
-        new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return 2;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                return 0;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                switch (d) {
-                    case 0: return SPACE_X;
-                    case 1: return SPACE_Y;
-                }
-                assert false;
-                return Double.NaN;
-            }
-        };
+        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{SPACE_X, SPACE_Y});
     private static final SpatialJoinFilter BOX_CONTAINS_POINT =
         new SpatialJoinFilter()
         {

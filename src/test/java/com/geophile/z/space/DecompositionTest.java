@@ -92,26 +92,6 @@ public class DecompositionTest
     }
 
     private final ApplicationSpace APP_SPACE =
-        new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return 2;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                return 0;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                return 1024;
-            }
-        };
-
+        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{1024, 1024});
     private final SpaceImpl SPACE = new SpaceImpl(APP_SPACE, ints(10, 10), null);
 }

@@ -112,26 +112,7 @@ public class SerializationTest
 
     private static final Serializer SERIALIZER = Serializer.newSerializer();
     private static final ApplicationSpace APPLICATION_SPACE =
-        new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return 2;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                return 0;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                return 1_000_000;
-            }
-        };
+        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{1_000_000, 1_000_000});
     private static final Space SPACE = Space.newSpace(APPLICATION_SPACE, 20, 20);
     private static final GeometryFactory FACTORY = new GeometryFactory();
 

@@ -75,36 +75,7 @@ public abstract class SpatialJoinTestBase
 
     protected static ApplicationSpace appSpace(final double xLo, final double xHi, final double yLo, final double yHi)
     {
-        return new ApplicationSpace()
-        {
-            @Override
-            public int dimensions()
-            {
-                return 2;
-            }
-
-            @Override
-            public double lo(int d)
-            {
-                switch (d) {
-                    case 0: return xLo;
-                    case 1: return yLo;
-                }
-                assert false;
-                return Double.NaN;
-            }
-
-            @Override
-            public double hi(int d)
-            {
-                switch (d) {
-                    case 0: return xHi;
-                    case 1: return yHi;
-                }
-                assert false;
-                return Double.NaN;
-            }
-        };
+        return ApplicationSpace.newApplicationSpace(new double[]{xLo, yLo}, new double[]{xHi, yHi});
     }
 
     protected final void print(String template, Object... args)
