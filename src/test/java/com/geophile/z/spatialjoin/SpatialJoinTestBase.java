@@ -39,11 +39,14 @@ public abstract class SpatialJoinTestBase
                 }
             }
             if (printSummary() && expected != null) {
+                double speedup = (double) testStats.slowJoinTimeNsec / testStats.joinTimeNsec;
                 if (expected.size() == 0) {
-                    print("%s\taccuracy = EMPTY RESULT", describeTest());
+                    print("%s\taccuracy = EMPTY RESULT\tspeedup = %s",
+                          describeTest(), speedup);
                 } else {
                     double accuracy = (double) testStats.overlapCount / testStats.filterCount;
-                    print("%s\tcount = %s\taccuracy = %s", describeTest(), actual.size(), accuracy);
+                    print("%s\tcount = %s\taccuracy = %s\tspeedup = %s",
+                          describeTest(), actual.size(), accuracy, speedup);
                 }
             }
         } catch (AssertionError e) {
@@ -114,6 +117,7 @@ public abstract class SpatialJoinTestBase
     private Set<Pair> computeExpectedSpatialJoin()
     {
         Set<Pair> expected = new HashSet<>();
+        long start = System.nanoTime();
         for (SpatialObject s : leftInput.spatialObjects()) {
             for (SpatialObject t : rightInput.spatialObjects()) {
                 if (overlap(s, t)) {
@@ -121,6 +125,8 @@ public abstract class SpatialJoinTestBase
                 }
             }
         }
+        long stop = System.nanoTime();
+        testStats.slowJoinTimeNsec += stop - start;
         return expected;
     }
 

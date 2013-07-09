@@ -12,13 +12,15 @@ class TestStats
     {
         loadTimeMsec = 0;
         joinTimeNsec = 0;
+        slowJoinTimeNsec = 0;
         outputRowCount = 0;
         filterCount = 0;
         overlapCount = 0;
     }
 
     long loadTimeMsec;
-    long joinTimeNsec;
+    long joinTimeNsec; // Time for geophiel spatial join
+    long slowJoinTimeNsec; // Time to check all pairs
     long outputRowCount;
     long filterCount;
     long overlapCount;
