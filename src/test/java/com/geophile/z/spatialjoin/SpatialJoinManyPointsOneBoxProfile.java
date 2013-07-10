@@ -78,6 +78,18 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     }
 
     @Override
+    protected Space space()
+    {
+        return SPACE;
+    }
+
+    @Override
+    protected Index newIndex()
+    {
+        return new TreeIndex();
+    }
+
+    @Override
     protected boolean overlap(SpatialObject x, SpatialObject y)
     {
         Box a = (Box) x;

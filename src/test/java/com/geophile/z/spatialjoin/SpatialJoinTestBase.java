@@ -55,6 +55,23 @@ public abstract class SpatialJoinTestBase
         }
     }
 
+    protected final TestInput newTestInput(int n, SpatialObjectGenerator spatialObjectGenerator)
+        throws IOException, InterruptedException
+    {
+        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(space(), newIndex());
+        TestInput testInput = new TestInput(spatialIndex, spatialObjectGenerator.description());
+        load(n, spatialObjectGenerator, testInput);
+        commit();
+        return testInput;
+    }
+
+    protected abstract Space space();
+
+    protected abstract Index newIndex();
+
+    protected void commit()
+    {}
+
     protected abstract boolean overlap(SpatialObject s, SpatialObject t);
 
     protected abstract boolean verify();

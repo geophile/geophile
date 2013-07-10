@@ -57,13 +57,13 @@ public class TestSpatialObject implements SpatialObject
     @Override
     public void readFrom(ByteBuffer buffer)
     {
-        fail();
+        id = buffer.getLong();
     }
 
     @Override
     public void writeTo(ByteBuffer buffer)
     {
-        fail();
+        buffer.putLong(id);
     }
 
     public TestSpatialObject(long id)
@@ -71,5 +71,5 @@ public class TestSpatialObject implements SpatialObject
         this.id = id;
     }
 
-    private final long id;
+    private long id;
 }

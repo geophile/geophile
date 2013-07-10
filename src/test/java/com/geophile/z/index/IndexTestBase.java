@@ -7,7 +7,9 @@
 package com.geophile.z.index;
 
 import com.geophile.z.Index;
+import com.geophile.z.Serializer;
 import com.geophile.z.space.SpaceImpl;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -18,6 +20,12 @@ import static org.junit.Assert.*;
 public abstract class IndexTestBase
 {
     // TODO: Load and remove in other orders.
+
+    @BeforeClass
+    public static void beforeClass()
+    {
+        SERIALIZER.register(1, TestSpatialObject.class);
+    }
 
     @Test
     public void test() throws Exception
@@ -194,4 +202,6 @@ public abstract class IndexTestBase
     }
 
     private static final int GAP = 10;
+
+    protected static final Serializer SERIALIZER = Serializer.newSerializer();
 }

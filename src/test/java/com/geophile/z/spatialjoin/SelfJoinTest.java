@@ -55,6 +55,18 @@ public class SelfJoinTest extends SpatialJoinTestBase
     }
 
     @Override
+    protected Space space()
+    {
+        return SPACE;
+    }
+
+    @Override
+    protected Index newIndex()
+    {
+        return new TreeIndex();
+    }
+
+    @Override
     protected boolean overlap(SpatialObject s, SpatialObject t)
     {
         return OVERLAP_TESTER.overlap(s, t);

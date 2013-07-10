@@ -91,6 +91,18 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     }
 
     @Override
+    protected Space space()
+    {
+        return SPACE;
+    }
+
+    @Override
+    protected Index newIndex()
+    {
+        return new TreeIndex();
+    }
+
+    @Override
     protected boolean overlap(SpatialObject s, SpatialObject t)
     {
         return OVERLAP_TESTER.overlap(s, t);
@@ -113,17 +125,6 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     {
         return false;
     }
-
-    private TestInput newTestInput(int n, SpatialObjectGenerator spatialObjectGenerator)
-        throws IOException, InterruptedException
-    {
-        Index index = new TreeIndex();
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
-        TestInput testInput = new TestInput(spatialIndex, spatialObjectGenerator.description());
-        load(n, spatialObjectGenerator, testInput);
-        return testInput;
-    }
-
 
     private static final int COUNT = 10_000;
     private static final int NX = 1_000_000;

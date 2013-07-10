@@ -57,11 +57,11 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinTestBase
         counters.reset();
         testStats.resetAll();
         testStats.loadTimeMsec = 0;
-        BoxGenerator pointGenerator = new BoxGenerator(appSpace, random, 1, 1);
+        BoxGenerator pointGenerator = new BoxGenerator(APPLICATION_SPACE, random, 1, 1);
         TestInput rightInput = newTestInput(N_POINTS, pointGenerator);
         int maxSize = warmup ? 1000 : 64000;
         for (int size = 1000; size <= maxSize; size *= 2) {
-            BoxGenerator boxGenerator = new BoxGenerator(appSpace, random, size, size);
+            BoxGenerator boxGenerator = new BoxGenerator(APPLICATION_SPACE, random, size, size);
             TestInput leftInput = newTestInput(1, boxGenerator);
             for (int trial = 0; trial < TRIALS; trial++) {
                 testJoin(spatialJoin, leftInput, rightInput);
@@ -78,6 +78,18 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinTestBase
                       averageOutputRowCount);
             }
         }
+    }
+
+    @Override
+    protected Space space()
+    {
+        return SPACE;
+    }
+
+    @Override
+    protected Index newIndex()
+    {
+        return new TreeIndex();
     }
 
     @Override
@@ -117,7 +129,7 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinTestBase
     private TestInput newTestInput(int n, BoxGenerator boxGenerator) throws IOException, InterruptedException
     {
         Index index = new TreeIndex();
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(space, index);
+        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         TestInput testInput = new TestInput(spatialIndex, boxGenerator.description());
         load(n, boxGenerator, testInput);
         return testInput;
@@ -127,9 +139,9 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinTestBase
     private static final int NY = 1_000_000;
     private static final int X_BITS = 20;
     private static final int Y_BITS = 20;
+    private static final ApplicationSpace APPLICATION_SPACE = appSpace(0, NX, 0, NY);
+    private static final Space SPACE = Space.newSpace(APPLICATION_SPACE, X_BITS, Y_BITS);
 
-    private final ApplicationSpace appSpace = appSpace(0, NX, 0, NY);
-    private final Space space = Space.newSpace(appSpace, X_BITS, Y_BITS);
     private final BoxOverlapTester overlapTester = new BoxOverlapTester();
     private final SpatialJoinFilter filter = new SpatialJoinFilter()
     {
