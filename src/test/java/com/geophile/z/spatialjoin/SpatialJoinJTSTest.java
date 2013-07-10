@@ -105,7 +105,7 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     @Override
     protected final boolean printSummary()
     {
-        return true;
+        return false;
     }
 
     @Override
