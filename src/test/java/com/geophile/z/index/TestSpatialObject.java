@@ -71,5 +71,8 @@ public class TestSpatialObject implements SpatialObject
         this.id = id;
     }
 
+    public TestSpatialObject()
+    {}
+
     private long id;
 }

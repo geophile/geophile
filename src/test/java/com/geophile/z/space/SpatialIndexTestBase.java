@@ -11,6 +11,7 @@ import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -20,6 +21,13 @@ import static org.junit.Assert.assertEquals;
 
 public abstract class SpatialIndexTestBase
 {
+    @BeforeClass
+    public static void beforeClass()
+    {
+        SERIALIZER.register(1, Point.class);
+        SERIALIZER.register(2, Box.class);
+    }
+
     // Like TreeIndexTest.testRetrieval, but written in terms of SpatialIndex
     @Test
     public void testRetrieval() throws IOException, InterruptedException
@@ -257,6 +265,7 @@ public abstract class SpatialIndexTestBase
                 b.yLo() <= p.y() && p.y() <= b.yHi();
         }
     };
+    protected static final Serializer SERIALIZER = Serializer.newSerializer();
 
     private SpatialIndexImpl spatialIndex;
 

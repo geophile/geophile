@@ -11,6 +11,7 @@ import com.geophile.z.SpatialObject;
 import com.geophile.z.SpatialObjectException;
 import com.geophile.z.space.SpatialIndexMetadata;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.Map;
 // Serializer is not type-safe. Each SpatialIndex has a serializer, and it is expected that type registration
 // will be done in a single thread.
 
-public class SerializerImpl extends Serializer
+public class SerializerImpl extends Serializer implements Serializable
 {
     // Serializer interface
 

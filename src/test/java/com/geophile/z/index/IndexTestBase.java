@@ -33,6 +33,7 @@ public abstract class IndexTestBase
         Index index = newIndex();
         for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
             for (int copies = 1; copies <= 8; copies++) {
+                print("nObjects: %s, copies: %s", nObjects, copies);
                 load(index, nObjects, copies);
                 checkContents(index, nObjects, copies, Collections.<Long>emptySet());
                 checkRetrieval(index, nObjects, copies);
@@ -42,6 +43,9 @@ public abstract class IndexTestBase
     }
 
     protected abstract Index newIndex() throws IOException, InterruptedException;
+
+    protected void commit()
+    {}
 
     private void load(Index index, int nObjects, int zCount)
         throws IOException, InterruptedException
@@ -66,6 +70,7 @@ public abstract class IndexTestBase
                 index.add(z, spatialObject);
             }
         }
+        commit();
     }
 
     private void checkContents(Index index, int nObjects, int zCount, Set<Long> removedIds)
@@ -79,6 +84,7 @@ public abstract class IndexTestBase
             zById.add(new ArrayList<Long>());
         }
         while (!(record = cursor.next()).eof()) {
+            System.out.println(record);
             long id = (int) record.spatialObject().id();
             assertTrue(!removedIds.contains(id));
             presentIds.add(id);
