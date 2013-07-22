@@ -33,7 +33,6 @@ public abstract class IndexTestBase
         Index index = newIndex();
         for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
             for (int copies = 1; copies <= 8; copies++) {
-                print("nObjects: %s, copies: %s", nObjects, copies);
                 load(index, nObjects, copies);
                 checkContents(index, nObjects, copies, Collections.<Long>emptySet());
                 checkRetrieval(index, nObjects, copies);
@@ -66,43 +65,10 @@ public abstract class IndexTestBase
             TestSpatialObject spatialObject = new TestSpatialObject(id);
             for (long c = 0; c < zCount; c++) {
                 long z = z((id + c) * GAP);
-                // print("id: %s, c: %s -- z: %s", id, c, SpaceImpl.formatZ(z));
                 index.add(z, spatialObject);
             }
         }
         commit();
-    }
-
-    private void checkContents(Index index, int nObjects, int zCount, Set<Long> removedIds)
-        throws IOException, InterruptedException
-    {
-        Set<Long> presentIds = new HashSet<>();
-        Cursor cursor = index.cursor(SpaceImpl.Z_MIN);
-        Record record;
-        List<List<Long>> zById = new ArrayList<>();
-        for (long id = 0; id < nObjects; id++) {
-            zById.add(new ArrayList<Long>());
-        }
-        while (!(record = cursor.next()).eof()) {
-            System.out.println(record);
-            long id = (int) record.spatialObject().id();
-            assertTrue(!removedIds.contains(id));
-            presentIds.add(id);
-            List<Long> zList = zById.get((int) id);
-            zList.add(record.key().z());
-        }
-        for (long id = 0; id < nObjects; id++) {
-            if (!removedIds.contains(id)) {
-                assertTrue(presentIds.contains(id));
-                List<Long> zList = zById.get((int) id);
-                assertEquals(zCount, zList.size());
-                long expected = id * GAP;
-                for (Long z : zList) {
-                    assertEquals(z(expected), z.longValue());
-                    expected += GAP;
-                }
-            }
-        }
     }
 
     private void removeAll(Index index, int nObjects, int zCount)
@@ -122,6 +88,38 @@ public abstract class IndexTestBase
             }
             removedIds.add(id);
             checkContents(index, nObjects, zCount, removedIds);
+        }
+        commit();
+    }
+
+    private void checkContents(Index index, int nObjects, int zCount, Set<Long> removedIds)
+        throws IOException, InterruptedException
+    {
+        Set<Long> presentIds = new HashSet<>();
+        Cursor cursor = index.cursor(SpaceImpl.Z_MIN);
+        Record record;
+        List<List<Long>> zById = new ArrayList<>();
+        for (long id = 0; id < nObjects; id++) {
+            zById.add(new ArrayList<Long>());
+        }
+        while (!(record = cursor.next()).eof()) {
+            long id = (int) record.spatialObject().id();
+            assertTrue(!removedIds.contains(id));
+            presentIds.add(id);
+            List<Long> zList = zById.get((int) id);
+            zList.add(record.key().z());
+        }
+        for (long id = 0; id < nObjects; id++) {
+            if (!removedIds.contains(id)) {
+                assertTrue(presentIds.contains(id));
+                List<Long> zList = zById.get((int) id);
+                assertEquals(zCount, zList.size());
+                long expected = id * GAP;
+                for (Long z : zList) {
+                    assertEquals(z(expected), z.longValue());
+                    expected += GAP;
+                }
+            }
         }
     }
 
@@ -195,6 +193,19 @@ public abstract class IndexTestBase
         }
         assertTrue(!expected.hasNext());
         assertEquals(nObjects * zCount, count);
+    }
+
+    private void dumpContents(Index index, String label)
+        throws IOException, InterruptedException
+    {
+        print(label);
+        print("{");
+        Cursor cursor = index.cursor(SpaceImpl.Z_MIN);
+        Record record;
+        while (!(record = cursor.next()).eof()) {
+            print("    %s", record);
+        }
+        print("}");
     }
 
     private long z(long x)
