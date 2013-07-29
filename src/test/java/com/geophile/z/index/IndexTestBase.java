@@ -9,6 +9,7 @@ package com.geophile.z.index;
 import com.geophile.z.Index;
 import com.geophile.z.Serializer;
 import com.geophile.z.space.SpaceImpl;
+import com.geophile.z.util.Stopwatch;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -30,20 +31,42 @@ public abstract class IndexTestBase
     @Test
     public void test() throws Exception
     {
-        Index index = newIndex();
-        for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
-            for (int copies = 1; copies <= 8; copies++) {
-                load(index, nObjects, copies);
-                checkContents(index, nObjects, copies, Collections.<Long>emptySet());
-                checkRetrieval(index, nObjects, copies);
-                removeAll(index, nObjects, copies);
+        try {
+            Index index = newIndex();
+            for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
+                for (int copies = 1; copies <= 8; copies++) {
+    /*
+                    print("nObjects: %s, copies: %s", nObjects, copies);
+    */
+                    long start = System.currentTimeMillis();
+                    load(index, nObjects, copies);
+                    long load = System.currentTimeMillis();
+                    checkContents(index, nObjects, copies, Collections.<Long>emptySet());
+                    long checkContents = System.currentTimeMillis();
+                    checkRetrieval(index, nObjects, copies);
+                    long checkRetrieval = System.currentTimeMillis();
+                    removeAll(index, nObjects, copies);
+                    long removeAll = System.currentTimeMillis();
+    /*
+                    print("    load: %s, checkContents: %s, checkRetrieval: %s, removeAll: %s",
+                          (load - start) / 1000.0,
+                          (checkContents - load) / 1000.0,
+                          (checkRetrieval - checkContents) / 1000.0,
+                          (removeAll - checkRetrieval) / 1000.0 );
+    */
+                }
             }
+        } finally {
+            shutdown();
         }
     }
 
     protected abstract Index newIndex() throws IOException, InterruptedException;
 
     protected void commit()
+    {}
+
+    protected void shutdown() throws IOException, InterruptedException
     {}
 
     private void load(Index index, int nObjects, int zCount)
@@ -74,9 +97,12 @@ public abstract class IndexTestBase
     private void removeAll(Index index, int nObjects, int zCount)
         throws IOException, InterruptedException
     {
+        Stopwatch removeTimer = new Stopwatch();
+        Stopwatch checkTimer = new Stopwatch();
         Set<Long> removedIds = new HashSet<>();
         for (long id = 0; id < nObjects; id++) {
             // Remove id and check remaining contents
+            removeTimer.start();
             for (long c = 0; c < zCount; c++) {
                 long expected = (id + c) * GAP;
                 boolean removed = index.remove(z(expected), id);
@@ -86,10 +112,19 @@ public abstract class IndexTestBase
                 removed = index.remove(z(expected), SpaceImpl.Z_MAX);
                 assertTrue(!removed);
             }
+            removeTimer.stop();
             removedIds.add(id);
-            checkContents(index, nObjects, zCount, removedIds);
+            if (id % 1000 == 0) {
+                checkTimer.start();
+                checkContents(index, nObjects, zCount, removedIds);
+                checkTimer.stop();
+            }
         }
         commit();
+/*
+        print("       remove time: %s", removeTimer.nSec() / 1_000_000_000.0);
+        print("       check time: %s", checkTimer.nSec() / 1_000_000_000.0);
+*/
     }
 
     private void checkContents(Index index, int nObjects, int zCount, Set<Long> removedIds)
