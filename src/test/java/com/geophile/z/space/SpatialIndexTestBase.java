@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 public abstract class SpatialIndexTestBase
 {
     @BeforeClass
-    public static void beforeClass()
+    public static void beforeClass() throws Exception
     {
         SERIALIZER.register(1, Point.class);
         SERIALIZER.register(2, Box.class);
