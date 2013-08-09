@@ -9,7 +9,6 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialJoin;
-import com.geophile.z.SpatialObject;
 import com.geophile.z.space.SpatialIndexImpl;
 
 import java.io.IOException;

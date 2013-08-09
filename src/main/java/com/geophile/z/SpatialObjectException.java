@@ -14,9 +14,6 @@ package com.geophile.z;
 
 public class SpatialObjectException extends RuntimeException
 {
-    public SpatialObjectException()
-    {}
-
     public SpatialObjectException(String message)
     {
         super(message);

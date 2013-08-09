@@ -26,16 +26,15 @@ public class PointsInBox
 
     private void run() throws IOException, InterruptedException
     {
-        Space space = Space.newSpace(APPLICATION_SPACE, SPACE_X, SPACE_Y);
         // Load spatial index with points
-        SpatialIndex points = SpatialIndex.newSpatialIndex(space, new TreeIndex());
+        SpatialIndex points = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex());
         for (int i = 0; i < N_POINTS; i++) {
             points.add(randomPoint());
         }
         // Run queries
         for (int q = 0; q < N_QUERIES; q++) {
             // Load spatial index with query box
-            SpatialIndex box = SpatialIndex.newSpatialIndex(space, new TreeIndex());
+            SpatialIndex box = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex());
             Box query = randomBox();
             box.add(query);
             // Create Iterator over spatial join output
@@ -53,36 +52,39 @@ public class PointsInBox
 
     private Point randomPoint()
     {
-        int x = random.nextInt(SPACE_X);
-        int y = random.nextInt(SPACE_Y);
+        int x = random.nextInt(X);
+        int y = random.nextInt(Y);
         return new Point(x, y);
     }
     
     private Box randomBox()
     {
-        int xLo = random.nextInt(SPACE_X - BOX_WIDTH);
+        int xLo = random.nextInt(X - BOX_WIDTH);
         int xHi = xLo + BOX_WIDTH - 1;
-        int yLo = random.nextInt(SPACE_Y - BOX_HEIGHT);
+        int yLo = random.nextInt(Y - BOX_HEIGHT);
         int yHi = yLo + BOX_HEIGHT - 1;
         return new Box(xLo, xHi, yLo, yHi);
     }
 
-    private static final int SPACE_X = 1_000_000;
-    private static final int SPACE_Y = 1_000_000;
+    private static final int X = 1_000_000;
+    private static final int Y = 1_000_000;
+    private static final int X_BITS = 20;
+    private static final int Y_BITS = 20;
     private static final int N_POINTS = 1_000_000;
     private static final int BOX_WIDTH = 2_000;
     private static final int BOX_HEIGHT = 2_000;
     private static final int N_QUERIES = 5;
     private static final ApplicationSpace APPLICATION_SPACE =
-        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{SPACE_X, SPACE_Y});
+        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{X, Y});
+    private static final Space SPACE = Space.newSpace(APPLICATION_SPACE, X_BITS, Y_BITS);
     private static final SpatialJoinFilter BOX_CONTAINS_POINT =
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(SpatialObject x, SpatialObject y)
+            public boolean overlap(SpatialObject s, SpatialObject t)
             {
-                Box box= (Box) x;
-                Point point = (Point) y;
+                Box box= (Box) s;
+                Point point = (Point) t;
                 return
                     box.xLo() <= point.x() && point.x() <= box.xHi() &&
                     box.yLo() <= point.y() && point.y() <= box.yHi();

@@ -16,6 +16,10 @@ import com.geophile.z.space.SpaceImpl;
 
 public abstract class Space
 {
+    /**
+     * Returns the {@link com.geophile.z.ApplicationSpace} associated with this Space.
+     * @return The {@link com.geophile.z.ApplicationSpace} associated with this Space.
+     */
     public final ApplicationSpace applicationSpace()
     {
         return applicationSpace;
@@ -24,7 +28,7 @@ public abstract class Space
     /**
      * Creates a {@link Space}.
      * The space has xBits.length dimensions. A coordinate of dimension d
-     * must lie between 0 inclusive and 2**xBits[d] exclusive.
+     * must lie between 0 inclusive and 2**xBits[d] exclusive. The sum of the xBits must not exceed 57.
      * @param xBits Specifies the number of bits of resolution along each dimension.
      */
     public static Space newSpace(ApplicationSpace applicationSpace, int ... xBits)
@@ -37,6 +41,7 @@ public abstract class Space
      * {@link Space#newSpace(ApplicationSpace, int...)}.
      * The space has xBits.length dimensions. A coordinate of dimension d
      * must lie between 0 inclusive and 2**xBits[d] exclusive.
+     * The sum of the xBits must not exceed 57.
      * @param xBits Specifies the dimensions and extent of the space.
      * @param interleave Specifies the how bits of coordinates are interleaved. 0 <= interleave[i] < 2**xBits[d],
      *     0 <= d < 2**xBits.length. The more bits that are present for a given dimension earlier in the interleaving,

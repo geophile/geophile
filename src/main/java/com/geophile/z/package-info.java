@@ -7,14 +7,14 @@
 /**
  * Geophile, implemented by this package, is a framework for spatial querying.
  *
- * All Geophile operations take place within a {@link com.geophile.z.Space}, which
+ * All Geophile operations take place within an {@link com.geophile.z.ApplicationSpace}, which
  * represents a multi-dimensional space, and defines the coordinates for each dimension.
  * A {@link com.geophile.z.SpatialIndex} organizes a set of {@link com.geophile.z.SpatialObject}s,
  * and provides for
  * efficient filtering and joining based on spatial predicates.
  *
  * <p>
- * Layers above Geophile need to provide two abstractions:
+ * Implementations of two abstractions are needed to use Geophile:
  *
  * <ol>
  * <li> {@link com.geophile.z.SpatialObject}: A {@link com.geophile.z.SpatialObject}
@@ -29,12 +29,16 @@
  * Hash tables do not qualify because they do not allow for efficient access in key order.
  * </ol>
  *
- * Some simple implementations are provided as part of the distribution, mostly to support examples and tests,
- * but these are also useful for simple applications. The included implementations are:
+ * Geophile includes some implementations of these interfaces:
  *
  * <ul>
  * <li> {@link com.geophile.z.spatialobject.d2.Point}: A point in 2d space.
  * <li> {@link com.geophile.z.spatialobject.d2.Box}: A box in 2d space.
+ * <li> {@link com.geophile.z.spatialobject.jts}: This package contains an adapter to
+ *      the <a href="http://www.vividsolutions.com/jts/JTSHome.htm">JTS Topology suite</a> classes,
+ *      which implements
+ *      the <a href="http://www.opengis.org/">Open GIS Consortium</a>'s
+ *      <a href="http://www.opengeospatial.org/standards/sfa">Simple Feature Specification</a>.
  * <li> {@link com.geophile.z.index.treeindex.TreeIndex}: An index based on {@link java.util.TreeMap}.
  * </ul>
  */

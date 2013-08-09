@@ -17,7 +17,7 @@ import java.io.IOException;
  * When a {@link com.geophile.z.SpatialObject} is added to a {@link com.geophile.z.SpatialIndex},
  * records of the form ((z, id), s) are added to an Index. s is the spatial object.
  * The key, (z, id), comprises a z-value z, and the spatial object's id.
- * ({@link com.geophile.z.SpatialIndex} is responsible for generating z-values and calling
+ * (The {@link com.geophile.z.SpatialIndex} is responsible for generating z-values and calling
  * {@link Index#add(long, com.geophile.z.SpatialObject)}.)
  *
  * Removal of a {@link com.geophile.z.SpatialObject} from a {@link com.geophile.z.SpatialIndex} is

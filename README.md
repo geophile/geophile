@@ -45,18 +45,22 @@ These files are located in `target/site/apidocs`.
 In addition to Index and Spatial Object, described above, Geophile
 relies on the following concepts.
 
-### Space
+### Space and ApplicationSpace
 
 In order to use Geophile, you must describe the *space* in which spatial
 objects reside by giving the number of cells in each dimension, e.g.
 
-        Space space = Space.newSpace(1_000_000, 1_000_000);
+        ApplicationSpace applicationSpace = 
+            ApplicationSpace.newApplicationSpace(new double[]{0.0, 1_000_000.0},
+                                                 new double[]{0.0, 1_000_000.0});
+        Space space = Space.newSpace(applicationSpace, 10, 10);
 
-This creates a 2-dimensional space in which the lower-left corner is
-(0, 0), and the upper-right corner is (999999, 999999).
+An `ApplicationSpace` describes the space from the application's point of view.
+In this case, the space has two dimensions, whose coordinates go from 0 to 1,000,000 in each
+dimension. A `Space` describes the space from Geophile's point of view, adding to the `ApplicationSpace`
+information describing the resolution of the space -- each dimension uses 10 bits of resolution.
 
-The arguments to `Space.newSpace` are longs, so the maximum number of
-cells in a dimension is `Long.MAX_VALUE`.
+The total resolution must never exceed 57. In this case, the total resolution is 20 (10 + 10).
 
 ### Spatial Index
 
@@ -102,10 +106,14 @@ points within the box.
 
 The space is created as follows:
 
-        Space space = Space.newSpace(SPACE_X, SPACE_Y);
-        ...
-        private static final int SPACE_X = 1_000_000;
-        private static final int SPACE_Y = 1_000_000;
+    private static final int X = 1_000_000;
+    private static final int Y = 1_000_000;
+    private static final int X_BITS = 20;
+    private static final int Y_BITS = 20;
+    ...
+    private static final ApplicationSpace APPLICATION_SPACE =
+        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{X, Y});
+    private static final Space SPACE = Space.newSpace(APPLICATION_SPACE, X_BITS, Y_BITS);
 
 The spatial index with 1,000,000 points is created and loaded as follows:
 
@@ -135,7 +143,8 @@ The spatial join output is created and scanned as follows:
                 ...
             }
 
-The example runs 5 queries for the same data set. To run the example:
+The example runs 5 queries for the same data set. To run the example
+(exact results will differ):
 
         $ src/test/examples/points_in_box 
         Points inside (82078:84077, 740534:742533)
@@ -194,7 +203,7 @@ The spatial join output is created and scanned as follows:
             ...
         }
 
-To run the example:
+To run the example (exact results will differ):
 
         $ src/test/examples/overlapping_pairs 
         Overlapping pairs

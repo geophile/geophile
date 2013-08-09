@@ -8,7 +8,6 @@ package com.geophile.z.index.treeindex;
 
 import com.geophile.z.Index;
 import com.geophile.z.index.IndexTestBase;
-import com.geophile.z.index.TestSpatialObject;
 
 public class TreeIndexTest extends IndexTestBase
 {
