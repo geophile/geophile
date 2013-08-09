@@ -264,22 +264,26 @@ public class SpaceImpl extends Space
     {
         String formatted;
         if (z < 0) {
-            formatted = Long.toString(z);
+            formatted = Long.toString(z, 16);
         } else {
             int length = length(z);
-            int significantDigits = (length + 3) / 4;
-            long bits = (z & ~LENGTH_MASK) >>> (63 - significantDigits * 4);
-            long x = bits;
-            int padLength = significantDigits;
-            while (x > 0) {
-                x = x >>> 4;
-                padLength -= 1;
+            if (length > MAX_Z_BITS) {
+                formatted = Long.toString(z, 16);
+            } else {
+                int significantDigits = (length + 3) / 4;
+                long bits = (z & ~LENGTH_MASK) >>> (63 - significantDigits * 4);
+                long x = bits;
+                int padLength = significantDigits;
+                while (x > 0) {
+                    x = x >>> 4;
+                    padLength -= 1;
+                }
+                if (padLength > 0 && padLength == significantDigits) {
+                    padLength--;
+                }
+                String padding = "0000000000000000".substring(0, padLength);
+                formatted = String.format("(0x%s%x, %s)", padding, bits, length);
             }
-            if (padLength > 0 && padLength == significantDigits) {
-                padLength--;
-            }
-            String padding = "0000000000000000".substring(0, padLength);
-            formatted = String.format("(0x%s%x, %s)", padding, bits, length);
         }
         return formatted;
     }

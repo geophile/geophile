@@ -14,7 +14,6 @@ import com.geophile.z.spatialobject.d2.Point;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -30,15 +29,16 @@ public abstract class SpatialIndexTestBase
 
     // Like TreeIndexTest.testRetrieval, but written in terms of SpatialIndex
     @Test
-    public void testRetrieval() throws IOException, InterruptedException
+    public void testRetrieval() throws Exception
     {
         Index index = newIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.add(new Point(x, y));
             }
         }
+        commitTransaction();
         Random random = new Random(SEED);
         int xLo;
         int xHi;
@@ -53,7 +53,8 @@ public abstract class SpatialIndexTestBase
                 yLo = random.nextInt(Y_MAX);
                 yHi = random.nextInt(Y_MAX - yLo);
             } while (yHi < yLo);
-            test(xLo, xHi, yLo, yHi,
+            test(spatialIndex,
+                 xLo, xHi, yLo, yHi,
                  new Filter()
                  {
                      @Override
@@ -66,21 +67,23 @@ public abstract class SpatialIndexTestBase
     }
 
     @Test
-    public void testRemoveAll() throws IOException, InterruptedException
+    public void testRemoveAll() throws Exception
     {
         Index index = newIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.add(new Point(x, y));
             }
         }
+        commitTransaction();
         // Remove everything
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.remove(new Point(x, y));
             }
         }
+        commitTransaction();
         Random random = new Random(SEED);
         int xLo;
         int xHi;
@@ -95,7 +98,8 @@ public abstract class SpatialIndexTestBase
                 yLo = random.nextInt(Y_MAX);
                 yHi = random.nextInt(Y_MAX - yLo);
             } while (yHi < yLo);
-            test(xLo, xHi, yLo, yHi,
+            test(spatialIndex,
+                 xLo, xHi, yLo, yHi,
                  new Filter()
                  {
                      @Override
@@ -108,15 +112,16 @@ public abstract class SpatialIndexTestBase
     }
 
     @Test
-    public void testRemoveSome() throws IOException, InterruptedException
+    public void testRemoveSome() throws Exception
     {
         Index index = newIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 spatialIndex.add(new Point(x, y));
             }
         }
+        commitTransaction();
         // Remove (x, y), for odd x/10 and even y/10
         for (long x = 0; x < X_MAX; x += 10) {
             if ((x / 10) % 2 == 1) {
@@ -127,6 +132,7 @@ public abstract class SpatialIndexTestBase
                 }
             }
         }
+        commitTransaction();
         Random random = new Random(SEED);
         int xLo;
         int xHi;
@@ -141,7 +147,8 @@ public abstract class SpatialIndexTestBase
                 yLo = random.nextInt(Y_MAX);
                 yHi = random.nextInt(Y_MAX - yLo);
             } while (yHi < yLo);
-            test(xLo, xHi, yLo, yHi,
+            test(spatialIndex,
+                 xLo, xHi, yLo, yHi,
                  new Filter()
                  {
                      @Override
@@ -155,10 +162,10 @@ public abstract class SpatialIndexTestBase
     }
 
     @Test
-    public void spatialIdGeneratorRestore() throws IOException, InterruptedException
+    public void spatialIdGeneratorRestore() throws Exception
     {
         Index index = newIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         // pX: expected id is X
         Point p0 = new Point(0, 0);
         spatialIndex.add(p0);
@@ -183,13 +190,13 @@ public abstract class SpatialIndexTestBase
     }
 
     @Test
-    public void spatialIdGeneratorTracking() throws IOException, InterruptedException
+    public void spatialIdGeneratorTracking() throws Exception
     {
         final int SOID_RESERVATION_BLOCK_SIZE = 3;
         System.setProperty(SpatialIndexImpl.SOID_RESERVALTION_BLOCK_SIZE_PROPERTY,
                            Integer.toString(SOID_RESERVATION_BLOCK_SIZE));
         Index index = newIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoid());
         assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoidStored());
         spatialIndex.add(new Point(0, 0));
@@ -202,7 +209,9 @@ public abstract class SpatialIndexTestBase
         assertEquals(SOID_RESERVATION_BLOCK_SIZE * 2, spatialIndex.firstUnreservedSoidStored());
     }
 
-    private void test(int xLo, int xHi, int yLo, int yHi, Filter filter) throws IOException, InterruptedException
+    private void test(SpatialIndexImpl spatialIndex,
+                      int xLo, int xHi, int yLo, int yHi,
+                      Filter filter) throws Exception
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
         Index index = newIndex();
@@ -232,7 +241,10 @@ public abstract class SpatialIndexTestBase
         assertEquals(expected, actual);
     }
 
-    public abstract Index newIndex() throws IOException, InterruptedException;
+    public abstract Index newIndex() throws Exception;
+
+    public void commitTransaction() throws Exception
+    {}
 
     private static final int SEED = 123456;
     private static final int X_MAX = 1000;
@@ -266,8 +278,6 @@ public abstract class SpatialIndexTestBase
         }
     };
     protected static final Serializer SERIALIZER = Serializer.newSerializer();
-
-    private SpatialIndexImpl spatialIndex;
 
     private static interface Filter
     {

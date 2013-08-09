@@ -43,7 +43,7 @@ class SpatialJoinIterator implements Iterator<Pair>
             throw new NoSuchElementException();
         }
         next = pending.poll();
-        if (LOG.isLoggable(Level.INFO)) {
+        if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.INFO, "{0} -> {1}", new Object[]{this, next});
         }
         return next;

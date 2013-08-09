@@ -134,7 +134,7 @@ public class SpatialIndexImpl extends SpatialIndex
         Cursor cursor = index.cursor(z);
         while (soid == UNKNOWN) {
             Record record = cursor.next();
-            if (record != null) {
+            if (!record.eof()) {
                 SpatialObjectKey key = record.key();
                 if (key.z() == z) {
                     if (record.spatialObject().equalTo(spatialObject)) {
