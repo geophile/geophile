@@ -26,6 +26,39 @@ public abstract class Space
     }
 
     /**
+     * Decompose spatialObject into z-values, stored in the zs array. The maximum number of z-values is
+     * zs.length. If fewer are needed, then the unused array positions are denoted by -1 at the end of the array.
+     * @param spatialObject The SpatialObject to be decomposed.
+     * @param zs The array containing the z-values resulting from the decomposition.
+     */
+    public abstract void decompose(SpatialObject spatialObject, long[] zs);
+
+    /**
+     * Returns the z-value for a point in the application space.
+     * @param point Point coordinates.
+     * @return z-value of the point.
+     */
+    public abstract long shuffle(long[] point);
+
+    /**
+     * Convert a coordinate in application space to geophile space.
+     * @param d dimension of the space.
+     * @param appCoord coordinate in application space to transform
+     * @return position in geophile space.
+     */
+    public abstract long appToZ(int d, double appCoord);
+
+    public static long zLo(long z)
+    {
+        return SpaceImpl.zLo(z);
+    }
+
+    public static long zHi(long z)
+    {
+        return SpaceImpl.zHi(z);
+    }
+
+    /**
      * Creates a {@link Space}.
      * The space has xBits.length dimensions. A coordinate of dimension d
      * must lie between 0 inclusive and 2**xBits[d] exclusive. The sum of the xBits must not exceed 57.
