@@ -45,20 +45,19 @@ These files are located in `target/site/apidocs`.
 In addition to Index and Spatial Object, described above, Geophile
 relies on the following concepts.
 
-### Space and ApplicationSpace
+### Space 
 
 In order to use Geophile, you must describe the *space* in which spatial
 objects reside by giving the number of cells in each dimension, e.g.
 
-        ApplicationSpace applicationSpace = 
-            ApplicationSpace.newApplicationSpace(new double[]{0.0, 1_000_000.0},
-                                                 new double[]{0.0, 1_000_000.0});
-        Space space = Space.newSpace(applicationSpace, 10, 10);
+        Space space = Space.newSpace(new double[]{0.0, 1_000_000.0},
+                                     new double[]{0.0, 1_000_000.0}, 
+                                     new int[]{10, 10});
 
-An `ApplicationSpace` describes the space from the application's point of view.
+A `Space` describes the space from the application's point of view.
 In this case, the space has two dimensions, whose coordinates go from 0 to 1,000,000 in each
-dimension. A `Space` describes the space from Geophile's point of view, adding to the `ApplicationSpace`
-information describing the resolution of the space -- each dimension uses 10 bits of resolution.
+dimension. The last argument says that Geophile represents the space internally
+using a grid with 10 bits of resolution in each dimension.
 
 The total resolution must never exceed 57. In this case, the total resolution is 20 (10 + 10).
 
@@ -111,9 +110,9 @@ The space is created as follows:
     private static final int X_BITS = 20;
     private static final int Y_BITS = 20;
     ...
-    private static final ApplicationSpace APPLICATION_SPACE =
-        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{X, Y});
-    private static final Space SPACE = Space.newSpace(APPLICATION_SPACE, X_BITS, Y_BITS);
+    private static final Space SPACE = Space.newSpace(new double[]{0, 0}, 
+                                                      new double[]{X, Y}, 
+                                                      new int[]{X_BITS, Y_BITS});
 
 The spatial index with 1,000,000 points is created and loaded as follows:
 
