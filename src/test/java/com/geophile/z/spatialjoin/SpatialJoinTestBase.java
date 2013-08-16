@@ -1,6 +1,7 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
+import com.geophile.z.space.ApplicationSpace;
 
 import java.io.IOException;
 import java.util.*;
@@ -91,11 +92,6 @@ public abstract class SpatialJoinTestBase
         for (int i = 0; i < n; i++) {
             testInput.add(spatialObjectGenerator.newSpatialObject());
         }
-    }
-
-    protected static ApplicationSpace appSpace(final double xLo, final double xHi, final double yLo, final double yHi)
-    {
-        return ApplicationSpace.newApplicationSpace(new double[]{xLo, yLo}, new double[]{xHi, yHi});
     }
 
     protected final void print(String template, Object... args)

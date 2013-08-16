@@ -1,6 +1,6 @@
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.ApplicationSpace;
+import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 
 import java.util.Random;
@@ -11,12 +11,12 @@ public abstract class SpatialObjectGenerator
 
     public abstract String description();
 
-    protected SpatialObjectGenerator(ApplicationSpace appSpace, Random random)
+    protected SpatialObjectGenerator(Space space, Random random)
     {
-        this.appSpace = appSpace;
+        this.space = space;
         this.random = random;
     }
 
-    protected final ApplicationSpace appSpace;
+    protected final Space space;
     protected final Random random;
 }

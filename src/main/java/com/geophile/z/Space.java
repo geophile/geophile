@@ -6,6 +6,7 @@
 
 package com.geophile.z;
 
+import com.geophile.z.space.ApplicationSpace;
 import com.geophile.z.space.SpaceImpl;
 
 /**
@@ -17,13 +18,24 @@ import com.geophile.z.space.SpaceImpl;
 public abstract class Space
 {
     /**
-     * Returns the {@link com.geophile.z.ApplicationSpace} associated with this Space.
-     * @return The {@link com.geophile.z.ApplicationSpace} associated with this Space.
+     * The number of dimensions of this Space.
+     * @return The number of dimensions of this space.
      */
-    public final ApplicationSpace applicationSpace()
-    {
-        return applicationSpace;
-    }
+    public abstract int dimensions();
+
+    /**
+     * The low coordinate of dimension d.
+     * @param d A dimension of the space, 0 <= d < dimensions()
+     * @return The low coordinate of dimension d.
+     */
+    public abstract double lo(int d);
+
+    /**
+     * The high coordinate of dimension d.
+     * @param d A dimension of the space, 0 <= d < dimensions()
+     * @return The high coordinate of dimension d.
+     */
+    public abstract double hi(int d);
 
     /**
      * Decompose spatialObject into z-values, stored in the zs array. The maximum number of z-values is
@@ -62,27 +74,31 @@ public abstract class Space
      * Creates a {@link Space}.
      * The space has xBits.length dimensions. A coordinate of dimension d
      * must lie between 0 inclusive and 2**xBits[d] exclusive. The sum of the xBits must not exceed 57.
+     * @param lo Low coordinates of the space.
+     * @param hi High coordinates of the space.
      * @param xBits Specifies the number of bits of resolution along each dimension.
      */
-    public static Space newSpace(ApplicationSpace applicationSpace, int ... xBits)
+    public static Space newSpace(double[] lo, double[] hi, int[] xBits)
     {
-        return newSpace(applicationSpace, xBits, null);
+        return newSpace(lo, hi, xBits, null);
     }
 
     /**
      * Creates a {@link Space}, providing a greater degree of control over performance than
-     * {@link Space#newSpace(ApplicationSpace, int...)}.
+     * {@link Space#newSpace(double[], double[], int[])}.
      * The space has xBits.length dimensions. A coordinate of dimension d
      * must lie between 0 inclusive and 2**xBits[d] exclusive.
      * The sum of the xBits must not exceed 57.
+     * @param lo Low coordinates of the space.
+     * @param hi High coordinates of the space.
      * @param xBits Specifies the dimensions and extent of the space.
      * @param interleave Specifies the how bits of coordinates are interleaved. 0 <= interleave[i] < 2**xBits[d],
      *     0 <= d < 2**xBits.length. The more bits that are present for a given dimension earlier in the interleaving,
      *     the more the spatial index will be optimized for selectivity in that dimension.
      */
-    public static Space newSpace(ApplicationSpace applicationSpace, int[] xBits, int[] interleave)
+    public static Space newSpace(double[] lo, double[] hi, int[] xBits, int[] interleave)
     {
-        return new SpaceImpl(applicationSpace, xBits, interleave);
+        return new SpaceImpl(lo, hi, xBits, interleave);
     }
 
     /**
@@ -90,9 +106,9 @@ public abstract class Space
      */
     public static final int MAX_DIMENSIONS = 6;
 
-    protected Space(ApplicationSpace applicationSpace)
+    protected Space(double[] lo, double[] hi)
     {
-        this.applicationSpace = applicationSpace;
+        this.applicationSpace = new ApplicationSpace(lo, hi);
     }
 
     protected ApplicationSpace applicationSpace;

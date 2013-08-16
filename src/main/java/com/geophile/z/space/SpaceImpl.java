@@ -6,7 +6,6 @@
 
 package com.geophile.z.space;
 
-import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 
@@ -48,6 +47,18 @@ public class SpaceImpl extends Space
     public int dimensions()
     {
         return dimensions;
+    }
+
+    @Override
+    public double lo(int d)
+    {
+        return applicationSpace.lo(d);
+    }
+
+    @Override
+    public double hi(int d)
+    {
+        return applicationSpace.hi(d);
     }
 
     public long shuffle(long x[])
@@ -293,9 +304,9 @@ public class SpaceImpl extends Space
         return (long) (((appCoord - appLo[d]) / appWidth[d]) * zRange[d]);
     }
 
-    public SpaceImpl(ApplicationSpace applicationSpace, int[] xBits, int[] interleave)
+    public SpaceImpl(double[] lo, double[] hi, int[] xBits, int[] interleave)
     {
-        super(applicationSpace);
+        super(lo, hi);
         this.dimensions = xBits.length;
         check(this.applicationSpace.dimensions() == this.dimensions,
               "Space dimensions: %s != ApplicationSpace dimensions: %s",

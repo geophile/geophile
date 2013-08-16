@@ -6,7 +6,6 @@
 
 package com.geophile.z.spatialobject;
 
-import com.geophile.z.ApplicationSpace;
 import com.geophile.z.Serializer;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
@@ -123,9 +122,9 @@ public class SerializationTest
     }
 
     private static final Serializer SERIALIZER = Serializer.newSerializer();
-    private static final ApplicationSpace APPLICATION_SPACE =
-        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{1_000_000, 1_000_000});
-    private static final Space SPACE = Space.newSpace(APPLICATION_SPACE, 20, 20);
+    private static final Space SPACE = Space.newSpace(new double[]{0, 0},
+                                                      new double[]{1_000_000, 1_000_000},
+                                                      new int[]{20, 20});
     private static final GeometryFactory FACTORY = new GeometryFactory();
 
     private final ByteBuffer buffer = ByteBuffer.allocate(1000);

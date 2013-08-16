@@ -59,9 +59,9 @@ public class OverlappingPairs
     private static final int N_BOXES = 1_000_000;
     private static final int BOX_WIDTH = 2;
     private static final int BOX_HEIGHT = 2;
-    private static final ApplicationSpace APPLICATION_SPACE =
-        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{X, Y});
-    private static final Space SPACE = Space.newSpace(APPLICATION_SPACE, X_BITS, Y_BITS);
+    private static final Space SPACE = Space.newSpace(new double[]{0, 0},
+                                                      new double[]{X, Y},
+                                                      new int[]{X_BITS, Y_BITS});
     private static final SpatialJoinFilter BOX_OVERLAP =
         new SpatialJoinFilter()
         {

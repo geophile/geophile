@@ -8,6 +8,7 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
 import com.geophile.z.index.treeindex.TreeIndex;
+import com.geophile.z.space.ApplicationSpace;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -37,11 +38,11 @@ public class SpatialJoinTest extends SpatialJoinTestBase
             for (int maxLeftXSize : MAX_SIZES) {
                 for (int maxLeftYSize : MAX_SIZES) {
                     BoxGenerator leftBoxGenerator =
-                        new BoxGenerator(APP_SPACE, random, maxLeftXSize, maxLeftYSize);
+                        new BoxGenerator(SPACE, random, maxLeftXSize, maxLeftYSize);
                     for (int maxRightXSize : MAX_SIZES) {
                         for (int maxRightYSize : MAX_SIZES) {
                             BoxGenerator rightBoxGenerator =
-                                new BoxGenerator(APP_SPACE, random, maxRightXSize, maxRightYSize);
+                                new BoxGenerator(SPACE, random, maxRightXSize, maxRightYSize);
                             for (int trial = 0; trial < TRIALS; trial++) {
                                 if (trial == 0 || nLeft < nRight) {
                                     leftInput = newTestInput(nLeft, leftBoxGenerator);
@@ -113,8 +114,9 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     private static final int Y_BITS = 20;
     private static final int TRIALS = 1;
     private static final BoxOverlapTester OVERLAP_TESTER = new BoxOverlapTester();
-    private static final ApplicationSpace APP_SPACE = appSpace(0, NX, 0, NY);
-    private static final Space SPACE = Space.newSpace(APP_SPACE, X_BITS, Y_BITS);
+    private static final Space SPACE = Space.newSpace(new double[]{0, 0},
+                                                      new double[]{NX, NY},
+                                                      new int[]{X_BITS, Y_BITS});
 
     private final Random random = new Random(123456);
     private final SpatialJoinFilter filter = new SpatialJoinFilter()

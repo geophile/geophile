@@ -6,7 +6,6 @@
 
 package com.geophile.z.space;
 
-import com.geophile.z.ApplicationSpace;
 import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
@@ -91,7 +90,10 @@ public class DecompositionTest
         return ints;
     }
 
-    private final ApplicationSpace APP_SPACE =
-        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{1024, 1024});
-    private final SpaceImpl SPACE = new SpaceImpl(APP_SPACE, ints(10, 10), null);
+    private static double[] doubles(double ... doubles)
+    {
+        return doubles;
+    }
+
+    private final SpaceImpl SPACE = new SpaceImpl(doubles(0, 0), doubles(1024, 1024), ints(10, 10), null);
 }

@@ -26,14 +26,12 @@ public class JTSPointGenerator extends SpatialObjectGenerator
 
     public JTSPointGenerator(Space space, GeometryFactory factory, Random random)
     {
-        super(space.applicationSpace(), random);
-        this.space = space;
+        super(space, random);
         this.factory = factory;
-        this.nx = (int) (appSpace.hi(0) - appSpace.lo(0));
-        this.ny = (int) (appSpace.hi(1) - appSpace.lo(1));
+        this.nx = (int) (space.hi(0) - space.lo(0));
+        this.ny = (int) (space.hi(1) - space.lo(1));
     }
 
-    private final Space space;
     private final GeometryFactory factory;
     private final int nx;
     private final int ny;

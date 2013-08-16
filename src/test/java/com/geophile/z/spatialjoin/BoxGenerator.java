@@ -1,6 +1,6 @@
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.ApplicationSpace;
+import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;
 
@@ -34,11 +34,11 @@ public class BoxGenerator extends SpatialObjectGenerator
         return maxY;
     }
 
-    public BoxGenerator(ApplicationSpace appSpace, Random random, int maxX, int maxY)
+    public BoxGenerator(Space space, Random random, int maxX, int maxY)
     {
-        super(appSpace, random);
-        this.nx = (int) (appSpace.hi(0) - appSpace.lo(0));
-        this.ny = (int) (appSpace.hi(1) - appSpace.lo(1));
+        super(space, random);
+        this.nx = (int) (space.hi(0) - space.lo(0));
+        this.ny = (int) (space.hi(1) - space.lo(1));
         this.maxX = maxX;
         this.maxY = maxY;
     }

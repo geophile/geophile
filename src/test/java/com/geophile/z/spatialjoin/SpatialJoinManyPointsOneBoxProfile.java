@@ -59,7 +59,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
         final int QUERY_X_SIZE = NX / 100;
         final int QUERY_Y_SIZE = NY / 100;
         SpatialIndex rightInput = loadPoints(N_POINTS);
-        BoxGenerator boxGenerator = new BoxGenerator(APP_SPACE, random, QUERY_X_SIZE, QUERY_Y_SIZE);
+        BoxGenerator boxGenerator = new BoxGenerator(SPACE, random, QUERY_X_SIZE, QUERY_Y_SIZE);
         long totalOutputCount = 0;
         long totalMsec = 0;
         for (int trial = 0; trial < TRIALS; trial++) {
@@ -151,10 +151,11 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
 
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
-    private static final int LOG_NX = 20;
-    private static final int LOG_NY = 20;
-    private static final ApplicationSpace APP_SPACE = appSpace(0, NX, 0, NY);
-    private static final Space SPACE = Space.newSpace(APP_SPACE, LOG_NX, LOG_NY);
+    private static final int X_BITS = 20;
+    private static final int Y_BITS = 20;
+    private static final Space SPACE = Space.newSpace(new double[]{0, 0},
+                                                      new double[]{NX, NY},
+                                                      new int[]{X_BITS, Y_BITS});
     private static final SpatialJoinFilter FILTER =
         USE_JTS
         ? new TestFilterJTS()

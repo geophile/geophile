@@ -262,9 +262,7 @@ public abstract class SpatialIndexTestBase
                 return c;
             }
         };
-    private static final ApplicationSpace APP_SPACE =
-        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{1000, 1000});
-    private static final SpaceImpl SPACE = new SpaceImpl(APP_SPACE, new int[]{10, 10}, null);
+    private static final SpaceImpl SPACE = new SpaceImpl(new double[]{0, 0}, new double[]{1000, 1000}, new int[]{10, 10}, null);
     private static final SpatialJoinFilter FILTER = new SpatialJoinFilter()
     {
         @Override

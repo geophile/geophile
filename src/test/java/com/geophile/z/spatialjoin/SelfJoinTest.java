@@ -47,7 +47,7 @@ public class SelfJoinTest extends SpatialJoinTestBase
         SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         for (int maxXSize : MAX_SIZES) {
             for (int maxYSize : MAX_SIZES) {
-                BoxGenerator boxGenerator = new BoxGenerator(APP_SPACE, random, maxXSize, maxYSize);
+                BoxGenerator boxGenerator = new BoxGenerator(SPACE, random, maxXSize, maxYSize);
                 TestInput input = newTestInput(COUNT, boxGenerator);
                 testJoin(spatialJoin, input, input);
             }
@@ -101,10 +101,11 @@ public class SelfJoinTest extends SpatialJoinTestBase
 
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
-    private static final int LOG_NX = 20;
-    private static final int LOG_NY = 20;
-    private static final ApplicationSpace APP_SPACE = appSpace(0, NX, 0, NY);
-    private static final Space SPACE = Space.newSpace(APP_SPACE, LOG_NX, LOG_NY);
+    private static final int X_BITS = 20;
+    private static final int Y_BITS = 20;
+    private static final Space SPACE = Space.newSpace(new double[]{0, 0},
+                                                      new double[]{NX, NY},
+                                                      new int[]{X_BITS, Y_BITS});
     private static final int COUNT = 10_000;
     private static final int[] MAX_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
     private static final BoxOverlapTester OVERLAP_TESTER = new BoxOverlapTester();

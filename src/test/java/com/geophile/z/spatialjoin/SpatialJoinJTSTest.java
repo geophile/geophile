@@ -24,7 +24,10 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.*;
+import com.geophile.z.Index;
+import com.geophile.z.Space;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.index.treeindex.TreeIndex;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.junit.Test;
@@ -139,8 +142,9 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     private static final int Y_MAX_SEGMENT_DISTANCE = 1_000;
     private static final JTSOverlapTester OVERLAP_TESTER = new JTSOverlapTester();
     private static final GeometryFactory FACTORY = new GeometryFactory();
-    private static final ApplicationSpace APP_SPACE = appSpace(0, NX, 0, NY);
-    private static final Space SPACE = Space.newSpace(APP_SPACE, X_BITS, Y_BITS);
+    private static final Space SPACE = Space.newSpace(new double[]{0, 0},
+                                                      new double[]{NX, NY},
+                                                      new int[]{X_BITS, Y_BITS});
 
     private final Random random = new Random(123456);
     private final SpatialJoinFilter filter = new SpatialJoinFilter()

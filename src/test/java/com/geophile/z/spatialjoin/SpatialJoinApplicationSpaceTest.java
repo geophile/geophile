@@ -119,9 +119,9 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     private static final int X_BITS = 10;
     private static final int Y_BITS = 10;
     private static final int TRIALS = 100;
-    private static final ApplicationSpace APPLICATION_SPACE =
-        appSpace(APP_SPACE_LO, APP_SPACE_HI, APP_SPACE_LO, APP_SPACE_HI);
-    private static final Space SPACE = Space.newSpace(APPLICATION_SPACE, X_BITS, Y_BITS);
+    private static final Space SPACE = Space.newSpace(new double[]{APP_SPACE_LO, APP_SPACE_LO},
+                                                      new double[]{APP_SPACE_HI, APP_SPACE_HI},
+                                                      new int[]{X_BITS, Y_BITS});
     private static final BoxOverlapTester OVERLAP_TESTER = new BoxOverlapTester();
 
     private final SpatialJoinFilter filter = new SpatialJoinFilter()

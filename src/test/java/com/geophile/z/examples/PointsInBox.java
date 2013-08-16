@@ -74,9 +74,9 @@ public class PointsInBox
     private static final int BOX_WIDTH = 2_000;
     private static final int BOX_HEIGHT = 2_000;
     private static final int N_QUERIES = 5;
-    private static final ApplicationSpace APPLICATION_SPACE =
-        ApplicationSpace.newApplicationSpace(new double[]{0, 0}, new double[]{X, Y});
-    private static final Space SPACE = Space.newSpace(APPLICATION_SPACE, X_BITS, Y_BITS);
+    private static final Space SPACE = Space.newSpace(new double[]{0, 0},
+                                                      new double[]{X, Y},
+                                                      new int[]{X_BITS, Y_BITS});
     private static final SpatialJoinFilter BOX_CONTAINS_POINT =
         new SpatialJoinFilter()
         {
