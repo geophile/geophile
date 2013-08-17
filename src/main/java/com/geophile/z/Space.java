@@ -50,21 +50,23 @@ public abstract class Space
      * @param point Point coordinates.
      * @return z-value of the point.
      */
-    public abstract long shuffle(long[] point);
+    public abstract long spatialIndexKey(double[] point);
 
     /**
-     * Convert a coordinate in application space to geophile space.
-     * @param d dimension of the space.
-     * @param appCoord coordinate in application space to transform
-     * @return position in geophile space.
+     * The low point of the given z-value.
+     * @param z A z-value
+     * @return low point of the given z-value
      */
-    public abstract long appToZ(int d, double appCoord);
-
     public static long zLo(long z)
     {
         return SpaceImpl.zLo(z);
     }
 
+    /**
+     * The high point of the given z-value.
+     * @param z A z-value
+     * @return high point of the given z-value
+     */
     public static long zHi(long z)
     {
         return SpaceImpl.zHi(z);

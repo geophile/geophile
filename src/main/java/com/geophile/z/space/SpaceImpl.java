@@ -61,6 +61,19 @@ public class SpaceImpl extends Space
         return applicationSpace.hi(d);
     }
 
+    @Override
+    public long spatialIndexKey(double[] point)
+    {
+        if (point.length != dimensions) {
+            throw new IllegalArgumentException(Arrays.toString(point));
+        }
+        long[] zPoint = new long[point.length];
+        for (int d = 0; d < dimensions; d++) {
+            zPoint[d] = appToZ(d, point[d]);
+        }
+        return shuffle(zPoint);
+    }
+
     public long shuffle(long x[])
     {
         return shuffle(x, zBits);
