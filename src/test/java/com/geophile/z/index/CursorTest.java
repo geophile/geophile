@@ -7,7 +7,7 @@
 package com.geophile.z.index;
 
 import com.geophile.z.Index;
-import com.geophile.z.index.treeindex.TreeIndex;
+import com.geophile.z.index.tree.TreeIndex;
 import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;
 

@@ -4,12 +4,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.index.treeindex;
+package com.geophile.z.index.tree;
 
 import com.geophile.z.Index;
 import com.geophile.z.index.IndexTestBase;
 
-public class TreeIndexTest extends IndexTestBase
+public class TreeTest extends IndexTestBase
 {
     @Override
     protected Index newIndex()

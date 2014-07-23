@@ -4,20 +4,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.index.treeindex;
+package com.geophile.z.index.tree;
 
-import com.geophile.z.Serializer;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
 import com.geophile.z.index.SpatialObjectKey;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class TreeIndexWithSerializationCursor extends Cursor
+public class TreeIndexCursor extends Cursor
 {
     // Cursor interface
 
@@ -43,11 +42,8 @@ public class TreeIndexWithSerializationCursor extends Cursor
 
     // TreeIndexCursor interface
 
-    public TreeIndexWithSerializationCursor(Serializer serializer,
-                                            TreeMap<SpatialObjectKey, ByteBuffer> tree,
-                                            SpatialObjectKey key)
+    public TreeIndexCursor(TreeMap<SpatialObjectKey, SpatialObject> tree, SpatialObjectKey key)
     {
-        this.serializer = serializer;
         this.tree = tree;
         this.startAt = key;
     }
@@ -70,11 +66,8 @@ public class TreeIndexWithSerializationCursor extends Cursor
                 return current();
         }
         if (treeIterator.hasNext()) {
-            Map.Entry<SpatialObjectKey, ByteBuffer> neighbor = treeIterator.next();
-            ByteBuffer buffer = neighbor.getValue();
-            buffer.mark();
-            current(neighbor.getKey().z(), serializer.deserialize(buffer));
-            buffer.reset();
+            Map.Entry<SpatialObjectKey, SpatialObject> neighbor = treeIterator.next();
+            current(neighbor.getKey().z(), neighbor.getValue());
             state(State.IN_USE);
             startAt = neighbor.getKey();
         } else {
@@ -94,9 +87,8 @@ public class TreeIndexWithSerializationCursor extends Cursor
 
     // Object state
 
-    private final TreeMap<SpatialObjectKey, ByteBuffer> tree;
-    private final Serializer serializer;
+    private final TreeMap<SpatialObjectKey, SpatialObject> tree;
     private SpatialObjectKey startAt;
     private boolean forward;
-    private Iterator<Map.Entry<SpatialObjectKey, ByteBuffer>> treeIterator;
+    private Iterator<Map.Entry<SpatialObjectKey, SpatialObject>> treeIterator;
 }

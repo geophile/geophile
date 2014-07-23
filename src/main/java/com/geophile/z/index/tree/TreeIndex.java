@@ -4,25 +4,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.index.treeindex;
+package com.geophile.z.index.tree;
 
 import com.geophile.z.DuplicateSpatialObjectException;
 import com.geophile.z.Index;
-import com.geophile.z.Serializer;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.SpatialObjectKey;
 
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// Like TreeIndex, but with serialization of spatial objects
+/**
+ * TreeIndex implements the {@link com.geophile.z.Index} interface in terms of a {@link java.util.TreeMap}.
+ * A TreeIndex is not safe for use for simultaneous use by multiple threads.
+ */
 
-public class TreeIndexWithSerialization implements Index
+public class TreeIndex implements Index
 {
     // Object interface
 
@@ -44,9 +44,9 @@ public class TreeIndexWithSerialization implements Index
     @Override
     public void add(long z, SpatialObject spatialObject)
     {
-        ByteBuffer replaced = tree.put(key(z, spatialObject.id()), serialize(spatialObject));
+        SpatialObject replaced = tree.put(key(z, spatialObject.id()), spatialObject);
         if (replaced != null) {
-            throw new DuplicateSpatialObjectException(deserialize(replaced));
+            throw new DuplicateSpatialObjectException(replaced);
         }
     }
 
@@ -54,10 +54,10 @@ public class TreeIndexWithSerialization implements Index
     public boolean remove(long z, long soid)
     {
         boolean removed = false;
-        Iterator<Map.Entry<SpatialObjectKey, ByteBuffer>> zScan =
+        Iterator<Map.Entry<SpatialObjectKey, SpatialObject>> zScan =
             tree.tailMap(key(z, soid)).entrySet().iterator();
         if (zScan.hasNext()) {
-            Map.Entry<SpatialObjectKey, ByteBuffer> entry = zScan.next();
+            Map.Entry<SpatialObjectKey, SpatialObject> entry = zScan.next();
             if (entry.getKey().z() == z) {
                 SpatialObjectKey key = entry.getKey();
                 assert key.z() == z : key;
@@ -73,7 +73,7 @@ public class TreeIndexWithSerialization implements Index
     @Override
     public Cursor cursor(long z)
     {
-        return new TreeIndexWithSerializationCursor(serializer, tree, key(z));
+        return new TreeIndexCursor(tree, key(z));
     }
 
     @Override
@@ -90,42 +90,15 @@ public class TreeIndexWithSerialization implements Index
 
     // TreeIndex
 
-    public TreeIndexWithSerialization(Serializer serializer)
-    {
-        this.serializer = serializer;
-    }
-
-    // For use by this class
-
-    private ByteBuffer serialize(SpatialObject spatialObject)
-    {
-        ByteBuffer buffer = ByteBuffer.allocate(INITIAL_BUFFER_SIZE);
-        boolean serialized = false;
-        do {
-            try {
-                serializer.serialize(spatialObject, buffer);
-                buffer.flip();
-                serialized = true;
-            } catch (BufferOverflowException e) {
-                buffer = ByteBuffer.allocate(buffer.capacity() * 2);
-            }
-        } while (!serialized);
-        return buffer;
-    }
-
-    private SpatialObject deserialize(ByteBuffer buffer)
-    {
-        return serializer.deserialize(buffer);
-    }
+    public TreeIndex()
+    {}
 
     // Class state
 
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
-    private static final int INITIAL_BUFFER_SIZE = 100;
 
     // Object state
 
     private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
-    private final Serializer serializer;
-    private final TreeMap<SpatialObjectKey, ByteBuffer> tree = new TreeMap<>();
+    private final TreeMap<SpatialObjectKey, SpatialObject> tree = new TreeMap<>();
 }

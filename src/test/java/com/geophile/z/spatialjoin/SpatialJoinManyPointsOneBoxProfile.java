@@ -31,7 +31,7 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
-import com.geophile.z.index.treeindex.TreeIndex;
+import com.geophile.z.index.tree.TreeIndex;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import com.geophile.z.spatialobject.jts.JTSPoint;

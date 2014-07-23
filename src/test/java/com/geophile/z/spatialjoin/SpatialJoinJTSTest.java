@@ -28,7 +28,7 @@ import com.geophile.z.Index;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialJoin;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.index.treeindex.TreeIndex;
+import com.geophile.z.index.tree.TreeIndex;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.junit.Test;
 

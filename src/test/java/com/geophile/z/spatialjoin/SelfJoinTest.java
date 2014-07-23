@@ -19,7 +19,7 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
-import com.geophile.z.index.treeindex.TreeIndex;
+import com.geophile.z.index.tree.TreeIndex;
 import org.junit.Test;
 
 import java.io.IOException;

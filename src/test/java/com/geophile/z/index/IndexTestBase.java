@@ -35,9 +35,9 @@ public abstract class IndexTestBase
             Index index = newIndex();
             for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
                 for (int copies = 1; copies <= 8; copies++) {
-    /*
+/*
                     print("nObjects: %s, copies: %s", nObjects, copies);
-    */
+*/
                     long start = System.currentTimeMillis();
                     load(index, nObjects, copies);
                     long load = System.currentTimeMillis();

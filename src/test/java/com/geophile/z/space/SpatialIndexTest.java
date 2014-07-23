@@ -7,7 +7,7 @@
 package com.geophile.z.space;
 
 import com.geophile.z.Index;
-import com.geophile.z.index.treeindex.TreeIndex;
+import com.geophile.z.index.tree.TreeIndex;
 
 public class SpatialIndexTest extends SpatialIndexTestBase
 {

@@ -45,6 +45,13 @@ public class Record
         this.spatialObject = spatialObject;
     }
 
+    // For creating a Record used just for its key, e.g. in a binary search of an array of Records.
+    public void set(long z, long soid)
+    {
+        this.key = SpatialObjectKey.key(z, soid);
+        this.spatialObject = null;
+    }
+
     public void setEOF()
     {
         key = null;

@@ -39,7 +39,7 @@
  *      which implements
  *      the <a href="http://www.opengis.org/">Open GIS Consortium</a>'s
  *      <a href="http://www.opengeospatial.org/standards/sfa">Simple Feature Specification</a>.
- * <li> {@link com.geophile.z.index.treeindex.TreeIndex}: An index based on {@link java.util.TreeMap}.
+ * <li> {@link com.geophile.z.index.tree.TreeIndex}: An index based on {@link java.util.TreeMap}.
  * </ul>
  */
 
