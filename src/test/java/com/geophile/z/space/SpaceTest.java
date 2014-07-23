@@ -142,10 +142,10 @@ public class SpaceTest
         for (int bits = 0; bits < SpaceImpl.MAX_Z_BITS; bits++) {
             long base = prefix(Z_TEST, bits);
             long sibling = base ^ (1L << (64 - bits));
-            // space-value isn't its own sibling
+            // z-value isn't its own sibling
             assertFalse(SpaceImpl.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(base, bits)));
             if (bits > 0) {
-                // space-value is it's sibling's sibling
+                // z-value is its sibling's sibling
                 assertTrue(SpaceImpl.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(sibling, bits)));
                 // siblings have to be at the same level
                 assertFalse(SpaceImpl.siblings(SpaceImpl.z(base, bits), SpaceImpl.z(sibling, bits + 1)));
@@ -224,16 +224,5 @@ public class SpaceTest
     private void check(SpaceImpl space, long expected, long[] x)
     {
         assertEquals(SpaceImpl.z(expected, space.zBits()), space.shuffle(x));
-    }
-
-    private ApplicationSpace applicationSpace(int dimensions, int size)
-    {
-        double[] lo = new double[dimensions];
-        double[] hi = new double[dimensions];
-        for (int d = 0; d < dimensions; d++) {
-            lo[d] = 0;
-            hi[d] = size;
-        }
-        return new ApplicationSpace(lo, hi);
     }
 }

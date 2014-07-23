@@ -26,7 +26,7 @@ public class Region
         buffer.append('(');
         buffer.append(level);
         buffer.append(": ");
-        for (int d = 0; d < dimensions; d++) {
+        for (int d = 0; d < space.dimensions; d++) {
             if (d > 0) {
                 buffer.append(", ");
             }
@@ -118,12 +118,11 @@ public class Region
         assert lo.length == space.dimensions;
         assert hi.length == space.dimensions;
         this.space = space;
-        this.dimensions = space.dimensions;
         this.interleave = space.interleave;
         this.lo = Arrays.copyOf(lo, lo.length);
         this.hi = Arrays.copyOf(hi, hi.length);
         this.level = level;
-        this.xBitPosition = new int[dimensions];
+        this.xBitPosition = new int[space.dimensions];
         for (int zBitPosition = space.zBits - 1; zBitPosition >= level; zBitPosition--) {
             int d = interleave[zBitPosition];
             xBitPosition[d]++;
@@ -135,7 +134,6 @@ public class Region
     private Region(Region region)
     {
         this.space = region.space;
-        this.dimensions = region.dimensions;
         this.interleave = region.interleave;
         this.lo = Arrays.copyOf(region.lo, region.lo.length);
         this.hi = Arrays.copyOf(region.hi, region.hi.length);
@@ -146,7 +144,6 @@ public class Region
     // Object state
 
     private final SpaceImpl space;
-    private final int dimensions;
     private final int[] interleave;
     private final long[] lo;
     private final long[] hi;

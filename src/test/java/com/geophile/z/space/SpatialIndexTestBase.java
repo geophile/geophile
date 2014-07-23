@@ -51,7 +51,7 @@ public abstract class SpatialIndexTestBase
             } while (xHi < xLo);
             do {
                 yLo = random.nextInt(Y_MAX);
-                yHi = random.nextInt(Y_MAX - yLo);
+                yHi = yLo + random.nextInt(Y_MAX - yLo);
             } while (yHi < yLo);
             test(spatialIndex,
                  xLo, xHi, yLo, yHi,

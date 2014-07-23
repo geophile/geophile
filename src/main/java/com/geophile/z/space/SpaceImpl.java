@@ -312,6 +312,7 @@ public class SpaceImpl extends Space
         return formatted;
     }
 
+    // Returns a coordinate in the Z space, right-justified, not a z-value.
     public long appToZ(int d, double appCoord)
     {
         return (long) (((appCoord - appLo[d]) / appWidth[d]) * zRange[d]);
@@ -397,9 +398,9 @@ public class SpaceImpl extends Space
         // A bit count of 0 means a 0-length bitstring, covering the entire space. The maximum bit count is 57,
         // (the number of bits between the leading 0 and the bit count).
         //
-        // Shuffling one bit at a time would be slow. The implementation used in shuffle(long[]) should be a lot
-        // faster, relying on array subscripting to locate masks which are combined using bitwise OR. The masks
-        // are computed here.
+        // Shuffling one bit at a time would be slow. The implementation used in {@link #spatialIndexKey(double[])}
+        // should be a lot faster, relying on array subscripting to locate masks which are combined using bitwise OR.
+        // The masks are computed here.
         //
         // First, xz, a mapping from x (coordinate) to z bit positions, is computed. xz[d][p] is the position
         // within the z-value of bit p of x[d], (the coordinate of dimension d). For both x and z, bit positions
