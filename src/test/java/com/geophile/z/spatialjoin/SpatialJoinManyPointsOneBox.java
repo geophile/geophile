@@ -4,36 +4,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-
 package com.geophile.z.spatialjoin;
 
+import com.geophile.util.MicroBenchmark;
 import com.geophile.z.*;
-import com.geophile.z.index.tree.TreeIndex;
+import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.spatialobject.d2.Box;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Random;
 
 // For time measurement
 
-public class SpatialJoinManyPointsOneBox extends SpatialJoinTestBase
+public class SpatialJoinManyPointsOneBox
 {
     public static void main(String[] args) throws IOException, InterruptedException
     {
@@ -42,97 +26,66 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinTestBase
 
     private void run() throws IOException, InterruptedException
     {
-        for (int w = 0; w < 10; w++) {
-            run(true);
-        }
-        run(false);
-    }
-
-    private void run(boolean warmup) throws IOException, InterruptedException
-    {
-        final int TRIALS = 100;
-        final int N_POINTS = 1_000_000;
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.INCLUDE);
-        Counters counters = Counters.forThread();
-        counters.reset();
-        testStats.resetAll();
-        testStats.loadTimeMsec = 0;
         BoxGenerator pointGenerator = new BoxGenerator(SPACE, random, 1, 1);
-        TestInput rightInput = newTestInput(N_POINTS, pointGenerator);
-        int maxSize = warmup ? 1000 : 64000;
-        for (int size = 1000; size <= maxSize; size *= 2) {
+        final SpatialIndex dataIndex = loadSpatialIndex(N_POINTS, pointGenerator);
+        final SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.INCLUDE);
+        for (int size = MIN_QUERY_BOX_SIZE; size <= MAX_QUERY_BOX_SIZE; size *= 2) {
             BoxGenerator boxGenerator = new BoxGenerator(SPACE, random, size, size);
-            TestInput leftInput = newTestInput(1, boxGenerator);
-            for (int trial = 0; trial < TRIALS; trial++) {
-                testJoin(spatialJoin, leftInput, rightInput);
+            final Box query = (Box) boxGenerator.newSpatialObject();
+            double manyManyJoinMsec;
+            double oneManyJoinMsec;
+            // Many/many join
+            {
+                MicroBenchmark benchmark =
+                    new MicroBenchmark(10, 0.10)
+                    {
+                        @Override
+                        public Object action() throws IOException, InterruptedException
+                        {
+                            SpatialIndex queryIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray());
+                            queryIndex.add(query);
+                            for (int trial = 0; trial < TRIALS; trial++) {
+                                Iterator<Pair> iterator = spatialJoin.iterator(queryIndex, dataIndex);
+                                while (iterator.hasNext()) {
+                                    iterator.next();
+                                }
+                            }
+                            return null;
+                        }
+                    };
+                manyManyJoinMsec = benchmark.run() / TRIALS / 1000;
             }
-            double loadMsecPerPoint = (double) testStats.loadTimeMsec / N_POINTS;
-            double averageJoinMsec = (double) testStats.joinTimeNsec / (TRIALS * 1_000_000);
-            double averageOutputRowCount = (double) testStats.outputRowCount / TRIALS;
-            if (!warmup) {
-                print("load msec/point: %s\tjoin msec: %s\tancestor: %s\tenter: %s\toutput size: %s",
-                      loadMsecPerPoint,
-                      averageJoinMsec,
-                      counters.ancestorFind(),
-                      counters.enterZ(),
-                      averageOutputRowCount);
+            // One/many join
+            {
+                MicroBenchmark benchmark =
+                    new MicroBenchmark(10, 0.10)
+                    {
+                        @Override
+                        public Object action() throws IOException, InterruptedException
+                        {
+                            for (int trial = 0; trial < TRIALS; trial++) {
+                                Iterator<SpatialObject> iterator = spatialJoin.iterator(query, dataIndex);
+                                while (iterator.hasNext()) {
+                                    iterator.next();
+                                }
+                            }
+                            return null;
+                        }
+                    };
+                oneManyJoinMsec = benchmark.run() / TRIALS / 1000;
             }
+            System.out.format("%d x %d\t\tmany/many: %f msec\tone/many: %f msec\n",
+                              size, size, manyManyJoinMsec, oneManyJoinMsec);
         }
     }
-
-    @Override
-    protected Space space()
+    private SpatialIndex loadSpatialIndex(int n, SpatialObjectGenerator generator)
+        throws IOException, InterruptedException
     {
-        return SPACE;
-    }
-
-    @Override
-    protected Index newIndex()
-    {
-        return new TreeIndex();
-    }
-
-    @Override
-    protected boolean overlap(SpatialObject x, SpatialObject y)
-    {
-        Box a = (Box) x;
-        Box b = (Box) y;
-        return
-            a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
-            a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
-    }
-
-    @Override
-    protected boolean verify()
-    {
-        return false;
-    }
-
-    @Override
-    protected boolean printSummary()
-    {
-        return false;
-    }
-
-    @Override
-    protected boolean trace()
-    {
-        return false;
-    }
-
-    @Override
-    protected void checkEquals(Object expected, Object actual)
-    {
-        assert expected.equals(actual);
-    }
-
-    private TestInput newTestInput(int n, BoxGenerator boxGenerator) throws IOException, InterruptedException
-    {
-        Index index = new TreeIndex();
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
-        TestInput testInput = new TestInput(spatialIndex, boxGenerator.description());
-        load(n, boxGenerator, testInput);
-        return testInput;
+        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray());
+        for (int i = 0; i < n; i++) {
+            spatialIndex.add(generator.newSpatialObject());
+        }
+        return spatialIndex;
     }
 
     private static final int NX = 1_000_000;
@@ -142,6 +95,10 @@ public class SpatialJoinManyPointsOneBox extends SpatialJoinTestBase
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{NX, NY},
                                                       new int[]{X_BITS, Y_BITS});
+    private static final int TRIALS = 200;
+    private static final int N_POINTS = 1_000_000;
+    private static final int MIN_QUERY_BOX_SIZE = 1000;
+    private static final int MAX_QUERY_BOX_SIZE = 64000;
 
     private final BoxOverlapTester overlapTester = new BoxOverlapTester();
     private final SpatialJoinFilter filter = new SpatialJoinFilter()

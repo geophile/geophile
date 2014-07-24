@@ -19,6 +19,10 @@ import java.nio.ByteBuffer;
 
 public interface SpatialObject
 {
+    /**
+     * Sets the identifier.
+     * @param id This object's unique identifier.
+     */
     void id(long id);
 
     /**

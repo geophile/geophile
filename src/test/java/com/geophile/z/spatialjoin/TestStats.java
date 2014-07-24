@@ -19,7 +19,7 @@ class TestStats
     }
 
     long loadTimeMsec;
-    long joinTimeNsec; // Time for geophiel spatial join
+    long joinTimeNsec; // Time for geophile spatial join
     long slowJoinTimeNsec; // Time to check all pairs
     long outputRowCount;
     long filterCount;

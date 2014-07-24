@@ -1,4 +1,4 @@
-package com.geophile.z.util;
+package com.geophile.util;
 
 public class Stopwatch
 {

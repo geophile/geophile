@@ -44,6 +44,7 @@ public class SpatialJoinImpl extends SpatialJoin
                                                                query.maxZ() == 1
                                                                ? SpatialIndex.Options.SINGLE_CELL
                                                                : SpatialIndex.Options.DEFAULT);
+        queryIndex.add(query);
         Iterator<SpatialObject> iterator =
             SpatialJoinIterator.spatialObjectIterator((SpatialIndexImpl) queryIndex,
                                                       (SpatialIndexImpl) dataIndex,

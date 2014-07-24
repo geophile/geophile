@@ -30,6 +30,12 @@ public class TestInput
         return spatialIndex;
     }
 
+    public SpatialObject only()
+    {
+        assert spatialObjects.size() == 1;
+        return spatialObjects.get(0);
+    }
+
     public TestInput(SpatialIndex spatialIndex, String description)
         throws IOException, InterruptedException
     {
