@@ -59,6 +59,17 @@ public abstract class SpatialJoin
     public abstract Iterator<Pair> iterator(SpatialIndex leftSpatialIndex, SpatialIndex rightSpatialIndex)
         throws IOException, InterruptedException;
 
+    /**
+     * Return an {@link java.util.Iterator} that will provide access to spatial join results.
+     * The {@link com.geophile.z.SpatialObject}s accessed through the {@link java.util.Iterator} are those
+     * elements of data that overlap the query object.
+     * @param query The {@link com.geophile.z.SpatialObject} used to select elements of data.
+     * @param data Set of {@link com.geophile.z.SpatialObject}s to be searched.
+     * @return An {@link java.util.Iterator} providing access to spatial join results.
+     */
+    public abstract Iterator<SpatialObject> iterator(SpatialObject query, SpatialIndex data)
+        throws IOException, InterruptedException;
+
     public final SpatialJoinFilter filter()
     {
         return filter;

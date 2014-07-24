@@ -14,7 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class SpatialJoinIterator implements Iterator<Pair>
+// T is either Pair or SpatialObject
+
+class SpatialJoinIterator<T> implements Iterator<T>
 {
     // Object interface
 
@@ -23,7 +25,6 @@ class SpatialJoinIterator implements Iterator<Pair>
     {
         return name;
     }
-
 
     // Iterator interface
 
@@ -35,9 +36,9 @@ class SpatialJoinIterator implements Iterator<Pair>
     }
 
     @Override
-    public Pair next()
+    public T next()
     {
-        Pair next;
+        T next;
         ensurePending();
         if (pending.isEmpty()) {
             throw new NoSuchElementException();
@@ -58,9 +59,34 @@ class SpatialJoinIterator implements Iterator<Pair>
 
     // SpatialJoinIterator interface
 
-    public SpatialJoinIterator(SpatialIndexImpl leftSpatialIndex,
-                               SpatialIndexImpl rightSpatialIndex,
-                               final SpatialJoinFilter filter) throws IOException, InterruptedException
+    public static SpatialJoinIterator<Pair> pairIterator(SpatialIndexImpl leftSpatialIndex,
+                                                         SpatialIndexImpl rightSpatialIndex,
+                                                         SpatialJoinFilter filter)
+        throws IOException, InterruptedException
+    {
+        return new SpatialJoinIterator<>(leftSpatialIndex,
+                                         rightSpatialIndex,
+                                         PAIR_OUTPUT_GENERATOR,
+                                         filter);
+    }
+
+    public static SpatialJoinIterator<SpatialObject> spatialObjectIterator(SpatialIndexImpl leftSpatialIndex,
+                                                                           SpatialIndexImpl rightSpatialIndex,
+                                                                           SpatialJoinFilter filter)
+        throws IOException, InterruptedException
+    {
+        return new SpatialJoinIterator<>(leftSpatialIndex,
+                                         rightSpatialIndex,
+                                         SPATIAL_OBJECT_OUTPUT_GENERATOR,
+                                         filter);
+    }
+
+    // For use by this class
+
+    private SpatialJoinIterator(SpatialIndexImpl leftSpatialIndex,
+                                SpatialIndexImpl rightSpatialIndex,
+                                final OutputGenerator<T> outputGenerator,
+                                final SpatialJoinFilter filter) throws IOException, InterruptedException
     {
         SpatialJoinOutput pendingLeftRight =
             new SpatialJoinOutput()
@@ -69,7 +95,7 @@ class SpatialJoinIterator implements Iterator<Pair>
                 public void add(SpatialObject left, SpatialObject right)
                 {
                     if (filter.overlap(left, right)) {
-                        pending.add(new Pair(left, right));
+                        pending.add(outputGenerator.generateOutput(left, right));
                     }
                 }
             };
@@ -81,7 +107,7 @@ class SpatialJoinIterator implements Iterator<Pair>
                 public void add(SpatialObject right, SpatialObject left)
                 {
                     if (filter.overlap(left, right)) {
-                        pending.add(new Pair(left, right));
+                        pending.add(outputGenerator.generateOutput(left, right));
                     }
                 }
             };
@@ -95,8 +121,6 @@ class SpatialJoinIterator implements Iterator<Pair>
         }
         findPairs();
     }
-
-    // For use by this class
 
     private void ensurePending()
     {
@@ -145,11 +169,40 @@ class SpatialJoinIterator implements Iterator<Pair>
 
     private static final Logger LOG = Logger.getLogger(SpatialJoinIterator.class.getName());
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
+    private static final OutputGenerator<Pair> PAIR_OUTPUT_GENERATOR =
+        new PairOutputGenerator();
+    private static final OutputGenerator<SpatialObject> SPATIAL_OBJECT_OUTPUT_GENERATOR =
+        new SpatialObjectOutputGenerator();
 
     // Object state
 
     private final String name = String.format("sj(%s)", idGenerator.getAndIncrement());
     private final SpatialJoinInput left;
     private final SpatialJoinInput right;
-    private final Queue<Pair> pending = new ArrayDeque<>();
+    private final Queue<T> pending = new ArrayDeque<>();
+
+    // Inner classes
+
+    private interface OutputGenerator<T>
+    {
+        T generateOutput(SpatialObject left, SpatialObject right);
+    }
+
+    private static class PairOutputGenerator implements OutputGenerator<Pair>
+    {
+        @Override
+        public Pair generateOutput(SpatialObject left, SpatialObject right)
+        {
+            return new Pair(left, right);
+        }
+    }
+
+    private static class SpatialObjectOutputGenerator implements OutputGenerator<SpatialObject>
+    {
+        @Override
+        public SpatialObject generateOutput(SpatialObject left, SpatialObject right)
+        {
+            return right;
+        }
+    }
 }

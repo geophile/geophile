@@ -9,6 +9,8 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.Pair;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
+import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.space.SpatialIndexImpl;
 
 import java.io.IOException;
@@ -25,8 +27,27 @@ public class SpatialJoinImpl extends SpatialJoin
         throws IOException, InterruptedException
     {
         Iterator<Pair> iterator =
-            new SpatialJoinIterator((SpatialIndexImpl) leftSpatialIndex, (SpatialIndexImpl) rightSpatialIndex,
-                                    filter);
+            SpatialJoinIterator.pairIterator((SpatialIndexImpl) leftSpatialIndex,
+                                             (SpatialIndexImpl) rightSpatialIndex,
+                                             filter);
+        if (duplicates == Duplicates.EXCLUDE) {
+            iterator = new DuplicateEliminatingIterator<>(iterator);
+        }
+        return iterator;
+    }
+
+    public Iterator<SpatialObject> iterator(SpatialObject query, SpatialIndex dataIndex)
+        throws IOException, InterruptedException
+    {
+        SpatialIndex queryIndex = SpatialIndex.newSpatialIndex(dataIndex.space(),
+                                                               new SortedArray(),
+                                                               query.maxZ() == 1
+                                                               ? SpatialIndex.Options.SINGLE_CELL
+                                                               : SpatialIndex.Options.DEFAULT);
+        Iterator<SpatialObject> iterator =
+            SpatialJoinIterator.spatialObjectIterator((SpatialIndexImpl) queryIndex,
+                                                      (SpatialIndexImpl) dataIndex,
+                                                      filter);
         if (duplicates == Duplicates.EXCLUDE) {
             iterator = new DuplicateEliminatingIterator<>(iterator);
         }
