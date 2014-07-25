@@ -1,3 +1,7 @@
+target
+workinprogress
+.idea
+*.iml
 *.class
 
 # Package Files #
