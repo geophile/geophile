@@ -97,11 +97,10 @@ between `com.geophile.z.Index` and `java.util.TreeMap`.
 To run the examples, set the `CLASSPATH` to contain
 `target/geophile-1.0.jar` and `target/test-classes`.
 
-### Find all the points in a given box
+### Find all overalpping pairs of boxes
 
-`PointsInBox` loads 1,000,000 points in one spatial index, a single
-query box in another, and then does a spatial join to locate all the
-points within the box.
+`OverlappingPairs` loads two spatial indexes, each with 1,000,000 tiny
+boxes, and then finds all the overlapping pairs.
 
 The space is created as follows:
 
@@ -113,70 +112,6 @@ The space is created as follows:
     private static final Space SPACE = Space.newSpace(new double[]{0, 0}, 
                                                       new double[]{X, Y}, 
                                                       new int[]{X_BITS, Y_BITS});
-
-The spatial index with 1,000,000 points is created and loaded as follows:
-
-        SpatialIndex<Point> points = 
-            SpatialIndex.newSpatialIndex(space, new TreeIndex<Point>());
-        for (int i = 0; i < N_POINTS; i++) {
-            points.add(randomPoint());
-        }
-        ...
-        private static final int N_POINTS = 1_000_000;
-
-The spatial index with a query box is created and loaded as follows:
-
-        SpatialIndex<Box> box = 
-            SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
-        Box query = randomBox();
-        box.add(query);
-
-The spatial join output is created and scanned as follows:
-
-            Iterator<Pair<Box, Point>> iterator =
-                SpatialJoin.newSpatialJoin(BOX_CONTAINS_POINT, 
-                                           SpatialJoin.Duplicates.EXCLUDE)
-                           .iterator(box, points);
-            while (iterator.hasNext()) {
-                Pair<Box, Point> pointInBox = iterator.next();
-                ...
-            }
-
-The example runs 5 queries for the same data set. To run the example
-(exact results will differ):
-
-        $ src/test/examples/points_in_box 
-        Points inside (82078:84077, 740534:742533)
-            (83230, 741182)
-            (82783, 741386)
-            (83198, 741478)
-            (83377, 742178)
-        Points inside (846457:848456, 156619:158618)
-            (846473, 157085)
-            (846665, 157147)
-            (847076, 157252)
-            (847979, 157426)
-            (848306, 157305)
-            (848156, 157784)
-            (848269, 157807)
-        Points inside (105162:107161, 922561:924560)
-            (105993, 922817)
-            (106286, 923679)
-            (106641, 923434)
-        Points inside (511381:513380, 932274:934273)
-            (511527, 933712)
-            (512707, 932378)
-            (513057, 932959)
-            (513160, 932908)
-        Points inside (738161:740160, 280379:282378)
-            (739058, 281866)
-            (739995, 281111)
-            (740117, 281418)
-
-### Find all overalpping pairs of boxes
-
-`OverlappingPairs` loads two spatial indexes, each with 1,000,000 tiny
-boxes, and then finds all the overlapping pairs.
 
 The spatial indexes are created and loaded as follows:
 
@@ -217,3 +152,72 @@ To run the example (exact results will differ):
             ((968053:968054, 24216:24217), (968054:968055, 24217:24218))
             ((977679:977680, 337249:337250), (977678:977679, 337250:337251))
             ((670178:670179, 643354:643355), (670178:670179, 643355:643356))
+
+### Find all the points in a given box
+
+`PointsInBox` loads 1,000,000 points in a spatial index, and then does
+a spatial join to locate all the points within a query box. There is a
+simplified API for cases like this, in which one of the spatial join
+inputs is a single spatial object.
+
+The spatial index with 1,000,000 points is created and loaded as follows:
+
+        SpatialIndex<Point> points = 
+            SpatialIndex.newSpatialIndex(space, new TreeIndex<Point>());
+        for (int i = 0; i < N_POINTS; i++) {
+            points.add(randomPoint());
+        }
+        ...
+        private static final int N_POINTS = 1_000_000;
+
+The query box is created:
+
+            Box box = randomBox();
+
+The spatial join is done as follows:
+
+            Iterator<SpatialObject> iterator =
+                SpatialJoin.newSpatialJoin(BOX_CONTAINS_POINT, SpatialJoinImpl.Duplicates.EXCLUDE)
+                           .iterator(box, points);
+            // Print points contained in box
+            System.out.println(String.format("Points inside %s", box));
+            while (iterator.hasNext()) {
+                SpatialObject pointInBox = iterator.next();
+                System.out.println(String.format("    %s", pointInBox));
+            }
+
+The iterator returns spatial objects from `points`, the second argument to the
+spatial join. (There is no reason to return `Pair` objects, because the left
+part of every pair would be the same query object.)
+
+The example runs 5 queries for the same data set. To run the example
+(exact results will differ):
+
+        $ src/test/examples/points_in_box 
+        Points inside (82078:84077, 740534:742533)
+            (83230, 741182)
+            (82783, 741386)
+            (83198, 741478)
+            (83377, 742178)
+        Points inside (846457:848456, 156619:158618)
+            (846473, 157085)
+            (846665, 157147)
+            (847076, 157252)
+            (847979, 157426)
+            (848306, 157305)
+            (848156, 157784)
+            (848269, 157807)
+        Points inside (105162:107161, 922561:924560)
+            (105993, 922817)
+            (106286, 923679)
+            (106641, 923434)
+        Points inside (511381:513380, 932274:934273)
+            (511527, 933712)
+            (512707, 932378)
+            (513057, 932959)
+            (513160, 932908)
+        Points inside (738161:740160, 280379:282378)
+            (739058, 281866)
+            (739995, 281111)
+            (740117, 281418)
+
