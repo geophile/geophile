@@ -6,10 +6,7 @@
 
 package com.geophile.z.space;
 
-import com.geophile.z.Index;
-import com.geophile.z.SingleCellException;
-import com.geophile.z.SpatialIndex;
-import com.geophile.z.SpatialObject;
+import com.geophile.z.*;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
 import com.geophile.z.index.SpatialObjectKey;
@@ -42,7 +39,7 @@ public class SpatialIndexImpl extends SpatialIndex
         }
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "add {0}", spatialObject);
-            for (int i = 0;i < zs.length && zs[i] != -1L; i++) {
+            for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
                 LOG.log(Level.FINE, "    {0}", formatZ(zs[i]));
             }
         }

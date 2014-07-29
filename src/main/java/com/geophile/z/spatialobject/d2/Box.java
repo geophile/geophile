@@ -6,6 +6,7 @@
 
 package com.geophile.z.spatialobject.d2;
 
+import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
@@ -103,11 +104,19 @@ public class Box implements SpatialObject
     }
 
     @Override
+    public boolean containedBy(Space space)
+    {
+        return
+            space.lo(0) <= xLo && xHi <= space.hi(0) &&
+            space.lo(1) <= yLo && yHi <= space.hi(1);
+    }
+
+    @Override
     public RegionComparison compare(Region region)
     {
         long rXLo = region.lo(0);
-        long rYLo = region.lo(1);
         long rXHi = region.hi(0);
+        long rYLo = region.lo(1);
         long rYHi = region.hi(1);
         SpaceImpl space = (SpaceImpl) region.space();
         long zxLo = space.appToZ(0, xLo);

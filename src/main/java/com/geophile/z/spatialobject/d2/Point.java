@@ -6,6 +6,7 @@
 
 package com.geophile.z.spatialobject.d2;
 
+import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
@@ -88,6 +89,14 @@ public class Point implements SpatialObject
         return
             region.lo(0) <= zx && zx <= region.hi(0) &&
             region.lo(1) <= zy && zy <= region.hi(1);
+    }
+
+    @Override
+    public boolean containedBy(Space space)
+    {
+        return
+            space.lo(0) <= x && x <= space.hi(0) &&
+            space.lo(1) <= y && y <= space.hi(1);
     }
 
     @Override

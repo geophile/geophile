@@ -54,11 +54,18 @@ public interface SpatialObject
     boolean equalTo(SpatialObject that);
 
     /**
-     * Returns true iff this spatial object is contained by the given region.
-     * @param region The region to compare to.
-     * @return true iff this spatial object is contained by the region.
+     * Returns true iff this spatial object is contained by the given Region.
+     * @param region The Region to compare to.
+     * @return true iff this spatial object is contained by the Region.
      */
     boolean containedBy(Region region);
+
+    /**
+     * Returns true iff this spatial object is contained by the given Space.
+     * @param space The Space to compare to.
+     * @return true iff this spatial object is contained by the Space.
+     */
+    boolean containedBy(Space space);
 
     /**
      * Returns the relationship of this spatial object to the given Region.

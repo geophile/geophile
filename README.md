@@ -32,7 +32,7 @@ Geophile can be built from source using [maven](http://maven.apache.org):
 
         mvn install
 
-This creates `target/geophile-1.0.jar`.
+This creates `target/geophile-1.1.2.jar`.
 
 To create Javadoc files:
 
@@ -95,7 +95,7 @@ between `com.geophile.z.Index` and `java.util.TreeMap`.
 * `com.geophile.z.spatialobject.d2.Box`: A 2d box.
 
 To run the examples, set the `CLASSPATH` to contain
-`target/geophile-1.0.jar` and `target/test-classes`.
+`target/geophile-1.1.2.jar` and `target/test-classes`.
 
 ### Find all overalpping pairs of boxes
 

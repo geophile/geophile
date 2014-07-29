@@ -6,14 +6,16 @@
 
 package com.geophile.z.space;
 
+import com.geophile.z.SpatialObjectException;
 import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class DecompositionTest
 {
-    @Test
+     @Test
     public void testAll()
     {
         Box box = new Box(0, 1023, 0, 1023);
@@ -83,6 +85,20 @@ public class DecompositionTest
         assertEquals(SpaceImpl.z(0x6aaaa00000000000L, 20), zs[1]);
         assertEquals(SpaceImpl.z(0x9555500000000000L, 20), zs[2]);
         assertEquals(SpaceImpl.z(0xc000000000000000L, 20), zs[3]);
+    }
+
+    // Issue 1
+    @Test
+    public void testBoxNotContainedInSpace()
+    {
+        Box box = new Box(0, 1025, 0, 1023);
+        long[] zs = new long[4];
+        try {
+            SPACE.decompose(box, zs);
+            fail();
+        } catch (SpatialObjectException e) {
+            // Expected
+        }
     }
 
     private static int[] ints(int... ints)

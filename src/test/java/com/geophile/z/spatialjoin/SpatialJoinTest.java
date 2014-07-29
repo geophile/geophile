@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 // Spatial join of inputs containing boxes, varying for each input:
 // - counts
@@ -25,7 +26,69 @@ import static org.junit.Assert.assertEquals;
 public class SpatialJoinTest extends SpatialJoinTestBase
 {
     @Test
-    public void test() throws IOException, InterruptedException
+    public void testSpaceMismatch() throws IOException, InterruptedException
+    {
+        // Dimensions mismatch
+        {
+            SpatialIndex leftSpatialIndex =
+                SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0, 0},
+                                                            new double[]{1000, 1000, 1000},
+                                                            new int[]{10, 10, 10}),
+                                             new TreeIndex());
+            SpatialIndex rightSpatialIndex =
+                SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
+                                                            new double[]{1000, 1000},
+                                                            new int[]{10, 10}),
+                                             new TreeIndex());
+            SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
+            try {
+                spatialJoin.iterator(leftSpatialIndex, rightSpatialIndex);
+                fail();
+            } catch (SpatialJoinException e) {
+                // Expected
+            }
+        }
+        // Space bounds mismatch
+        {
+            SpatialIndex leftSpatialIndex =
+                SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
+                                                            new double[]{1000, 1000},
+                                                            new int[]{10, 10}),
+                                             new TreeIndex());
+            SpatialIndex rightSpatialIndex =
+                SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
+                                                            new double[]{2000, 1000},
+                                                            new int[]{10, 10}),
+                                             new TreeIndex());
+            SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
+            try {
+                spatialJoin.iterator(leftSpatialIndex, rightSpatialIndex);
+                fail();
+            } catch (SpatialJoinException e) {
+                // Expected
+            }
+        }
+    }
+
+    @Test
+    public void testNonIdenticalSpaceMatch() throws IOException, InterruptedException
+    {
+        SpatialIndex leftSpatialIndex =
+            SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
+                                                        new double[]{1000, 1000},
+                                                        new int[]{10, 10}),
+                                         new TreeIndex());
+        SpatialIndex rightSpatialIndex =
+            SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
+                                                        new double[]{1000, 1000},
+                                                        new int[]{10, 10}),
+                                         new TreeIndex());
+        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
+        spatialJoin.iterator(leftSpatialIndex, rightSpatialIndex);
+    }
+
+    @Test
+    public void testSpatialJoin() throws IOException, InterruptedException
     {
         SpatialJoin spatialJoinExcludeDuplicates = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         SpatialJoin spatialJoinIncludeDuplicates = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.INCLUDE);
@@ -105,8 +168,8 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     }
 
     private static final int MAX_COUNT = 100_000;
-    private static final int[] COUNTS = new int[]{ 1, 10, 100, 1_000, 10_000, 100_000 };
-    private static final int[] MAX_SIZES = new int[]{ 1, 10_000, /* 1% */ 100_000 /* 10% */ };
+    private static final int[] COUNTS = new int[]{1, 10, 100, 1_000, 10_000, 100_000};
+    private static final int[] MAX_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
     private static final int X_BITS = 20;

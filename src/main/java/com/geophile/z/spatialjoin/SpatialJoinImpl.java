@@ -6,10 +6,7 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.Pair;
-import com.geophile.z.SpatialIndex;
-import com.geophile.z.SpatialJoin;
-import com.geophile.z.SpatialObject;
+import com.geophile.z.*;
 import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.space.SpatialIndexImpl;
 
@@ -26,6 +23,9 @@ public class SpatialJoinImpl extends SpatialJoin
     public Iterator<Pair> iterator(SpatialIndex leftSpatialIndex, SpatialIndex rightSpatialIndex)
         throws IOException, InterruptedException
     {
+        if (!leftSpatialIndex.space().equals(rightSpatialIndex.space())) {
+            throw new SpatialJoinException("Attempt to join spatial indexes with incompatible spaces");
+        }
         Iterator<Pair> iterator =
             SpatialJoinIterator.pairIterator((SpatialIndexImpl) leftSpatialIndex,
                                              (SpatialIndexImpl) rightSpatialIndex,

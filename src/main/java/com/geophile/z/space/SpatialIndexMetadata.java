@@ -6,6 +6,7 @@
 
 package com.geophile.z.space;
 
+import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.SpatialObjectKey;
 
@@ -54,6 +55,13 @@ public class SpatialIndexMetadata implements SpatialObject
 
     @Override
     public boolean containedBy(Region region)
+    {
+        assert false;
+        return false;
+    }
+
+    @Override
+    public boolean containedBy(Space space)
     {
         assert false;
         return false;

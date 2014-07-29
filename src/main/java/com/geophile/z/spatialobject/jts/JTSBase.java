@@ -1,9 +1,11 @@
 package com.geophile.z.spatialobject.jts;
 
+import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.SpatialObjectException;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
+import com.geophile.z.space.SpaceImpl;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
@@ -68,6 +70,9 @@ public abstract class JTSBase implements SpatialObject
     public abstract boolean containedBy(Region region);
 
     @Override
+    public abstract boolean containedBy(Space space);
+
+    @Override
     public abstract RegionComparison compare(Region region);
 
     @Override
@@ -103,13 +108,17 @@ public abstract class JTSBase implements SpatialObject
         }
     }
 
-    protected JTSBase(Geometry geometry)
+    protected JTSBase(Space space, Geometry geometry)
     {
+        this.space = (SpaceImpl) space;
         this.geometry = geometry;
     }
 
+    // Used during deserialization
     protected JTSBase()
-    {}
+    {
+        this.space = null;
+    }
 
     protected void read(ByteBuffer input)
     {
@@ -161,6 +170,7 @@ public abstract class JTSBase implements SpatialObject
     // Object state
 
     private long id;
+    protected final SpaceImpl space;
     // Caching of hashCode
     private boolean hashCodeKnown = false;
     private int hashCode;

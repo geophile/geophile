@@ -8,6 +8,7 @@ package com.geophile.z.space;
 
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
+import com.geophile.z.SpatialObjectException;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -40,6 +41,27 @@ public class SpaceImpl extends Space
             buffer.append(xBits[d]);
         }
         return buffer.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        boolean eq = false;
+        if (obj != null && obj instanceof SpaceImpl) {
+            SpaceImpl that = (SpaceImpl) obj;
+            eq = this.dimensions == that.dimensions;
+            for (int d = 0; eq && d < dimensions; d++) {
+                eq =
+                    this.xBits[d] == that.xBits[d] &&
+                    this.appLo[d] == that.appLo[d] &&
+                    this.appWidth[d] == that.appWidth[d];
+            }
+            eq = eq && this.interleave.length == that.interleave.length;
+            for (int i = 0; eq && i < interleave.length; i++) {
+                eq = this.interleave[i] == that.interleave[i];
+            }
+        }
+        return eq;
     }
 
     // SpaceImpl interface
@@ -81,6 +103,9 @@ public class SpaceImpl extends Space
 
     public void decompose(SpatialObject spatialObject, long[] zs)
     {
+        if (!spatialObject.containedBy(this)) {
+            throw new SpatialObjectException(String.format("%s not contained by %s", spatialObject, this));
+        }
         int maxRegions = zs.length;
         int zCount = 0;
         double[] appPoint = spatialObject.arbitraryPoint();
@@ -130,7 +155,7 @@ public class SpaceImpl extends Space
                                 zs[zCount++] = region.z();
                                 break;
                             case REGION_OVERLAPS_OBJECT:
-                                if (queue.size() + 1  + zCount < maxRegions) {
+                                if (queue.size() + 1 + zCount < maxRegions) {
                                     queue.add(region.copy());
                                     region.up();
                                     region.downLeft();
@@ -150,7 +175,7 @@ public class SpaceImpl extends Space
                                 queue.add(region.copy());
                                 break;
                             case REGION_INSIDE_OBJECT:
-                                if (queue.size() + 1  + zCount < maxRegions) {
+                                if (queue.size() + 1 + zCount < maxRegions) {
                                     zs[zCount++] = region.z();
                                     region.up();
                                     region.downLeft();
@@ -168,7 +193,7 @@ public class SpaceImpl extends Space
                                     queue.add(region.copy());
                                 } else {
                                     region.up();
-                                      zs[zCount++] = region.z();
+                                    zs[zCount++] = region.z();
                                 }
                                 break;
                         }
@@ -205,14 +230,22 @@ public class SpaceImpl extends Space
         for (int d = 0; d < dimensions; d++) {
             long xd = x[d];
             switch (xBytes[d]) {
-                case 8: z |= shuffle7[d][(int)(xd >>> 56) & 0xff];
-                case 7: z |= shuffle6[d][(int)(xd >>> 48) & 0xff];
-                case 6: z |= shuffle5[d][(int)(xd >>> 40) & 0xff];
-                case 5: z |= shuffle4[d][(int)(xd >>> 32) & 0xff];
-                case 4: z |= shuffle3[d][(int)(xd >>> 24) & 0xff];
-                case 3: z |= shuffle2[d][(int)(xd >>> 16) & 0xff];
-                case 2: z |= shuffle1[d][(int)(xd >>>  8) & 0xff];
-                case 1: z |= shuffle0[d][(int)(xd       ) & 0xff];
+                case 8:
+                    z |= shuffle7[d][(int) (xd >>> 56) & 0xff];
+                case 7:
+                    z |= shuffle6[d][(int) (xd >>> 48) & 0xff];
+                case 6:
+                    z |= shuffle5[d][(int) (xd >>> 40) & 0xff];
+                case 5:
+                    z |= shuffle4[d][(int) (xd >>> 32) & 0xff];
+                case 4:
+                    z |= shuffle3[d][(int) (xd >>> 24) & 0xff];
+                case 3:
+                    z |= shuffle2[d][(int) (xd >>> 16) & 0xff];
+                case 2:
+                    z |= shuffle1[d][(int) (xd >>> 8) & 0xff];
+                case 1:
+                    z |= shuffle0[d][(int) (xd) & 0xff];
             }
         }
         return z | length;

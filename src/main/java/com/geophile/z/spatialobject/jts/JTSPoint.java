@@ -6,6 +6,7 @@ import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import com.geophile.z.space.SpaceImpl;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Point;
 
 public class JTSPoint extends JTSBase
@@ -49,6 +50,17 @@ public class JTSPoint extends JTSBase
     }
 
     @Override
+    public boolean containedBy(Space space)
+    {
+        assert space == this.space;
+        Coordinate coordinate = point().getCoordinate();
+        Envelope envelope = geometry.getEnvelopeInternal();
+        return
+            space.lo(0) <= coordinate.x && coordinate.x <= space.hi(0) &&
+            space.lo(1) <= coordinate.y && coordinate.y <= space.hi(1);
+    }
+
+    @Override
     public RegionComparison compare(Region region)
     {
         Point point = point();
@@ -75,7 +87,7 @@ public class JTSPoint extends JTSBase
 
     public JTSPoint(Space space, Point point)
     {
-        super(point);
+        super(space, point);
     }
 
     public JTSPoint()

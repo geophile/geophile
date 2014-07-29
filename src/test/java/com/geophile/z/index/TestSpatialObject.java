@@ -1,5 +1,6 @@
 package com.geophile.z.index;
 
+import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
@@ -42,6 +43,13 @@ public class TestSpatialObject implements SpatialObject
 
     @Override
     public boolean containedBy(Region region)
+    {
+        fail();
+        return false;
+    }
+
+    @Override
+    public boolean containedBy(Space space)
     {
         fail();
         return false;
