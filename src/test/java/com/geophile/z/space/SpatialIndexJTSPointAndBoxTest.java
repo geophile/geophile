@@ -42,19 +42,8 @@ public class SpatialIndexJTSPointAndBoxTest
             }
         }
         Random random = new Random(SEED);
-        int xLo;
-        int xHi;
-        int yLo;
-        int yHi;
         for (int i = 0; i < 1000; i++) {
-            do {
-                xLo = random.nextInt(X_MAX);
-                xHi = xLo + random.nextInt(X_MAX - xLo);
-            } while (xHi < xLo);
-            do {
-                yLo = random.nextInt(Y_MAX);
-                yHi = random.nextInt(Y_MAX - yLo);
-            } while (yHi < yLo);
+            generateRandomBox(random);
             test(xLo, xHi, yLo, yHi,
                  new Filter()
                  {
@@ -66,7 +55,7 @@ public class SpatialIndexJTSPointAndBoxTest
                  });
         }
     }
-    
+
     @Test
     public void testRemoveAll() throws IOException, InterruptedException
     {
@@ -84,19 +73,8 @@ public class SpatialIndexJTSPointAndBoxTest
             }
         }
         Random random = new Random(SEED);
-        int xLo;
-        int xHi;
-        int yLo;
-        int yHi;
         for (int i = 0; i < 1000; i++) {
-            do {
-                xLo = random.nextInt(X_MAX);
-                xHi = xLo + random.nextInt(X_MAX - xLo);
-            } while (xHi < xLo);
-            do {
-                yLo = random.nextInt(Y_MAX);
-                yHi = random.nextInt(Y_MAX - yLo);
-            } while (yHi < yLo);
+            generateRandomBox(random);
             test(xLo, xHi, yLo, yHi,
                  new Filter()
                  {
@@ -130,19 +108,8 @@ public class SpatialIndexJTSPointAndBoxTest
             }
         }
         Random random = new Random(SEED);
-        int xLo;
-        int xHi;
-        int yLo;
-        int yHi;
         for (int i = 0; i < 1000; i++) {
-            do {
-                xLo = random.nextInt(X_MAX);
-                xHi = xLo + random.nextInt(X_MAX - xLo);
-            } while (xHi < xLo);
-            do {
-                yLo = random.nextInt(Y_MAX);
-                yHi = random.nextInt(Y_MAX - yLo);
-            } while (yHi < yLo);
+            generateRandomBox(random);
             test(xLo, xHi, yLo, yHi,
                  new Filter()
                  {
@@ -239,6 +206,18 @@ public class SpatialIndexJTSPointAndBoxTest
         return new JTSPoint(SPACE, factory.createPoint(new Coordinate(x, y)));
     }
 
+    private void generateRandomBox(Random random)
+    {
+        do {
+            xLo = random.nextInt(X_MAX);
+            xHi = xLo + random.nextInt(X_MAX - xLo);
+        } while (xHi <= xLo);
+        do {
+            yLo = random.nextInt(Y_MAX);
+            yHi = random.nextInt(Y_MAX - yLo);
+        } while (yHi <= yLo);
+    }
+
     private static final int SEED = 123456;
     private static final int X_MAX = 1000;
     private static final int Y_MAX = 1000;
@@ -276,4 +255,9 @@ public class SpatialIndexJTSPointAndBoxTest
     {
         boolean keep(SpatialObject spatialObject);
     }
+
+    private int xLo;
+    private int xHi;
+    private int yLo;
+    private int yHi;
 }

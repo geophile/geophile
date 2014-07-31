@@ -40,19 +40,8 @@ public abstract class SpatialIndexTestBase
         }
         commitTransaction();
         Random random = new Random(SEED);
-        int xLo;
-        int xHi;
-        int yLo;
-        int yHi;
         for (int i = 0; i < 1000; i++) {
-            do {
-                xLo = random.nextInt(X_MAX);
-                xHi = xLo + random.nextInt(X_MAX - xLo);
-            } while (xHi < xLo);
-            do {
-                yLo = random.nextInt(Y_MAX);
-                yHi = yLo + random.nextInt(Y_MAX - yLo);
-            } while (yHi < yLo);
+            generateRandomBox(random);
             test(spatialIndex,
                  xLo, xHi, yLo, yHi,
                  new Filter()
@@ -85,19 +74,8 @@ public abstract class SpatialIndexTestBase
         }
         commitTransaction();
         Random random = new Random(SEED);
-        int xLo;
-        int xHi;
-        int yLo;
-        int yHi;
         for (int i = 0; i < 1000; i++) {
-            do {
-                xLo = random.nextInt(X_MAX);
-                xHi = xLo + random.nextInt(X_MAX - xLo);
-            } while (xHi < xLo);
-            do {
-                yLo = random.nextInt(Y_MAX);
-                yHi = random.nextInt(Y_MAX - yLo);
-            } while (yHi < yLo);
+            generateRandomBox(random);
             test(spatialIndex,
                  xLo, xHi, yLo, yHi,
                  new Filter()
@@ -142,11 +120,11 @@ public abstract class SpatialIndexTestBase
             do {
                 xLo = random.nextInt(X_MAX);
                 xHi = xLo + random.nextInt(X_MAX - xLo);
-            } while (xHi < xLo);
+            } while (xHi <= xLo);
             do {
                 yLo = random.nextInt(Y_MAX);
                 yHi = random.nextInt(Y_MAX - yLo);
-            } while (yHi < yLo);
+            } while (yHi <= yLo);
             test(spatialIndex,
                  xLo, xHi, yLo, yHi,
                  new Filter()
@@ -241,6 +219,18 @@ public abstract class SpatialIndexTestBase
         assertEquals(expected, actual);
     }
 
+    private void generateRandomBox(Random random)
+    {
+        do {
+            xLo = random.nextInt(X_MAX);
+            xHi = xLo + random.nextInt(X_MAX - xLo);
+        } while (xHi <= xLo);
+        do {
+            yLo = random.nextInt(Y_MAX);
+            yHi = yLo + random.nextInt(Y_MAX - yLo);
+        } while (yHi <= yLo);
+    }
+
     public abstract Index newIndex() throws Exception;
 
     public void commitTransaction() throws Exception
@@ -281,4 +271,9 @@ public abstract class SpatialIndexTestBase
     {
         boolean keep(SpatialObject spatialObject);
     }
+
+    private int xLo;
+    private int xHi;
+    private int yLo;
+    private int yHi;
 }

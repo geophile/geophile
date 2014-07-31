@@ -12,9 +12,9 @@ public class BoxGenerator extends SpatialObjectGenerator
     public SpatialObject newSpatialObject()
     {
         long xLo = random.nextInt(nx - maxX);
-        long xHi = xLo + (maxX == 1 ? 0 : random.nextInt(maxX));
+        long xHi = xLo + 1 + (maxX == 1 ? 0 : random.nextInt(maxX - 1));
         long yLo = random.nextInt(ny - maxY);
-        long yHi = yLo + (maxY == 1 ? 0 : random.nextInt(maxY));
+        long yHi = yLo + 1 + (maxY == 1 ? 0 : random.nextInt(maxY - 1));
         return new Box(xLo, xHi, yLo, yHi);
     }
 
@@ -22,16 +22,6 @@ public class BoxGenerator extends SpatialObjectGenerator
     public String description()
     {
         return String.format("max sizes (%s, %s)", maxX, maxY);
-    }
-
-    public int maxX()
-    {
-        return maxX;
-    }
-
-    public int maxY()
-    {
-        return maxY;
     }
 
     public BoxGenerator(Space space, Random random, int maxX, int maxY)

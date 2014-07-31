@@ -68,11 +68,7 @@ public class Box implements SpatialObject
     @Override
     public int maxZ()
     {
-        // TODO: Don't rely on system variable
-        return
-            xLo == xHi && yLo == yHi
-            ? 1
-            : Integer.getInteger("maxz", 4);
+        return MAX_Z;
     }
 
     @Override
@@ -216,6 +212,10 @@ public class Box implements SpatialObject
 
     public Box()
     {}
+
+    // Class state
+
+    private static final int MAX_Z = 8;
 
     // Object state
 

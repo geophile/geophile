@@ -31,6 +31,9 @@ public class Record
 
     public void copyTo(Record record)
     {
+        if (record == this) {
+            throw new IllegalArgumentException();
+        }
         if (eof()) {
             record.setEOF();
         } else {
@@ -57,6 +60,9 @@ public class Record
         key = null;
         spatialObject = null;
     }
+
+    public Record()
+    {}
 
     // Object state
 

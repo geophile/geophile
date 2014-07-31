@@ -21,6 +21,7 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.*;
 import com.geophile.z.index.tree.TreeIndex;
 import com.geophile.z.spatialobject.d2.Box;
+import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -54,11 +55,11 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     @Override
     protected boolean overlap(SpatialObject x, SpatialObject y)
     {
-        Box a = (Box) x;
-        Box b = (Box) y;
+        Box b = (Box) x;
+        Point p = (Point) y;
         return
-            a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
-            a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
+            b.xLo() <= p.x() && p.x() <= b.xHi() &&
+            b.yLo() <= p.y() && p.y() <= b.yHi();
     }
 
     @Override
@@ -90,7 +91,7 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
             for (int j = 0; j < n; j++) {
                 double x = APP_SPACE_LO + i * gridCellSize + random.nextInt(gridCellSize);
                 double y = APP_SPACE_LO + j * gridCellSize + random.nextInt(gridCellSize);
-                input.add(new Box(x, x, y, y));
+                input.add(new Point(x, y));
             }
         }
         return input;
@@ -122,7 +123,7 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     private static final Space SPACE = Space.newSpace(new double[]{APP_SPACE_LO, APP_SPACE_LO},
                                                       new double[]{APP_SPACE_HI, APP_SPACE_HI},
                                                       new int[]{X_BITS, Y_BITS});
-    private static final BoxOverlapTester OVERLAP_TESTER = new BoxOverlapTester();
+    private static final BoxPointOverlapTester OVERLAP_TESTER = new BoxPointOverlapTester();
 
     private final SpatialJoinFilter filter = new SpatialJoinFilter()
     {
