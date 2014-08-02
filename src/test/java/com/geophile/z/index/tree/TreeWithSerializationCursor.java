@@ -66,8 +66,8 @@ public class TreeWithSerializationCursor extends Cursor
                 }
                 break;
             case DONE:
-                assert current().eof();
-                return current();
+                assert current() == null;
+                return null;
         }
         if (treeIterator.hasNext()) {
             Map.Entry<SpatialObjectKey, ByteBuffer> neighbor = treeIterator.next();

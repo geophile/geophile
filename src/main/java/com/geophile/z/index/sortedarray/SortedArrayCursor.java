@@ -60,8 +60,8 @@ public class SortedArrayCursor extends Cursor
                 }
                 break;
             case DONE:
-                assert current().eof();
-                return current();
+                assert current() == null;
+                return null;
         }
         if (position != DONE) {
             Record record = record(position);

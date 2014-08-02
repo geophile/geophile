@@ -34,16 +34,18 @@ public class CursorTest
         boolean expectedEmpty;
         Record entry;
         // Full cursor
+        // debug("Full cursor %s\n", n);
         {
             cursor = index.cursor(0L);
             expectedKey = 0;
-            while (!(entry = cursor.next()).eof()) {
+            while ((entry = cursor.next()) != null) {
                 assertEquals(expectedKey, key(entry));
                 expectedKey += GAP;
             }
             assertEquals(n * GAP, expectedKey);
         }
         // Try scans starting at, before, and after each key and ending at, before and after each key.
+        // debug("Scan from key %s\n", n);
         {
             for (int i = 0; i < n; i++) {
                 int startBase = GAP * i;
@@ -57,7 +59,7 @@ public class CursorTest
                             expectedLastKey = end >= endBase ? endBase : endBase - GAP;
                             expectedEmpty = start > end || start <= end && (end >= startBase || start <= endBase);
                             boolean empty = true;
-                            while (!(entry = cursor.next()).eof() &&
+                            while ((entry = cursor.next()) != null &&
                                    entry.key().z() <= end) {
                                 // debug("    %s", entry.getKey());
                                 assertEquals(expectedKey, key(entry));
@@ -75,23 +77,24 @@ public class CursorTest
             }
         }
         // Alternating next and previous
+        // debug("Alternate next and previous %s\n", n);
         {
             // debug("n: %s", n);
             cursor = index.cursor(0L);
             expectedKey = 0;
             entry = cursor.next();
-            if (!entry.eof()) {
+            if (entry != null) {
                 // debug("expected: %s, start: %s", expectedKey, entry.getKey());
                 expectedKey += GAP;
             }
-            while (!(entry = cursor.next()).eof()) {
+            while ((entry = cursor.next()) != null) {
                 // debug("expected: %s, next: %s", expectedKey, entry.getKey());
                 assertEquals(expectedKey, key(entry));
                 expectedKey += GAP;
                 if (expectedKey != n * GAP) {
                     entry = cursor.next();
                     // debug("expected: %s, next: %s", expectedKey, entry.getKey());
-                    assertTrue(!entry.eof());
+                    assertTrue(entry != null);
                     assertEquals(expectedKey, key(entry));
                     expectedKey -= GAP;
                     entry = cursor.previous();
@@ -103,23 +106,24 @@ public class CursorTest
             assertEquals(n * GAP, expectedKey);
         }
         // Alternating previous and next
+        // debug("Alternate previous and next %s\n", n);
         {
             // debug("n: %s", n);
             cursor = index.cursor(Long.MAX_VALUE);
             expectedKey = (n - 1) * GAP;
             entry = cursor.previous();
-            if (!entry.eof()) {
+            if (entry != null) {
                 // debug("expected: %s, start: %s", expectedKey, entry.getKey());
                 expectedKey -= GAP;
             }
-            while (!(entry = cursor.previous()).eof()) {
+            while ((entry = cursor.previous()) != null) {
                 // debug("expected: %s, previous: %s", expectedKey, entry.getKey());
                 assertEquals(expectedKey, key(entry));
                 expectedKey -= GAP;
                 if (expectedKey >= 0) {
                     entry = cursor.previous();
                     // debug("expected: %s, previous: %s", expectedKey, entry.getKey());
-                    assertTrue(!entry.eof());
+                    assertTrue(entry != null);
                     assertEquals(expectedKey, key(entry));
                     expectedKey += GAP;
                     entry = cursor.next();
@@ -131,6 +135,7 @@ public class CursorTest
             assertEquals(-GAP, expectedKey);
         }
         // goTo
+        // debug("goTo %s\n", n);
         if (n > 0) {
             cursor = index.cursor(0L);
             int match;
@@ -150,14 +155,14 @@ public class CursorTest
                 before = match - GAP / 2;
                 cursor.goTo(SpatialObjectKey.keyLowerBound(before));
                 if (i == n) {
-                    assertTrue(cursor.next().eof());
+                    assertTrue(cursor.next() == null);
                 } else {
                     assertEquals(match, key(cursor.next()));
                 }
                 // Before, previous
                 cursor.goTo(SpatialObjectKey.keyLowerBound(before));
                 if (i == 0) {
-                    assertTrue(cursor.previous().eof());
+                    assertTrue(cursor.previous() == null);
                 } else {
                     assertEquals(match - GAP, key(cursor.previous()));
                 }

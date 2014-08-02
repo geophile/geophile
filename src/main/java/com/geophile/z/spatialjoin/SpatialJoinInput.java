@@ -336,7 +336,7 @@ class SpatialJoinInput
 
     public long nextEntry()
     {
-        return current.eof() ? EOF : SpaceImpl.zLo(current.key().z());
+        return eof ? EOF : SpaceImpl.zLo(current.key().z());
     }
 
     public long nextExit()
@@ -346,9 +346,9 @@ class SpatialJoinInput
 
     public void enterZ() throws IOException, InterruptedException
     {
-        assert !current.eof();
+        assert !eof;
         if (currentOverlapsOtherNest() ||
-            !that.current.eof() && overlap(current.key().z(), that.current.key().z())) {
+            !that.eof && overlap(current.key().z(), that.current.key().z())) {
             // Enter current
             if (!nest.isEmpty()) {
                 long topZ = nest.peek().key().z();
@@ -357,7 +357,7 @@ class SpatialJoinInput
             Record currentCopy = new Record();
             current.copyTo(currentCopy);
             nest.push(currentCopy);
-            cursor.next().copyTo(current);
+            copyToCurrent(cursor.next());
         } else {
             advanceCursor();
         }
@@ -414,19 +414,19 @@ class SpatialJoinInput
     private void advanceCursor() throws IOException, InterruptedException
     {
         // Use that.current to skip ahead
-        if (that.current.eof()) {
+        if (that.eof) {
             // If that.current is EOF, then we can skip to the end on this side too.
-            current.setEOF();
+            this.eof = true;
         } else {
-            assert !current.eof(); // Should have been checked in caller, but just to be sure.
+            assert !eof; // Should have been checked in caller, but just to be sure.
             long thisCurrentZ = this.current.key().z();
             long thatCurrentZ = that.current.key().z();
             assert thatCurrentZ >= thisCurrentZ; // otherwise, we would have entered that.current
             if (thatCurrentZ > thisCurrentZ) {
                 cursor.goTo(SpatialObjectKey.keyLowerBound(thatCurrentZ));
-                cursor.next().copyTo(current);
+                copyToCurrent(cursor.next());
                 if (!singleCellOptimization || !singleCell) {
-                    if (!current.eof() && SpaceImpl.contains(thatCurrentZ, current.key().z())) {
+                    if (!eof && SpaceImpl.contains(thatCurrentZ, current.key().z())) {
                         // that.current contains this.current. Find the largest ancestor.
                         findAncestorToResume(current.key().z(), thisCurrentZ);
                     } else {
@@ -450,10 +450,7 @@ class SpatialJoinInput
                 buffer.append(' ');
                 buffer.append(formatZ(record.key().z()));
             }
-            String nextZ =
-                current.eof()
-                ? "eof"
-                : formatZ(current.key().z());
+            String nextZ = eof ? "eof" : formatZ(current.key().z());
             LOG.log(Level.FINE,
                     "{0} {1}: nest:{2}, current: {3}",
                     new Object[]{this, label, buffer.toString(), nextZ});
@@ -469,19 +466,20 @@ class SpatialJoinInput
             SpatialObjectKey key = SpatialObjectKey.keyLowerBound(zCandidate);
             cursor.goTo(key);
             Record ancestor = cursor.next();
-            if (!ancestor.eof() && ancestor.key().z() == zCandidate) {
-                ancestor.copyTo(current);
+            if (ancestor != null && ancestor.key().z() == zCandidate) {
+                copyToCurrent(ancestor);
+                // ancestor.copyTo(current);
             }
             zCandidate = SpaceImpl.parent(zCandidate);
             counters.countAncestorFind();
         }
         // Resume at current
-        if (current.eof()) {
+        if (eof) {
             cursor.close();
         } else {
             assert current.key().z() >= zLowerBound;
             cursor.goTo(current.key());
-            cursor.next().copyTo(current);
+            copyToCurrent(cursor.next());
         }
     }
 
@@ -512,11 +510,22 @@ class SpatialJoinInput
         throws IOException, InterruptedException
     {
         this.cursor = newCursor(spatialIndex);
-        this.cursor.next().copyTo(this.current);
+        this.current = new Record();
+        copyToCurrent(this.cursor.next());
         this.spatialJoinOutput = spatialJoinOutput;
         this.singleCell = spatialIndex.singleCell();
         this.singleCellOptimization = SpatialJoinImpl.singleCellOptimization();
         log("initialize");
+    }
+
+    private void copyToCurrent(Record record)
+    {
+        if (record == null) {
+            eof = true;
+        } else {
+            record.copyTo(current);
+            eof = false;
+        }
     }
 
     // Class state
@@ -539,7 +548,8 @@ class SpatialJoinInput
     // and cursor contains later z-values.
     private final Deque<Record> nest = new ArrayDeque<>();
     private final Cursor cursor;
-    private final Record current = new Record();
+    private final Record current;
+    private boolean eof = false;
     private final boolean singleCellOptimization;
     private final Counters counters = Counters.forThread();
 }

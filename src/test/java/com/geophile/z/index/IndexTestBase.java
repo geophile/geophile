@@ -138,7 +138,7 @@ public abstract class IndexTestBase
         for (long id = 0; id < nObjects; id++) {
             zById.add(new ArrayList<Long>());
         }
-        while (!(record = cursor.next()).eof()) {
+        while ((record = cursor.next()) != null) {
             long id = (int) record.spatialObject().id();
             assertTrue(!removedIds.contains(id));
             presentIds.add(id);
@@ -180,7 +180,7 @@ public abstract class IndexTestBase
         expected = allKeys.keySet().iterator();
         cursor = index.cursor(start.z());
         count = 0;
-        while (!(record = cursor.next()).eof()) {
+        while ((record = cursor.next()) != null) {
             assertEquals(expected.next(), record.key());
             count++;
         }
@@ -190,7 +190,7 @@ public abstract class IndexTestBase
         start = SpatialObjectKey.keyLowerBound(z(GAP * nObjects / 2 + GAP / 2));
         expected = allKeys.tailMap(start, true).keySet().iterator();
         cursor = index.cursor(start.z());
-        while (!(record = cursor.next()).eof()) {
+        while ((record = cursor.next()) != null) {
             assertEquals(expected.next(), record.key());
         }
         assertTrue(!expected.hasNext());
@@ -198,7 +198,7 @@ public abstract class IndexTestBase
         start = SpatialObjectKey.keyUpperBound(z(SpaceImpl.Z_MAX));
         expected = allKeys.tailMap(start, true).keySet().iterator();
         cursor = index.cursor(start.z());
-        while (!(record = cursor.next()).eof()) {
+        while ((record = cursor.next()) != null) {
             fail();
         }
         assertTrue(!expected.hasNext());
@@ -206,7 +206,7 @@ public abstract class IndexTestBase
         start = SpatialObjectKey.keyLowerBound(z(SpaceImpl.Z_MIN));
         expected = allKeys.headMap(start, true).descendingKeySet().iterator();
         cursor = index.cursor(start.z());
-        while (!(record = cursor.previous()).eof()) {
+        while ((record = cursor.previous()) != null) {
             fail();
         }
         assertTrue(!expected.hasNext());
@@ -214,7 +214,7 @@ public abstract class IndexTestBase
         start = SpatialObjectKey.keyUpperBound(z(GAP * nObjects / 2 + GAP / 2));
         expected = allKeys.headMap(start, true).descendingKeySet().iterator();
         cursor = index.cursor(start.z());
-        while (!(record = cursor.previous()).eof()) {
+        while ((record = cursor.previous()) != null) {
             assertEquals(expected.next(), record.key());
         }
         assertTrue(!expected.hasNext());
@@ -223,7 +223,7 @@ public abstract class IndexTestBase
         expected = allKeys.descendingKeySet().iterator();
         cursor = index.cursor(start.z());
         count = 0;
-        while (!(record = cursor.previous()).eof()) {
+        while ((record = cursor.previous()) != null) {
             assertEquals(expected.next(), record.key());
             count++;
         }
@@ -238,7 +238,7 @@ public abstract class IndexTestBase
         print("{");
         Cursor cursor = index.cursor(SpaceImpl.Z_MIN);
         Record record;
-        while (!(record = cursor.next()).eof()) {
+        while ((record = cursor.next()) != null) {
             print("    %s", record);
         }
         print("}");

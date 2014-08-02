@@ -20,17 +20,17 @@ public abstract class Cursor
 
     public void close()
     {
-        current.setEOF();
         state = State.DONE;
     }
 
     public final Record current() throws IOException, InterruptedException
     {
-        return current;
+        return state == State.DONE ? null : current;
     }
 
     protected final void current(long z, SpatialObject spatialObject)
     {
+        assert state != State.DONE;
         current.set(z, spatialObject);
     }
 
@@ -41,6 +41,7 @@ public abstract class Cursor
 
     protected void state(State newState)
     {
+        assert newState != State.DONE;
         state = newState;
     }
 

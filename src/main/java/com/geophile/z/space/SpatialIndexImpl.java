@@ -131,7 +131,7 @@ public class SpatialIndexImpl extends SpatialIndex
         Cursor cursor = index.cursor(z);
         while (soid == UNKNOWN) {
             Record record = cursor.next();
-            if (!record.eof()) {
+            if (record != null) {
                 SpatialObjectKey key = record.key();
                 if (key.z() == z) {
                     if (record.spatialObject().equalTo(spatialObject)) {
@@ -180,7 +180,7 @@ public class SpatialIndexImpl extends SpatialIndex
     private long firstUnreservedSoid(Record metadataRecord)
     {
         long firstUnreservedSoid = 0;
-        if (!metadataRecord.eof()) {
+        if (metadataRecord != null) {
             SpatialIndexMetadata metadata = (SpatialIndexMetadata) metadataRecord.spatialObject();
             firstUnreservedSoid = metadata.firstUnreservedSoid();
         }

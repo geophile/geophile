@@ -62,8 +62,8 @@ public class TreeIndexCursor extends Cursor
                 }
                 break;
             case DONE:
-                assert current().eof();
-                return current();
+                assert current() == null;
+                return null;
         }
         if (treeIterator.hasNext()) {
             Map.Entry<SpatialObjectKey, SpatialObject> neighbor = treeIterator.next();

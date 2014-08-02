@@ -9,7 +9,7 @@ public class Record
     @Override
     public String toString()
     {
-        return eof() ? "EOF" : key.toString();
+        return key.toString();
     }
 
     // Record interface
@@ -24,22 +24,13 @@ public class Record
         return spatialObject;
     }
 
-    public boolean eof()
-    {
-        return key == null && spatialObject == null;
-    }
-
     public void copyTo(Record record)
     {
         if (record == this) {
             throw new IllegalArgumentException();
         }
-        if (eof()) {
-            record.setEOF();
-        } else {
-            record.key = key;
-            record.spatialObject = spatialObject;
-        }
+        record.key = key;
+        record.spatialObject = spatialObject;
     }
 
     public void set(long z, SpatialObject spatialObject)
@@ -55,14 +46,9 @@ public class Record
         this.spatialObject = null;
     }
 
-    public void setEOF()
-    {
-        key = null;
-        spatialObject = null;
-    }
-
     public Record()
-    {}
+    {
+    }
 
     // Object state
 
