@@ -10,6 +10,7 @@ import com.geophile.z.Index;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
+import com.geophile.z.index.RecordImpl;
 import com.geophile.z.index.SpatialObjectKey;
 
 import java.util.Arrays;
@@ -43,7 +44,7 @@ public class SortedArray implements Index
     public void add(long z, SpatialObject spatialObject)
     {
         ensureSpace(n + 1);
-        Record record = new Record();
+        Record record = newRecord();
         record.set(z, spatialObject);
         records[n++] = record;
         sorted = false;
@@ -53,7 +54,7 @@ public class SortedArray implements Index
     public boolean remove(long z, long soid)
     {
         boolean removed = false;
-        Record record = new Record();
+        Record record = newRecord();
         record.set(z, soid);
         int position = Arrays.binarySearch(records, 0, n, record, SortedArray.RECORD_COMPARATOR);
         if (position >= 0) {
@@ -81,6 +82,12 @@ public class SortedArray implements Index
     public SpatialObjectKey key(long z, long soid)
     {
         return SpatialObjectKey.key(z, soid);
+    }
+
+    @Override
+    public Record newRecord()
+    {
+        return new RecordImpl();
     }
 
     // SortedArray

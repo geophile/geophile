@@ -41,8 +41,10 @@ public class SortedArrayCursor extends Cursor
 
     public SortedArrayCursor(SortedArray sortedArray, SpatialObjectKey startAt)
     {
+        super(sortedArray);
         this.records = sortedArray.records;
         this.n = sortedArray.n;
+        this.startAt = sortedArray.newRecord();
         this.startAt.set(startAt.z(), startAt.soid());
     }
 
@@ -118,7 +120,7 @@ public class SortedArrayCursor extends Cursor
 
     private final Object[] records;
     private final int n;
-    private final Record startAt = new Record();
+    private final Record startAt;
     private boolean forward;
     private int position;
 }

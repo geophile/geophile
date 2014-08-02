@@ -44,11 +44,12 @@ public class TreeWithSerializationCursor extends Cursor
     // TreeIndexCursor interface
 
     public TreeWithSerializationCursor(Serializer serializer,
-                                       TreeMap<SpatialObjectKey, ByteBuffer> tree,
+                                       TreeWithSerialization treeIndex,
                                        SpatialObjectKey key)
     {
+        super(treeIndex);
         this.serializer = serializer;
-        this.tree = tree;
+        this.tree = treeIndex.tree();
         this.startAt = key;
     }
 

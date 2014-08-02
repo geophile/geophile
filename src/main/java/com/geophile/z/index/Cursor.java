@@ -6,6 +6,7 @@
 
 package com.geophile.z.index;
 
+import com.geophile.z.Index;
 import com.geophile.z.SpatialObject;
 
 import java.io.IOException;
@@ -45,9 +46,14 @@ public abstract class Cursor
         state = newState;
     }
 
+    protected Cursor(Index index)
+    {
+        current = index.newRecord();
+    }
+
     // Object state
 
-    private final Record current = new Record();
+    private final Record current;
     private State state = State.NEVER_USED;
 
     // Inner classes

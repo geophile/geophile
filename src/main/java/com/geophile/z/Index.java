@@ -7,6 +7,7 @@
 package com.geophile.z;
 
 import com.geophile.z.index.Cursor;
+import com.geophile.z.index.Record;
 import com.geophile.z.index.SpatialObjectKey;
 
 import java.io.IOException;
@@ -82,4 +83,6 @@ public interface Index
      * @return An index key (z, soid).
      */
     SpatialObjectKey key(long z, long soid);
+
+    Record newRecord();
 }

@@ -10,6 +10,8 @@ import com.geophile.z.DuplicateSpatialObjectException;
 import com.geophile.z.Index;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
+import com.geophile.z.index.Record;
+import com.geophile.z.index.RecordImpl;
 import com.geophile.z.index.SpatialObjectKey;
 
 import java.util.Iterator;
@@ -33,7 +35,6 @@ public class TreeIndex implements Index
     }
 
     // Index interface
-
 
     @Override
     public boolean blindUpdates()
@@ -73,7 +74,7 @@ public class TreeIndex implements Index
     @Override
     public Cursor cursor(long z)
     {
-        return new TreeIndexCursor(tree, key(z));
+        return new TreeIndexCursor(this, key(z));
     }
 
     @Override
@@ -88,10 +89,23 @@ public class TreeIndex implements Index
         return SpatialObjectKey.key(z, soid);
     }
 
+    @Override
+    public Record newRecord()
+    {
+        return new RecordImpl();
+    }
+
     // TreeIndex
 
     public TreeIndex()
     {}
+
+    // For use by this package
+
+    TreeMap<SpatialObjectKey, SpatialObject> tree()
+    {
+        return tree;
+    }
 
     // Class state
 

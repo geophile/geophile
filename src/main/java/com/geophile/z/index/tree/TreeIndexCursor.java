@@ -42,9 +42,10 @@ public class TreeIndexCursor extends Cursor
 
     // TreeIndexCursor interface
 
-    public TreeIndexCursor(TreeMap<SpatialObjectKey, SpatialObject> tree, SpatialObjectKey key)
+    public TreeIndexCursor(TreeIndex treeIndex, SpatialObjectKey key)
     {
-        this.tree = tree;
+        super(treeIndex);
+        this.tree = treeIndex.tree();
         this.startAt = key;
     }
 

@@ -1,5 +1,6 @@
 package com.geophile.z.spatialjoin;
 
+import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.Cursor;
 import com.geophile.z.index.Record;
@@ -354,7 +355,7 @@ class SpatialJoinInput
                 long topZ = nest.peek().key().z();
                 assert SpaceImpl.contains(topZ, current.key().z());
             }
-            Record currentCopy = new Record();
+            Record currentCopy = spatialIndex.index().newRecord();
             current.copyTo(currentCopy);
             nest.push(currentCopy);
             copyToCurrent(cursor.next());
@@ -509,8 +510,9 @@ class SpatialJoinInput
     private SpatialJoinInput(SpatialIndexImpl spatialIndex, SpatialJoinOutput spatialJoinOutput)
         throws IOException, InterruptedException
     {
+        this.spatialIndex = spatialIndex;
         this.cursor = newCursor(spatialIndex);
-        this.current = new Record();
+        this.current = spatialIndex.index().newRecord();
         copyToCurrent(this.cursor.next());
         this.spatialJoinOutput = spatialJoinOutput;
         this.singleCell = spatialIndex.singleCell();
@@ -541,6 +543,7 @@ class SpatialJoinInput
     public static long EOF = Long.MAX_VALUE;
 
     private final int id = idGenerator.getAndIncrement();
+    private final SpatialIndexImpl spatialIndex;
     private final boolean singleCell;
     private SpatialJoinInput that;
     private final SpatialJoinOutput spatialJoinOutput;
