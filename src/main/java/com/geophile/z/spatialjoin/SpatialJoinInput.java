@@ -440,23 +440,6 @@ class SpatialJoinInput
         }
     }
 
-    private void log(String label)
-    {
-        if (LOG.isLoggable(Level.FINE)) {
-            StringBuilder buffer = new StringBuilder();
-            Iterator<Record> nestScan = nest.descendingIterator();
-            while (nestScan.hasNext()) {
-                Record record = nestScan.next();
-                buffer.append(' ');
-                buffer.append(formatZ(record.key().z()));
-            }
-            String nextZ = eof ? "eof" : formatZ(current.key().z());
-            LOG.log(Level.FINE,
-                    "{0} {1}: nest:{2}, current: {3}",
-                    new Object[]{this, label, buffer.toString(), nextZ});
-        }
-    }
-
     private void findAncestorToResume(long zStart, long zLowerBound)
         throws IOException, InterruptedException
     {
@@ -526,6 +509,23 @@ class SpatialJoinInput
         } else {
             record.copyTo(current);
             eof = false;
+        }
+    }
+
+    private void log(String label)
+    {
+        if (LOG.isLoggable(Level.FINE)) {
+            StringBuilder buffer = new StringBuilder();
+            Iterator<Record> nestScan = nest.descendingIterator();
+            while (nestScan.hasNext()) {
+                Record record = nestScan.next();
+                buffer.append(' ');
+                buffer.append(formatZ(record.key().z()));
+            }
+            String nextZ = eof ? "eof" : formatZ(current.key().z());
+            LOG.log(Level.FINE,
+                    "{0} {1}: nest:{2}, current: {3}",
+                    new Object[]{this, label, buffer.toString(), nextZ});
         }
     }
 

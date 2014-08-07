@@ -138,28 +138,6 @@ public class SpatialIndexImpl extends SpatialIndex
         return zs;
     }
 
-    private long soid(long z, SpatialObject spatialObject) throws IOException, InterruptedException
-    {
-        long soid = UNKNOWN;
-        Cursor cursor = index.cursor(z);
-        while (soid == UNKNOWN) {
-            Record record = cursor.next();
-            if (record != null) {
-                SpatialObjectKey key = record.key();
-                if (key.z() == z) {
-                    if (record.spatialObject().equalTo(spatialObject)) {
-                        soid = record.spatialObject().id();
-                    }
-                } else {
-                    soid = MISSING;
-                }
-            } else {
-                soid = MISSING;
-            }
-        }
-        return soid;
-    }
-
     private long nextSoid() throws IOException, InterruptedException
     {
         long soid = idGenerator.getAndIncrement();
@@ -203,8 +181,6 @@ public class SpatialIndexImpl extends SpatialIndex
     // Class state
 
     private static final Logger LOG = Logger.getLogger(SpatialIndexImpl.class.getName());
-    private static final long UNKNOWN = -2L;
-    private static final long MISSING = -1L;
     private static final long SOID_RESERVATION_BLOCK_SIZE = 1_000_000L;
     static final String SOID_RESERVALTION_BLOCK_SIZE_PROPERTY = "soidReservationBlockSize";
 

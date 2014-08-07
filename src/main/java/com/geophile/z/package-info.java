@@ -7,7 +7,7 @@
 /**
  * Geophile, implemented by this package, is a framework for spatial querying.
  *
- * All Geophile operations take place within a {@link com.geophile.z.space.Space}, which
+ * All Geophile operations take place within a {@link com.geophile.z.Space}, which
  * represents a multi-dimensional space, and defines the coordinates for each dimension.
  * A {@link com.geophile.z.SpatialIndex} organizes a set of {@link com.geophile.z.SpatialObject}s,
  * and provides for

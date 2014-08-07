@@ -33,12 +33,6 @@ import java.io.IOException;
 public interface Index
 {
     /**
-     * Indicates whether this index does blind updates.
-     * @return true if this index does blind updates, false otherwise.
-     */
-    boolean blindUpdates();
-
-    /**
      * Adds a spatial object to this index, associated with the given z-value.
      * @param z z-value representing a region that overlaps the spatial object.
      * @param spatialObject The spatial object being added to the index.
@@ -81,4 +75,12 @@ public interface Index
     SpatialObjectKey key(long z, long soid);
 
     Record newRecord();
+
+    /**
+     * Indicates whether this index does blind updates.
+     * @return true if this index does blind updates, false otherwise.
+     */
+    boolean blindUpdates();
+
+
 }
