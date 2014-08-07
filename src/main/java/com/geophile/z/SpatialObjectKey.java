@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.index;
+package com.geophile.z;
 
 import static com.geophile.z.space.SpaceImpl.formatZ;
 

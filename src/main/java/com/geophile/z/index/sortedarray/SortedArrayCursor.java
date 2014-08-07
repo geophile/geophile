@@ -6,9 +6,9 @@
 
 package com.geophile.z.index.sortedarray;
 
-import com.geophile.z.index.Cursor;
-import com.geophile.z.index.Record;
-import com.geophile.z.index.SpatialObjectKey;
+import com.geophile.z.Cursor;
+import com.geophile.z.Record;
+import com.geophile.z.SpatialObjectKey;
 
 import java.io.IOException;
 import java.util.Arrays;

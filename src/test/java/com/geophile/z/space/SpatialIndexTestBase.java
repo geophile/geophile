@@ -146,6 +146,19 @@ public abstract class SpatialIndexTestBase
     }
 
     @Test
+    public void testRemovalVsDuplicates() throws Exception
+    {
+        final int COPIES = 10;
+        Index index = newIndex();
+        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Box box = new Box(250, 750, 250, 750);
+        for (int c = 0; c < COPIES; c++) {
+            spatialIndex.add(box);
+        }
+        commitTransaction();
+    }
+
+    @Test
     public void spatialIdGeneratorRestore() throws Exception
     {
         Index index = newIndex();

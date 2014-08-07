@@ -6,8 +6,6 @@
 
 package com.geophile.z;
 
-import com.geophile.z.index.Record;
-
 public interface RecordFilter
 {
     boolean select(Record record);

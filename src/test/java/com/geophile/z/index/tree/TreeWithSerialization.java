@@ -10,10 +10,10 @@ import com.geophile.z.DuplicateSpatialObjectException;
 import com.geophile.z.Index;
 import com.geophile.z.Serializer;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.index.Cursor;
-import com.geophile.z.index.Record;
-import com.geophile.z.index.RecordImpl;
-import com.geophile.z.index.SpatialObjectKey;
+import com.geophile.z.Cursor;
+import com.geophile.z.Record;
+import com.geophile.z.RecordImpl;
+import com.geophile.z.SpatialObjectKey;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;

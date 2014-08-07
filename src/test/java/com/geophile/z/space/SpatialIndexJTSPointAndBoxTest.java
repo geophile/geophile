@@ -13,7 +13,7 @@
 package com.geophile.z.space;
 
 import com.geophile.z.*;
-import com.geophile.z.index.Record;
+import com.geophile.z.Record;
 import com.geophile.z.index.tree.TreeIndex;
 import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;

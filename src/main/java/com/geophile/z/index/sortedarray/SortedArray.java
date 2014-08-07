@@ -8,10 +8,10 @@ package com.geophile.z.index.sortedarray;
 
 import com.geophile.z.Index;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.index.Cursor;
-import com.geophile.z.index.Record;
-import com.geophile.z.index.RecordImpl;
-import com.geophile.z.index.SpatialObjectKey;
+import com.geophile.z.Cursor;
+import com.geophile.z.Record;
+import com.geophile.z.RecordImpl;
+import com.geophile.z.SpatialObjectKey;
 
 import java.util.Arrays;
 import java.util.Comparator;

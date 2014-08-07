@@ -6,8 +6,7 @@
 
 package com.geophile.z.index;
 
-import com.geophile.z.Index;
-import com.geophile.z.Serializer;
+import com.geophile.z.*;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.util.Stopwatch;
 import org.junit.BeforeClass;

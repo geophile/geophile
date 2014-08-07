@@ -6,10 +6,6 @@
 
 package com.geophile.z;
 
-import com.geophile.z.index.Cursor;
-import com.geophile.z.index.Record;
-import com.geophile.z.index.SpatialObjectKey;
-
 import java.io.IOException;
 
 /**
@@ -29,7 +25,7 @@ import java.io.IOException;
  * An index that does "blind updates" cannot detect duplicate keys, and cannot indicate whether a removal succeeds.
  * An index with these behaviors is indicated by {@link #blindUpdates()}.
  *
- * Access to Index contents is accomplished using a {@link com.geophile.z.index.Cursor}, obtained by
+ * Access to Index contents is accomplished using a {@link Cursor}, obtained by
  * {@link Index#cursor(long)}.
  *
  */
@@ -63,9 +59,9 @@ public interface Index
     boolean remove(long z, long soid) throws IOException, InterruptedException;
 
     /**
-     * Returns a {@link com.geophile.z.index.Cursor} positioned at the given z-value.
+     * Returns a {@link Cursor} positioned at the given z-value.
      * @param z A z-value
-     * @return A {@link com.geophile.z.index.Cursor} postioned at the given z-value.
+     * @return A {@link Cursor} postioned at the given z-value.
      */
     Cursor cursor(long z) throws IOException, InterruptedException;
 

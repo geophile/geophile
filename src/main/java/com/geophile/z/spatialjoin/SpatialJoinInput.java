@@ -1,10 +1,9 @@
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.index.Cursor;
-import com.geophile.z.index.Record;
-import com.geophile.z.index.SpatialObjectKey;
+import com.geophile.z.Cursor;
+import com.geophile.z.Record;
+import com.geophile.z.SpatialObjectKey;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
 

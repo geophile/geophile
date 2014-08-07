@@ -8,7 +8,7 @@ package com.geophile.z.space;
 
 import com.geophile.z.RecordFilter;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.index.Record;
+import com.geophile.z.Record;
 
 class RemovalFilter implements RecordFilter
 {

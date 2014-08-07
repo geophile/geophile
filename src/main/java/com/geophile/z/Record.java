@@ -1,6 +1,4 @@
-package com.geophile.z.index;
-
-import com.geophile.z.SpatialObject;
+package com.geophile.z;
 
 public interface Record
 {

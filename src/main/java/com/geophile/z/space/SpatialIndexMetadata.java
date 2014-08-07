@@ -8,7 +8,7 @@ package com.geophile.z.space;
 
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.index.SpatialObjectKey;
+import com.geophile.z.SpatialObjectKey;
 
 import java.nio.ByteBuffer;
 

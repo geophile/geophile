@@ -4,9 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.index;
-
-import com.geophile.z.SpatialObject;
+package com.geophile.z;
 
 public class RecordImpl implements Record
 {
