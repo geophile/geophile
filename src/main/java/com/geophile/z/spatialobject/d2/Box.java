@@ -36,7 +36,12 @@ public class Box implements SpatialObject
     @Override
     public boolean equals(Object o)
     {
-        return o != null && o instanceof Box && equalTo((Box) o);
+        boolean eq = false;
+        if (o != null && o instanceof Box) {
+            Box that = (Box) o;
+            eq = this.id == that.id && this.equalTo(that);
+        }
+        return eq;
     }
 
     @Override

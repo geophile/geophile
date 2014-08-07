@@ -67,9 +67,12 @@ public abstract class SpatialIndexTestBase
         }
         commitTransaction();
         // Remove everything
+        RemovalFilter removalFilter = new RemovalFilter();
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.remove(new Point(x, y));
+                Point point = new Point(x, y);
+                removalFilter.spatialObject(point);
+                spatialIndex.remove(point, removalFilter);
             }
         }
         commitTransaction();
@@ -101,11 +104,14 @@ public abstract class SpatialIndexTestBase
         }
         commitTransaction();
         // Remove (x, y), for odd x/10 and even y/10
+        RemovalFilter removalFilter = new RemovalFilter();
         for (long x = 0; x < X_MAX; x += 10) {
             if ((x / 10) % 2 == 1) {
                 for (long y = 0; y < Y_MAX; y += 10) {
                     if ((y / 10) % 2 == 0) {
-                        spatialIndex.remove(new Point(x, y));
+                        Point point = new Point(x, y);
+                        removalFilter.spatialObject(point);
+                        spatialIndex.remove(point, removalFilter);
                     }
                 }
             }
@@ -187,6 +193,11 @@ public abstract class SpatialIndexTestBase
         assertEquals(SOID_RESERVATION_BLOCK_SIZE * 2, spatialIndex.firstUnreservedSoidStored());
     }
 
+    public abstract Index newIndex() throws Exception;
+
+    public void commitTransaction() throws Exception
+    {}
+
     private void test(SpatialIndexImpl spatialIndex,
                       int xLo, int xHi, int yLo, int yHi,
                       Filter filter) throws Exception
@@ -198,9 +209,8 @@ public abstract class SpatialIndexTestBase
         Iterator<Pair> iterator =
             SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
         List<Point> actual = new ArrayList<>();
-        Point point;
         while (iterator.hasNext()) {
-            point = (Point) iterator.next().right();
+            Point point = (Point) iterator.next().right();
             if (!actual.contains(point)) {
                 actual.add(point);
             }
@@ -208,12 +218,14 @@ public abstract class SpatialIndexTestBase
         List<Point> expected = new ArrayList<>();
         for (long x = 10 * ((xLo + 9) / 10); x <= 10 * (xHi / 10); x += 10) {
             for (long y = 10 * ((yLo + 9) / 10); y <= 10 * (yHi / 10); y += 10) {
-                point = new Point(x, y);
+                Point point = new Point(x, y);
                 if (filter.keep(point)) {
                     expected.add(point);
                 }
             }
         }
+        clearIds(actual);
+        clearIds(expected);
         Collections.sort(actual, POINT_RANKING);
         Collections.sort(expected, POINT_RANKING);
         assertEquals(expected, actual);
@@ -231,10 +243,12 @@ public abstract class SpatialIndexTestBase
         } while (yHi <= yLo);
     }
 
-    public abstract Index newIndex() throws Exception;
-
-    public void commitTransaction() throws Exception
-    {}
+    private void clearIds(Collection<Point> points)
+    {
+        for (Point point : points) {
+            point.id(0);
+        }
+    }
 
     private static final int SEED = 123456;
     private static final int X_MAX = 1000;

@@ -31,11 +31,16 @@ public class Point implements SpatialObject
         return ((int) (h >>> 32)) ^ (int) h;
     }
 
-    @Override
-    public boolean equals(Object o)
-    {
-        return o != null && o instanceof Point && equalTo((Point) o);
-    }
+        @Override
+        public boolean equals(Object o)
+        {
+            boolean eq = false;
+            if (o != null && o instanceof Point) {
+                Point that = (Point) o;
+                eq = this.id == that.id && this.equalTo(that);
+            }
+            return eq;
+        }
 
     @Override
     public String toString()

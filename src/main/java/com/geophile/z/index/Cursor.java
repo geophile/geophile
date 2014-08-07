@@ -19,6 +19,20 @@ public abstract class Cursor
 
     public abstract void goTo(SpatialObjectKey key) throws IOException, InterruptedException;
 
+    /**
+     * Delete the record returned by the immediately preceding call to next or previous.
+     * The return value is true if a record was deleted. If the record returned was null,
+     * or if no record has been returned yet, (i.e., next or
+     * previous has not been called), then the return value is false. One other possibility
+     * is that the record in question is no longer present, due to a concurrent operation
+     * on the underlying Index, in which case the return value is also false.
+     * This is unlikely, but could occur if the index is being
+     * accessed at a low level of isolation, e.g. READ COMMITTED.
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public abstract boolean deleteCurrent() throws IOException, InterruptedException;
+
     public void close()
     {
         state = State.DONE;

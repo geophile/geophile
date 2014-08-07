@@ -45,31 +45,44 @@ public class SpatialIndexImpl extends SpatialIndex
         }
     }
 
-    public boolean remove(SpatialObject spatialObject) throws IOException, InterruptedException
+    public boolean remove(SpatialObject spatialObject,
+                          RecordFilter recordFilter) throws IOException, InterruptedException
     {
-        boolean found;
         long[] zs = decompose(spatialObject);
-        // Find smallest z and remove it first. The first removal, which has to search for a spatial object id,
-        // should be the slowest step, and searching in the smallest z should minimize the number of spatial objects
-        // that need to be examined.
-        long zSmallest = zs[0];
-        for (int i = 1; i < zs.length && zs[i] != -1L; i++) {
+        int recordsDeleted = 0;
+        Cursor cursor = null;
+        for (int i = 0; i < zs.length; i++) {
             long z = zs[i];
-            if (SpaceImpl.length(z) > SpaceImpl.length(zSmallest)) {
-                zSmallest = z;
+            if (cursor == null) {
+                cursor = index.cursor(z);
+            } else {
+                cursor.goTo(SpatialObjectKey.keyLowerBound(z));
+            }
+            boolean more = true;
+            boolean found = false;
+            while (more && !found) {
+                Record record = cursor.next();
+                if (record == null) {
+                    more = false;
+                } else {
+                    if (record.key().z() == z) {
+                        if (recordFilter.select(record)) {
+                            found = true;
+                        }
+                    } else {
+                        more = false;
+                    }
+                }
+                if (found) {
+                    cursor.deleteCurrent();
+                    recordsDeleted++;
+                }
             }
         }
-        // Do the first removal, getting the spatial object id.
-        long soid = soid(zSmallest, spatialObject);
-        if (found = (soid != MISSING)) {
-            // Remove everything else with the same soid.
-            for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
-                long z = zs[i];
-                boolean removed = index.remove(z, soid);
-                assert index.blindUpdates() || removed;
-            }
+        if (recordsDeleted > 0 && recordsDeleted < zs.length) {
+            throw new SpatialIndex.Exception(String.format("Incomplete deletion of spatial object %s", spatialObject));
         }
-        return found;
+        return recordsDeleted == zs.length;
     }
 
     public boolean singleCell()

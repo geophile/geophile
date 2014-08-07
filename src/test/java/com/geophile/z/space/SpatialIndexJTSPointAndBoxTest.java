@@ -13,6 +13,7 @@
 package com.geophile.z.space;
 
 import com.geophile.z.*;
+import com.geophile.z.index.Record;
 import com.geophile.z.index.tree.TreeIndex;
 import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;
@@ -69,7 +70,7 @@ public class SpatialIndexJTSPointAndBoxTest
         // Remove everything
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.remove(point(x, y));
+                spatialIndex.remove(point(x, y), RECORD_FILTER);
             }
         }
         Random random = new Random(SEED);
@@ -102,7 +103,7 @@ public class SpatialIndexJTSPointAndBoxTest
             if ((x / 10) % 2 == 1) {
                 for (long y = 0; y < Y_MAX; y += 10) {
                     if ((y / 10) % 2 == 0) {
-                        spatialIndex.remove(point(x, y));
+                        spatialIndex.remove(point(x, y), RECORD_FILTER);
                     }
                 }
             }
@@ -245,6 +246,14 @@ public class SpatialIndexJTSPointAndBoxTest
             return
                 b.xLo() <= p.point().getX() && p.point().getX() <= b.xHi() &&
                 b.yLo() <= p.point().getY() && p.point().getY() <= b.yHi();
+        }
+    };
+    private static final RecordFilter RECORD_FILTER = new RecordFilter()
+    {
+        @Override
+        public boolean select(Record record)
+        {
+            return true;
         }
     };
 

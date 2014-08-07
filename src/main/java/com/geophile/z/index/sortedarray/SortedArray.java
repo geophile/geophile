@@ -97,6 +97,14 @@ public class SortedArray implements Index
         n = 0;
     }
 
+    // For use by this package
+    
+    void deleteRecord(int at)
+    {
+        System.arraycopy(records, at + 1, records, at, n - at - 1);
+        records[--n] = null;
+    }
+
     // For use by this class
 
     private void ensureSorted()
@@ -113,8 +121,11 @@ public class SortedArray implements Index
 
     private void ensureSpace(int n)
     {
-        if (records == null || records.length < n) {
-            records = Arrays.copyOf(records, Math.max(MIN_ARRAY_SIZE, (int) (n * 1.5)));
+        int newLength = Math.max(MIN_ARRAY_SIZE, (int) (n * 1.5));
+        if (records == null) {
+            records = new Object[newLength];
+        } else if (records.length < n) {
+            records = Arrays.copyOf(records, newLength);
         }
     }
 

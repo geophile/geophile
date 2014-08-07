@@ -29,15 +29,12 @@ public abstract class IndexTestBase
     }
 
     @Test
-    public void test() throws Exception
+    public void testIndex() throws Exception
     {
         try {
             Index index = newIndex();
             for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
                 for (int copies = 1; copies <= 8; copies++) {
-/*
-                    print("nObjects: %s, copies: %s", nObjects, copies);
-*/
                     long start = System.currentTimeMillis();
                     load(index, nObjects, copies);
                     long load = System.currentTimeMillis();
@@ -47,6 +44,7 @@ public abstract class IndexTestBase
                     long checkRetrieval = System.currentTimeMillis();
                     removeAll(index, nObjects, copies);
                     long removeAll = System.currentTimeMillis();
+
     /*
                     print("    load: %s, checkContents: %s, checkRetrieval: %s, removeAll: %s",
                           (load - start) / 1000.0,
@@ -58,6 +56,14 @@ public abstract class IndexTestBase
             }
         } finally {
             shutdown();
+        }
+    }
+
+    @Test
+    public void testCursor() throws Exception
+    {
+        for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
+            testCursor(nObjects);
         }
     }
 
@@ -229,6 +235,158 @@ public abstract class IndexTestBase
         }
         assertTrue(!expected.hasNext());
         assertEquals(nObjects * zCount, count);
+    }
+
+    private void testCursor(int nObjects) throws Exception
+    {
+        Index index = newIndex();
+        try {
+            // Delete everything in scan
+            {
+                load(index, nObjects, 1);
+                Cursor cursor = index.cursor(SpaceImpl.Z_MIN);
+                Record record;
+                int id = 0;
+                while ((record = cursor.next()) != null) {
+                    assertEquals(z(id * GAP), record.key().z());
+                    cursor.deleteCurrent();
+                    id++;
+                }
+                cursor.goTo(SpatialObjectKey.keyLowerBound(SpaceImpl.Z_MIN));
+                assertNull(cursor.next());
+                assertEquals(id, nObjects);
+            }
+            // Same thing, backwards
+            {
+                load(index, nObjects, 1);
+                Cursor cursor = index.cursor(SpaceImpl.Z_MAX);
+                Record record;
+                int id = nObjects;
+                while ((record = cursor.previous()) != null) {
+                    id--;
+                    assertEquals(z(id * GAP), record.key().z());
+                    cursor.deleteCurrent();
+                }
+                cursor.goTo(SpatialObjectKey.keyLowerBound(SpaceImpl.Z_MAX));
+                assertNull(cursor.previous());
+                assertEquals(id, 0);
+            }
+            // Skip every other
+            {
+                load(index, nObjects, 1);
+                Cursor cursor = index.cursor(SpaceImpl.Z_MIN);
+                Record record;
+                int id = 0;
+                while ((record = cursor.next()) != null) {
+                    // Delete even ids
+                    assertEquals(z(id * GAP), record.key().z());
+                    if (id % 2 == 0) {
+                        cursor.deleteCurrent();
+                    }
+                    id++;
+                }
+                // Check odd ids remain
+                id = 1;
+                cursor.goTo(SpatialObjectKey.keyLowerBound(SpaceImpl.Z_MIN));
+                while ((record = cursor.next()) != null) {
+                    assertEquals(z(id * GAP), record.key().z());
+                    cursor.deleteCurrent();
+                    id += 2;
+                }
+                cursor.goTo(SpatialObjectKey.keyLowerBound(SpaceImpl.Z_MIN));
+                assertNull(cursor.next());
+                assertEquals(id, nObjects + 1);
+            }
+            // Skip every other going backward
+            {
+                load(index, nObjects, 1);
+                Cursor cursor = index.cursor(SpaceImpl.Z_MAX);
+                Record record;
+                int id = nObjects;
+                while ((record = cursor.previous()) != null) {
+                    id--;
+                    // Delete even ids
+                    assertEquals(z(id * GAP), record.key().z());
+                    if (id % 2 == 0) {
+                        cursor.deleteCurrent();
+                    }
+                }
+                // Check odd ids remain
+                id = 1;
+                cursor.goTo(SpatialObjectKey.keyLowerBound(SpaceImpl.Z_MIN));
+                while ((record = cursor.next()) != null) {
+                    assertEquals(z(id * GAP), record.key().z());
+                    cursor.deleteCurrent();
+                    id += 2;
+                }
+                cursor.deleteCurrent();
+                cursor.goTo(SpatialObjectKey.keyLowerBound(SpaceImpl.Z_MAX));
+                assertNull(cursor.previous());
+                assertEquals(id, nObjects + 1);
+            }
+            // Test random walk, selecting next or previous randomly
+            {
+                Random random = new Random(23456);
+                load(index, nObjects, 1);
+                // Get copy of keys for control
+                long[] control = new long[nObjects];
+                Cursor cursor = index.cursor(SpaceImpl.Z_MIN);
+                Record record;
+                int c = 0;
+                while ((record = cursor.next()) != null) {
+                    control[c++] = record.key().z();
+                }
+                // Do random walk, starting in the middle, deleting each visited key.
+                // Do the same walk in the control array, indicating deleting with -1.
+                c = nObjects / 2;
+                long zExpected;
+                cursor = index.cursor(z(nObjects * GAP / 2));
+                int delta;
+                for (int i = 0; i < nObjects; i++) {
+                    if (random.nextBoolean()) {
+                        // forward
+                        record = cursor.next();
+                        if (record == null) {
+                            cursor.goTo(SpatialObjectKey.keyLowerBound(SpaceImpl.Z_MIN));
+                            record = cursor.next();
+                        }
+                        assertNotNull(record);
+                        cursor.deleteCurrent();
+                        delta = 1;
+                    } else {
+                        // backward
+                        record = cursor.previous();
+                        if (record == null) {
+                            cursor.goTo(SpatialObjectKey.keyLowerBound(SpaceImpl.Z_MAX));
+                            record = cursor.previous();
+                        }
+                        assertNotNull(record);
+                        cursor.deleteCurrent();
+                        delta = -1;
+                    }
+                    if (i > 0) {
+                        do {
+                            c += delta;
+                            if (c == nObjects) {
+                                c = 0;
+                            } else if (c == -1) {
+                                c = nObjects - 1;
+                            }
+                        } while (control[c] == -1);
+                    }
+                    zExpected = control[c];
+                    control[c] = -1;
+                    assertEquals(zExpected, record.key().z());
+                }
+                cursor.goTo(SpatialObjectKey.keyLowerBound(SpaceImpl.Z_MIN));
+                assertNull(cursor.previous());
+                for (c = 0; c < nObjects; c++) {
+                    assertEquals(-1, control[c]);
+                }
+            }
+        } finally {
+            shutdown();
+        }
     }
 
     private void dumpContents(Index index, String label)

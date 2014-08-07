@@ -35,9 +35,11 @@ public abstract class SpatialIndex
     /**
      * Removes the given spatial object from the index.
      * @param spatialObject The object to be removed.
+     * @param filterTODO
      * @return true if spatialObject was found and removed, false otherwise
      */
-    public abstract boolean remove(SpatialObject spatialObject) throws IOException, InterruptedException;
+    public abstract boolean remove(SpatialObject spatialObject,
+                                   RecordFilter recordFilter) throws IOException, InterruptedException;
 
     /**
      * Creates a SpatialIndex. The index
@@ -82,4 +84,12 @@ public abstract class SpatialIndex
     // Inner classes
 
     public enum Options {DEFAULT, SINGLE_CELL}
+
+    public class Exception extends RuntimeException
+    {
+        public Exception(String message)
+        {
+            super(message);
+        }
+    }
 }

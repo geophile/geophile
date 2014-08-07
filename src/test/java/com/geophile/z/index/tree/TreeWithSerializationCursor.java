@@ -40,6 +40,16 @@ public class TreeWithSerializationCursor extends Cursor
         state(State.NEVER_USED);
     }
 
+    @Override
+    public boolean deleteCurrent() throws IOException, InterruptedException
+    {
+        boolean removed = false;
+        if (state() == State.IN_USE) {
+            treeIterator.remove();
+            removed = true;
+        }
+        return removed;
+    }
 
     // TreeIndexCursor interface
 

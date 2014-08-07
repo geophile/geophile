@@ -39,8 +39,18 @@ public class TreeIndexCursor extends Cursor
         state(State.NEVER_USED);
     }
 
+    @Override
+    public boolean deleteCurrent() throws IOException, InterruptedException
+    {
+        boolean removed = false;
+        if (state() == State.IN_USE) {
+            treeIterator.remove();
+            removed = true;
+        }
+        return removed;
+    }
 
-    // TreeIndexCursor interface
+// TreeIndexCursor interface
 
     public TreeIndexCursor(TreeIndex treeIndex, SpatialObjectKey key)
     {
