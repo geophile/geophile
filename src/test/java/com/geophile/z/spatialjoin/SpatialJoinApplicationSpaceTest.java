@@ -84,7 +84,14 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     {
         // An n x n grid is superimposed on the space, and a random point is selected from each grid cell.
         int gridCellSize = APP_SPACE_WIDTH / n;
-        Index index = new TreeIndex();
+        Index index = new TreeIndex()
+        {
+            @Override
+            public Record newRecord()
+            {
+                return new TestRecord();
+            }
+        };
         SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index, SpatialIndex.Options.SINGLE_CELL);
         TestInput input = new TestInput(spatialIndex, String.format("grid(%s x %s)", gridCellSize, gridCellSize));
         for (int i = 0; i < n; i++) {
@@ -128,10 +135,10 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     private final SpatialJoinFilter filter = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(SpatialObject x, SpatialObject y)
+        public boolean overlap(Record x, Record y)
         {
             testStats.filterCount++;
-            boolean overlap = OVERLAP_TESTER.overlap(x, y);
+            boolean overlap = OVERLAP_TESTER.overlap(x.spatialObject(), y.spatialObject());
             if (overlap) {
                 testStats.overlapCount++;
             }

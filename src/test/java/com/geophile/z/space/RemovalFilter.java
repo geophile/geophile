@@ -15,7 +15,7 @@ class RemovalFilter implements RecordFilter
     @Override
     public boolean select(Record record)
     {
-        return record.spatialObject().equalTo(target);
+        return record.spatialObject().equals(target);
     }
 
     public void spatialObject(SpatialObject target)

@@ -206,7 +206,7 @@ public class SpaceImpl extends Space
             zs[zCount++] = region.z();
         }
         for (int i = zCount; i < maxRegions; i++) {
-            zs[i] = -1L;
+            zs[i] = Z_NULL;
         }
         Arrays.sort(zs, 0, zCount);
         boolean merge;
@@ -218,7 +218,7 @@ public class SpaceImpl extends Space
                 if ((merge = siblings(a, b))) {
                     zs[i - 1] = parent(a);
                     System.arraycopy(zs, i + 1, zs, i, zCount - i - 1);
-                    zs[--zCount] = -1L;
+                    zs[--zCount] = Z_NULL;
                 }
             }
         } while (merge);
@@ -491,6 +491,7 @@ public class SpaceImpl extends Space
     public static final int MAX_Z_BITS = 57; // MSB is unused. 6 LSBs contain the number of z-value bits.
     public static final long Z_MIN = 0x0L;
     public static final long Z_MAX = ((1L << MAX_Z_BITS) - 1) << LENGTH_BITS | LENGTH_MASK;
+    public static final long Z_NULL = -1L;
 
     // Object state
 

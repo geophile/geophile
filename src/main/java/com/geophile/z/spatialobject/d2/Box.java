@@ -39,7 +39,11 @@ public class Box implements SpatialObject
         boolean eq = false;
         if (o != null && o instanceof Box) {
             Box that = (Box) o;
-            eq = this.id == that.id && this.equalTo(that);
+            eq =
+                this.xLo == that.xLo &&
+                this.xHi == that.xHi &&
+                this.yLo == that.yLo &&
+                this.yHi == that.yHi;
         }
         return eq;
     }
@@ -53,18 +57,6 @@ public class Box implements SpatialObject
     // SpatialObject interface
 
     @Override
-    public void id(long id)
-    {
-        this.id = id;
-    }
-
-    @Override
-    public long id()
-    {
-        return id;
-    }
-
-    @Override
     public double[] arbitraryPoint()
     {
         return new double[]{xLo, yLo};
@@ -74,21 +66,6 @@ public class Box implements SpatialObject
     public int maxZ()
     {
         return MAX_Z;
-    }
-
-    @Override
-    public boolean equalTo(SpatialObject spatialObject)
-    {
-        boolean eq = false;
-        if (spatialObject != null && spatialObject instanceof Box) {
-            Box that = (Box) spatialObject;
-            eq =
-                this.xLo == that.xLo &&
-                this.xHi == that.xHi &&
-                this.yLo == that.yLo &&
-                this.yHi == that.yHi;
-        }
-        return eq;
     }
 
     @Override
@@ -136,7 +113,6 @@ public class Box implements SpatialObject
     @Override
     public void readFrom(ByteBuffer buffer)
     {
-        id = buffer.getLong();
         xLo = buffer.getDouble();
         xHi = buffer.getDouble();
         yLo = buffer.getDouble();
@@ -146,7 +122,6 @@ public class Box implements SpatialObject
     @Override
     public void writeTo(ByteBuffer buffer)
     {
-        buffer.putLong(id);
         buffer.putDouble(xLo);
         buffer.putDouble(xHi);
         buffer.putDouble(yLo);
@@ -224,7 +199,6 @@ public class Box implements SpatialObject
 
     // Object state
 
-    private long id;
     private double xLo;
     private double xHi;
     private double yLo;

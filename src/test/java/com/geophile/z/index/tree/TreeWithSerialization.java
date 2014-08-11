@@ -6,25 +6,16 @@
 
 package com.geophile.z.index.tree;
 
-import com.geophile.z.DuplicateSpatialObjectException;
-import com.geophile.z.Index;
-import com.geophile.z.Serializer;
-import com.geophile.z.SpatialObject;
-import com.geophile.z.Cursor;
-import com.geophile.z.Record;
-import com.geophile.z.RecordImpl;
-import com.geophile.z.SpatialObjectKey;
+import com.geophile.z.*;
 
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
+import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // Like TreeIndex, but with serialization of spatial objects
 
-public class TreeWithSerialization implements Index
+public class TreeWithSerialization extends Index
 {
     // Object interface
 
@@ -36,111 +27,87 @@ public class TreeWithSerialization implements Index
 
     // Index interface
 
-
     @Override
-    public boolean blindUpdates()
+    public void add(Record record)
     {
-        return false;
-    }
-
-    @Override
-    public void add(long z, SpatialObject spatialObject)
-    {
-        ByteBuffer replaced = tree.put(key(z, spatialObject.id()), serialize(spatialObject));
-        if (replaced != null) {
-            throw new DuplicateSpatialObjectException(deserialize(replaced));
+        SerializedRecord copy = (SerializedRecord) newRecord();
+        record.copyTo(copy);
+        copy.serialize();
+        boolean added = tree.add(copy);
+        if (!added) {
+            throw new DuplicateRecordException(record);
         }
     }
 
     @Override
-    public boolean remove(long z, long soid)
+    public boolean remove(long z, RecordFilter recordFilter)
     {
-        boolean removed = false;
-        Iterator<Map.Entry<SpatialObjectKey, ByteBuffer>> zScan =
-            tree.tailMap(key(z, soid)).entrySet().iterator();
-        if (zScan.hasNext()) {
-            Map.Entry<SpatialObjectKey, ByteBuffer> entry = zScan.next();
-            if (entry.getKey().z() == z) {
-                SpatialObjectKey key = entry.getKey();
-                assert key.z() == z : key;
-                if (key.soid() == soid) {
-                    zScan.remove();
-                    removed = true;
-                }
+        boolean foundRecord = false;
+        boolean zMatch = true;
+        Iterator<SerializedRecord> iterator = tree.tailSet(key(z)).iterator();
+        while (zMatch && iterator.hasNext() && !foundRecord) {
+            Record record = iterator.next();
+            if (record.z() == z) {
+                foundRecord = recordFilter.select(record);
+            } else {
+                zMatch = false;
             }
         }
-        return removed;
+        if (foundRecord) {
+            iterator.remove();
+        }
+        return foundRecord;
     }
 
     @Override
-    public Cursor cursor(long z)
+    public Cursor cursor()
     {
-        return new TreeWithSerializationCursor(serializer, this, key(z));
-    }
-
-    @Override
-    public SpatialObjectKey key(long z)
-    {
-        return SpatialObjectKey.keyLowerBound(z);
-    }
-
-    @Override
-    public SpatialObjectKey key(long z, long soid)
-    {
-        return SpatialObjectKey.key(z, soid);
+        return new TreeWithSerializationCursor(this);
     }
 
     @Override
     public Record newRecord()
     {
-        return new RecordImpl();
+        return new SerializedRecord(serializer);
     }
 
-    // TreeIndex
+    // TreeWithSerialization
 
-    public TreeWithSerialization(Serializer serializer)
+    public TreeWithSerialization(SpatialObjectSerializer serializer)
     {
         this.serializer = serializer;
     }
 
     // For use by this package
 
-    TreeMap<SpatialObjectKey, ByteBuffer> tree()
+    TreeSet<SerializedRecord> tree()
     {
         return tree;
     }
 
     // For use by this class
 
-    private ByteBuffer serialize(SpatialObject spatialObject)
+    private SerializedRecord key(long z)
     {
-        ByteBuffer buffer = ByteBuffer.allocate(INITIAL_BUFFER_SIZE);
-        boolean serialized = false;
-        do {
-            try {
-                serializer.serialize(spatialObject, buffer);
-                buffer.flip();
-                serialized = true;
-            } catch (BufferOverflowException e) {
-                buffer = ByteBuffer.allocate(buffer.capacity() * 2);
-            }
-        } while (!serialized);
-        return buffer;
-    }
-
-    private SpatialObject deserialize(ByteBuffer buffer)
-    {
-        return serializer.deserialize(buffer);
+        return new SerializedRecord(serializer, z, null, 0);
     }
 
     // Class state
 
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
-    private static final int INITIAL_BUFFER_SIZE = 100;
+    private static final Comparator<TestRecord> RECORD_COMPARATOR =
+        new Comparator<TestRecord>()
+        {
+            @Override
+            public int compare(TestRecord r, TestRecord s)
+            {
+                return r.keyCompare(s);
+            }
+        };
 
     // Object state
 
     private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
-    private final Serializer serializer;
-    private final TreeMap<SpatialObjectKey, ByteBuffer> tree = new TreeMap<>();
+    private final SpatialObjectSerializer serializer;
+    private final TreeSet<SerializedRecord> tree = new TreeSet<>(RECORD_COMPARATOR);
 }

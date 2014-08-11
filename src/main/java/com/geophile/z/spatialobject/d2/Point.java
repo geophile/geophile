@@ -37,7 +37,7 @@ public class Point implements SpatialObject
             boolean eq = false;
             if (o != null && o instanceof Point) {
                 Point that = (Point) o;
-                eq = this.id == that.id && this.equalTo(that);
+                eq = this.x == that.x && this.y == that.y;
             }
             return eq;
         }
@@ -51,18 +51,6 @@ public class Point implements SpatialObject
     // SpatialObject interface
 
     @Override
-    public void id(long id)
-    {
-        this.id = id;
-    }
-
-    @Override
-    public long id()
-    {
-        return id;
-    }
-
-    @Override
     public double[] arbitraryPoint()
     {
         return new double[]{x, y};
@@ -72,17 +60,6 @@ public class Point implements SpatialObject
     public int maxZ()
     {
         return 1;
-    }
-
-    @Override
-    public boolean equalTo(SpatialObject spatialObject)
-    {
-        boolean eq = false;
-        if (spatialObject != null && spatialObject instanceof Point) {
-            Point that = (Point) spatialObject;
-            eq = this.x == that.x && this.y == that.y;
-        }
-        return eq;
     }
 
     @Override
@@ -126,7 +103,6 @@ public class Point implements SpatialObject
     @Override
     public void readFrom(ByteBuffer buffer)
     {
-        id = buffer.getLong();
         x = buffer.getDouble();
         y = buffer.getDouble();
     }
@@ -134,7 +110,6 @@ public class Point implements SpatialObject
     @Override
     public void writeTo(ByteBuffer buffer)
     {
-        buffer.putLong(id);
         buffer.putDouble(x);
         buffer.putDouble(y);
     }
@@ -175,7 +150,6 @@ public class Point implements SpatialObject
 
     // Object state
 
-    private long id;
     private double x;
     private double y;
 }

@@ -9,7 +9,6 @@ package com.geophile.z.index;
 import com.geophile.z.Cursor;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
-import com.geophile.z.SpatialObjectKey;
 import com.geophile.z.index.tree.TreeIndex;
 import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;
@@ -35,14 +34,14 @@ public class CursorTest
         int expectedKey;
         int expectedLastKey;
         boolean expectedEmpty;
-        Record entry;
+        Record record;
         // Full cursor
         // debug("Full cursor %s\n", n);
         {
-            cursor = index.cursor(0L);
+            cursor = newCursor(index, 0);
             expectedKey = 0;
-            while ((entry = cursor.next()) != null) {
-                assertEquals(expectedKey, key(entry));
+            while ((record = cursor.next()) != null) {
+                assertEquals(expectedKey, key(record));
                 expectedKey += GAP;
             }
             assertEquals(n * GAP, expectedKey);
@@ -57,15 +56,15 @@ public class CursorTest
                     for (long end = endBase - 1; end <= endBase + 1; end++) {
                         if (start <= end) {
                             // debug("start: %s, end: %s", start, end);
-                            cursor = index.cursor(start);
+                            cursor = newCursor(index, start);
                             expectedKey = start <= startBase ? startBase : startBase + GAP;
                             expectedLastKey = end >= endBase ? endBase : endBase - GAP;
                             expectedEmpty = start > end || start <= end && (end >= startBase || start <= endBase);
                             boolean empty = true;
-                            while ((entry = cursor.next()) != null &&
-                                   entry.key().z() <= end) {
+                            while ((record = cursor.next()) != null &&
+                                   record.z() <= end) {
                                 // debug("    %s", entry.getKey());
-                                assertEquals(expectedKey, key(entry));
+                                assertEquals(expectedKey, key(record));
                                 expectedKey += GAP;
                                 empty = false;
                             }
@@ -83,26 +82,26 @@ public class CursorTest
         // debug("Alternate next and previous %s\n", n);
         {
             // debug("n: %s", n);
-            cursor = index.cursor(0L);
+            cursor = newCursor(index, 0);
             expectedKey = 0;
-            entry = cursor.next();
-            if (entry != null) {
+            record = cursor.next();
+            if (record != null) {
                 // debug("expected: %s, start: %s", expectedKey, entry.getKey());
                 expectedKey += GAP;
             }
-            while ((entry = cursor.next()) != null) {
+            while ((record = cursor.next()) != null) {
                 // debug("expected: %s, next: %s", expectedKey, entry.getKey());
-                assertEquals(expectedKey, key(entry));
+                assertEquals(expectedKey, key(record));
                 expectedKey += GAP;
                 if (expectedKey != n * GAP) {
-                    entry = cursor.next();
+                    record = cursor.next();
                     // debug("expected: %s, next: %s", expectedKey, entry.getKey());
-                    assertTrue(entry != null);
-                    assertEquals(expectedKey, key(entry));
+                    assertTrue(record != null);
+                    assertEquals(expectedKey, key(record));
                     expectedKey -= GAP;
-                    entry = cursor.previous();
+                    record = cursor.previous();
                     // debug("expected: %s, previous: %s", expectedKey, entry.getKey());
-                    assertEquals(expectedKey, key(entry));
+                    assertEquals(expectedKey, key(record));
                     expectedKey += GAP; // About to go to next
                 }
             }
@@ -112,26 +111,26 @@ public class CursorTest
         // debug("Alternate previous and next %s\n", n);
         {
             // debug("n: %s", n);
-            cursor = index.cursor(Long.MAX_VALUE);
+            cursor = newCursor(index, Long.MAX_VALUE);
             expectedKey = (n - 1) * GAP;
-            entry = cursor.previous();
-            if (entry != null) {
+            record = cursor.previous();
+            if (record != null) {
                 // debug("expected: %s, start: %s", expectedKey, entry.getKey());
                 expectedKey -= GAP;
             }
-            while ((entry = cursor.previous()) != null) {
+            while ((record = cursor.previous()) != null) {
                 // debug("expected: %s, previous: %s", expectedKey, entry.getKey());
-                assertEquals(expectedKey, key(entry));
+                assertEquals(expectedKey, key(record));
                 expectedKey -= GAP;
                 if (expectedKey >= 0) {
-                    entry = cursor.previous();
+                    record = cursor.previous();
                     // debug("expected: %s, previous: %s", expectedKey, entry.getKey());
-                    assertTrue(entry != null);
-                    assertEquals(expectedKey, key(entry));
+                    assertTrue(record != null);
+                    assertEquals(expectedKey, key(record));
                     expectedKey += GAP;
-                    entry = cursor.next();
+                    record = cursor.next();
                     // debug("expected: %s, next: %s", expectedKey, entry.getKey());
-                    assertEquals(expectedKey, key(entry));
+                    assertEquals(expectedKey, key(record));
                     expectedKey -= GAP; // About to go to next
                 }
             }
@@ -140,7 +139,7 @@ public class CursorTest
         // goTo
         // debug("goTo %s\n", n);
         if (n > 0) {
-            cursor = index.cursor(0L);
+            cursor = newCursor(index, 0);
             int match;
             int before;
             for (int i = 0; i <= n; i++) {
@@ -148,22 +147,22 @@ public class CursorTest
                 match = i * GAP;
                 if (i < n) {
                     // Match, next
-                    cursor.goTo(SpatialObjectKey.keyLowerBound(match));
+                    cursor.goTo(key(index, match));
                     assertEquals(match, key(cursor.next()));
                     // Match, previous
-                    cursor.goTo(SpatialObjectKey.keyLowerBound(match + 1));
+                    cursor.goTo(key(index, match + 1));
                     assertEquals(match, key(cursor.previous()));
                 }
                 // Before, next
                 before = match - GAP / 2;
-                cursor.goTo(SpatialObjectKey.keyLowerBound(before));
+                cursor.goTo(key(index, before));
                 if (i == n) {
                     assertTrue(cursor.next() == null);
                 } else {
                     assertEquals(match, key(cursor.next()));
                 }
                 // Before, previous
-                cursor.goTo(SpatialObjectKey.keyLowerBound(before));
+                cursor.goTo(key(index, before));
                 if (i == 0) {
                     assertTrue(cursor.previous() == null);
                 } else {
@@ -180,14 +179,33 @@ public class CursorTest
         // Populate map with keys 0, GAP, ..., GAP * (n - 1)
         for (int i = 0; i < n; i++) {
             long key = GAP * i;
-            index.add(key, new Point(key, key));
+            BaseRecord record = new BaseRecord();
+            record.z(key);
+            record.spatialObject(new Point(key, key));
+            index.add(record);
         }
         return index;
     }
 
-    private long key(Record entry)
+    private long key(Record record)
     {
-        return entry.key().z();
+        return record.z();
+    }
+
+    private Record key(Index index, long z)
+    {
+        Record key = index.newKeyRecord();
+        key.z(z);
+        return key;
+    }
+
+    private Cursor newCursor(Index index, long z) throws IOException, InterruptedException
+    {
+        Cursor cursor = index.cursor();
+        Record key= index.newKeyRecord();
+        key.z(z);
+        cursor.goTo(key);
+        return cursor;
     }
 
     private void debug(String template, Object ... args)

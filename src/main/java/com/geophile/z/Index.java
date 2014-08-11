@@ -6,6 +6,8 @@
 
 package com.geophile.z;
 
+import com.geophile.z.index.KeyTemplateIndex;
+
 import java.io.IOException;
 
 /**
@@ -30,17 +32,17 @@ import java.io.IOException;
  *
  */
 
-public interface Index
+public abstract class Index
 {
     /**
      * Adds a spatial object to this index, associated with the given z-value.
-     * @param z z-value representing a region that overlaps the spatial object.
-     * @param spatialObject The spatial object being added to the index.
-     * @throws DuplicateSpatialObjectException if (z, spatialObject.id()) is already present. This exception cannot
+     * An Index implementation must not assume that it owns the record, and that the record is immutable.
+     * @param record The record being added to this Index.
+     * @throws DuplicateRecordException if (z, spatialObject.id()) is already present. This exception cannot
      *         be thrown by an index that does blind updates.
      */
-    void add(long z, SpatialObject spatialObject)
-        throws IOException, InterruptedException, DuplicateSpatialObjectException;
+    public abstract void add(Record record)
+        throws IOException, InterruptedException, DuplicateRecordException;
 
     /**
      * Removes the association between the given z-value and the spatial object with the given id.
@@ -50,37 +52,32 @@ public interface Index
      * @return false if this index does blind updates. Otherwise, the return value is true
      *               if the record with key (z, spatialObject.id()) was found and removed, false otherwise.
      */
-    boolean remove(long z, long soid) throws IOException, InterruptedException;
+    public abstract boolean remove(long z, RecordFilter recordFilter) throws IOException, InterruptedException;
 
     /**
      * Returns a {@link Cursor} positioned at the given z-value.
-     * @param z A z-value
      * @return A {@link Cursor} postioned at the given z-value.
      */
-    Cursor cursor(long z) throws IOException, InterruptedException;
+    public abstract Cursor cursor() throws IOException, InterruptedException;
 
-    /**
-     * Returns an index key comprising the given z-value, and -1 in place of the spatial object's id.
-     * (Spatial object ids are non-negative.)
-     * @param z A z-value.
-     * @return An index key (z, -1).
-     */
-    SpatialObjectKey key(long z);
+    public abstract Record newRecord();
 
-    /**
-     * Returns an index key comprising the given z-value, and the given spatial object id.
-     * @param z A z-value.
-     * @return An index key (z, soid).
-     */
-    SpatialObjectKey key(long z, long soid);
-
-    Record newRecord();
+    public Record newKeyRecord()
+    {
+        return newRecord();
+    }
 
     /**
      * Indicates whether this index does blind updates.
      * @return true if this index does blind updates, false otherwise.
      */
-    boolean blindUpdates();
+    public boolean blindUpdates()
+    {
+        return false;
+    }
 
-
+    public Index restrict(Record keyTemplate)
+    {
+        return new KeyTemplateIndex(this, keyTemplate);
+    }
 }

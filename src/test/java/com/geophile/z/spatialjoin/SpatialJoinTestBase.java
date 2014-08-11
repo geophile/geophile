@@ -19,10 +19,10 @@ public abstract class SpatialJoinTestBase
         throws IOException, InterruptedException
     {
         testManyManyJoin(spatialJoin, leftInput, rightInput);
-        if (leftInput.spatialObjects().size() == 1) {
-            testOneManyJoin(spatialJoin, leftInput.only(), rightInput);
-        } else if (rightInput.spatialObjects().size() == 1) {
-            testOneManyJoin(spatialJoin, rightInput.only(), leftInput);
+        if (leftInput.records().size() == 1) {
+            testOneManyJoin(spatialJoin, leftInput.only().spatialObject(), rightInput);
+        } else if (rightInput.records().size() == 1) {
+            testOneManyJoin(spatialJoin, rightInput.only().spatialObject(), leftInput);
         }
     }
 
@@ -35,8 +35,8 @@ public abstract class SpatialJoinTestBase
         this.rightInput = data;
         this.testStats = new TestStats();
         try {
-            Map<SpatialObject, Integer> actual = computeOneManySpatialJoin();
-            Set<SpatialObject> expected = null;
+            Map<Record, Integer> actual = computeOneManySpatialJoin();
+            Set<Record> expected = null;
             if (verify()) {
                 if (spatialJoin.duplicates() == SpatialJoin.Duplicates.EXCLUDE) {
                     checkNoDuplicates(actual);
@@ -47,12 +47,12 @@ public abstract class SpatialJoinTestBase
             if (trace()) {
                 if (expected != null) {
                     print("expected");
-                    for (SpatialObject spatialObject : expected) {
-                        print("    %s", spatialObject);
+                    for (Record record : expected) {
+                        print("    %s", record);
                     }
                 }
                 print("actual");
-                for (Map.Entry<SpatialObject, Integer> entry : actual.entrySet()) {
+                for (Map.Entry<Record, Integer> entry : actual.entrySet()) {
                     print("    %s: %s", entry.getKey(), entry.getValue());
                 }
             }
@@ -170,19 +170,19 @@ public abstract class SpatialJoinTestBase
         }
     }
 
-    private Map<SpatialObject, Integer> computeOneManySpatialJoin() throws IOException, InterruptedException
+    private Map<Record, Integer> computeOneManySpatialJoin() throws IOException, InterruptedException
     {
-        Map<SpatialObject, Integer> actual = new HashMap<>(); // SpatialObject -> occurrence count
+        Map<Record, Integer> actual = new HashMap<>(); // Record -> occurrence count
         long start = System.nanoTime();
-        Iterator<SpatialObject> joinScan = spatialJoin.iterator(query, rightInput.spatialIndex());
+        Iterator<Record> joinScan = spatialJoin.iterator(query, rightInput.spatialIndex());
         while (joinScan.hasNext()) {
-            SpatialObject spatialObject = joinScan.next();
+            Record record = joinScan.next();
             if (verify()) {
-                Integer count = actual.get(spatialObject);
+                Integer count = actual.get(record);
                 if (count == null) {
                     count = 0;
                 }
-                actual.put(spatialObject, count + 1);
+                actual.put(record, count + 1);
             }
             testStats.outputRowCount++;
         }
@@ -212,12 +212,12 @@ public abstract class SpatialJoinTestBase
         return actual;
     }
 
-    private Set<SpatialObject> computeExpectedOneManySpatialJoin()
+    private Set<Record> computeExpectedOneManySpatialJoin()
     {
-        Set<SpatialObject> expected = new HashSet<>();
+        Set<Record> expected = new HashSet<>();
         long start = System.nanoTime();
-        for (SpatialObject s : rightInput.spatialObjects()) {
-            if (overlap(query, s)) {
+        for (Record s : rightInput.records()) {
+            if (overlap(query, s.spatialObject())) {
                 expected.add(s);
             }
         }
@@ -230,10 +230,10 @@ public abstract class SpatialJoinTestBase
     {
         Set<Pair> expected = new HashSet<>();
         long start = System.nanoTime();
-        for (SpatialObject s : leftInput.spatialObjects()) {
-            for (SpatialObject t : rightInput.spatialObjects()) {
-                if (overlap(s, t)) {
-                    expected.add(new Pair(s, t));
+        for (Record r : leftInput.records()) {
+            for (Record s : rightInput.records()) {
+                if (overlap(r.spatialObject(), s.spatialObject())) {
+                    expected.add(new Pair(r, s));
                 }
             }
         }

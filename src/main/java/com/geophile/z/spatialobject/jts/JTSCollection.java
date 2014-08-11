@@ -26,19 +26,7 @@ public class JTSCollection extends JTSBaseWithBoundingBox
         return point;
     }
 
-    @Override
-    public boolean equalTo(SpatialObject that)
-    {
-        boolean eq = false;
-        ensureGeometry();
-        if (that != null && that instanceof JTSCollection) {
-            GeometryCollection thatGeometryCollection = ((JTSCollection) that).geometryCollection();
-            eq = geometryCollection().equals(thatGeometryCollection);
-        }
-        return eq;
-    }
-
-    // JTSLineString interface
+    // JTSCollection interface
 
     public JTSCollection(Space space, GeometryCollection geometryCollection)
     {

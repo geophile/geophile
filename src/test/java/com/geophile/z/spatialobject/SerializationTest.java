@@ -6,7 +6,7 @@
 
 package com.geophile.z.spatialobject;
 
-import com.geophile.z.Serializer;
+import com.geophile.z.SpatialObjectSerializer;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;
@@ -118,10 +118,10 @@ public class SerializationTest
         buffer.flip();
         SpatialObject reconstituted = SERIALIZER.deserialize(buffer);
         assertSame(original.getClass(), reconstituted.getClass());
-        assertTrue(reconstituted.equalTo(original));
+        assertTrue(reconstituted.equals(original));
     }
 
-    private static final Serializer SERIALIZER = Serializer.newSerializer();
+    private static final SpatialObjectSerializer SERIALIZER = SpatialObjectSerializer.newSerializer();
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{1_000_000, 1_000_000},
                                                       new int[]{20, 20});

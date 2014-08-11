@@ -1,7 +1,9 @@
 package com.geophile.z.spatialjoin;
 
+import com.geophile.z.Record;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
+import com.geophile.z.TestRecord;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,18 +13,19 @@ public class TestInput
 {
     public String toString()
     {
-        return String.format("%s: %s", spatialObjects.size(), description);
+        return String.format("%s: %s", records.size(), description);
     }
 
     public void add(SpatialObject spatialObject) throws IOException, InterruptedException
     {
-        spatialObjects.add(spatialObject);
-        spatialIndex.add(spatialObject);
+        TestRecord record = new TestRecord(spatialObject, soidCounter++);
+        records.add(record);
+        spatialIndex.add(record);
     }
 
-    public List<SpatialObject> spatialObjects()
+    public List<Record> records()
     {
-        return spatialObjects;
+        return records;
     }
 
     public SpatialIndex spatialIndex()
@@ -30,24 +33,22 @@ public class TestInput
         return spatialIndex;
     }
 
-    public SpatialObject only()
+    public Record only()
     {
-        assert spatialObjects.size() == 1;
-        return spatialObjects.get(0);
+        assert records.size() == 1;
+        return records.get(0);
     }
 
     public TestInput(SpatialIndex spatialIndex, String description)
         throws IOException, InterruptedException
     {
         this.description = description;
-        this.spatialObjects = new ArrayList<>();
+        this.records = new ArrayList<>();
         this.spatialIndex = spatialIndex;
-        for (SpatialObject spatialObject : spatialObjects) {
-            spatialIndex.add(spatialObject);
-        }
     }
 
     private final String description;
-    private final List<SpatialObject> spatialObjects;
+    private final List<Record> records;
     private final SpatialIndex spatialIndex;
+    private int soidCounter = 0;
 }

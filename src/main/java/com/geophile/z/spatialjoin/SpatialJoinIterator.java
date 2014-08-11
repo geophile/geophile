@@ -1,8 +1,8 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Pair;
+import com.geophile.z.Record;
 import com.geophile.z.SpatialJoinRuntimeException;
-import com.geophile.z.SpatialObject;
 import com.geophile.z.space.SpatialIndexImpl;
 
 import java.io.IOException;
@@ -70,14 +70,14 @@ class SpatialJoinIterator<T> implements Iterator<T>
                                          filter);
     }
 
-    public static SpatialJoinIterator<SpatialObject> spatialObjectIterator(SpatialIndexImpl leftSpatialIndex,
-                                                                           SpatialIndexImpl rightSpatialIndex,
-                                                                           SpatialJoinFilter filter)
+    public static SpatialJoinIterator<Record> spatialObjectIterator(SpatialIndexImpl leftSpatialIndex,
+                                                                    SpatialIndexImpl rightSpatialIndex,
+                                                                    SpatialJoinFilter filter)
         throws IOException, InterruptedException
     {
         return new SpatialJoinIterator<>(leftSpatialIndex,
                                          rightSpatialIndex,
-                                         SPATIAL_OBJECT_OUTPUT_GENERATOR,
+                                         RECORD_OUTPUT_GENERATOR,
                                          filter);
     }
 
@@ -92,7 +92,7 @@ class SpatialJoinIterator<T> implements Iterator<T>
             new SpatialJoinOutput()
             {
                 @Override
-                public void add(SpatialObject left, SpatialObject right)
+                public void add(Record left, Record right)
                 {
                     if (filter.overlap(left, right)) {
                         pending.add(outputGenerator.generateOutput(left, right));
@@ -104,7 +104,7 @@ class SpatialJoinIterator<T> implements Iterator<T>
             new SpatialJoinOutput()
             {
                 @Override
-                public void add(SpatialObject right, SpatialObject left)
+                public void add(Record right, Record left)
                 {
                     if (filter.overlap(left, right)) {
                         pending.add(outputGenerator.generateOutput(left, right));
@@ -171,8 +171,8 @@ class SpatialJoinIterator<T> implements Iterator<T>
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
     private static final OutputGenerator<Pair> PAIR_OUTPUT_GENERATOR =
         new PairOutputGenerator();
-    private static final OutputGenerator<SpatialObject> SPATIAL_OBJECT_OUTPUT_GENERATOR =
-        new SpatialObjectOutputGenerator();
+    private static final OutputGenerator<Record> RECORD_OUTPUT_GENERATOR =
+        new RecordOutputGenerator();
 
     // Object state
 
@@ -185,22 +185,22 @@ class SpatialJoinIterator<T> implements Iterator<T>
 
     private interface OutputGenerator<T>
     {
-        T generateOutput(SpatialObject left, SpatialObject right);
+        T generateOutput(Record left, Record right);
     }
 
     private static class PairOutputGenerator implements OutputGenerator<Pair>
     {
         @Override
-        public Pair generateOutput(SpatialObject left, SpatialObject right)
+        public Pair generateOutput(Record left, Record right)
         {
             return new Pair(left, right);
         }
     }
 
-    private static class SpatialObjectOutputGenerator implements OutputGenerator<SpatialObject>
+    private static class RecordOutputGenerator implements OutputGenerator<Record>
     {
         @Override
-        public SpatialObject generateOutput(SpatialObject left, SpatialObject right)
+        public Record generateOutput(Record left, Record right)
         {
             return right;
         }

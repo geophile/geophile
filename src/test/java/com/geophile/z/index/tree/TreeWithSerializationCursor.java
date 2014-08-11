@@ -6,16 +6,11 @@
 
 package com.geophile.z.index.tree;
 
-import com.geophile.z.Serializer;
 import com.geophile.z.Cursor;
 import com.geophile.z.Record;
-import com.geophile.z.SpatialObjectKey;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
 
 public class TreeWithSerializationCursor extends Cursor
 {
@@ -34,9 +29,9 @@ public class TreeWithSerializationCursor extends Cursor
     }
 
     @Override
-    public void goTo(SpatialObjectKey key)
+    public void goTo(Record key)
     {
-        this.startAt = key;
+        this.startAt = (SerializedRecord) key;
         state(State.NEVER_USED);
     }
 
@@ -53,14 +48,10 @@ public class TreeWithSerializationCursor extends Cursor
 
     // TreeIndexCursor interface
 
-    public TreeWithSerializationCursor(Serializer serializer,
-                                       TreeWithSerialization treeIndex,
-                                       SpatialObjectKey key)
+    public TreeWithSerializationCursor(TreeWithSerialization treeIndex)
     {
         super(treeIndex);
-        this.serializer = serializer;
-        this.tree = treeIndex.tree();
-        this.startAt = key;
+        this.treeIndex = treeIndex;
     }
 
     // For use by this class
@@ -81,13 +72,10 @@ public class TreeWithSerializationCursor extends Cursor
                 return null;
         }
         if (treeIterator.hasNext()) {
-            Map.Entry<SpatialObjectKey, ByteBuffer> neighbor = treeIterator.next();
-            ByteBuffer buffer = neighbor.getValue();
-            buffer.mark();
-            current(neighbor.getKey().z(), serializer.deserialize(buffer));
-            buffer.reset();
+            SerializedRecord neighbor = treeIterator.next();
+            current(neighbor);
+            neighbor.copyTo(startAt);
             state(State.IN_USE);
-            startAt = neighbor.getKey();
         } else {
             close();
         }
@@ -98,16 +86,15 @@ public class TreeWithSerializationCursor extends Cursor
     {
         treeIterator =
             forwardMove
-            ? tree.tailMap(startAt, includeStartKey).entrySet().iterator()
-            : tree.headMap(startAt, includeStartKey).descendingMap().entrySet().iterator();
+            ? treeIndex.tree().tailSet(startAt, includeStartKey).iterator()
+            : treeIndex.tree().headSet(startAt, includeStartKey).descendingIterator();
         forward = forwardMove;
     }
 
     // Object state
 
-    private final TreeMap<SpatialObjectKey, ByteBuffer> tree;
-    private final Serializer serializer;
-    private SpatialObjectKey startAt;
+    private final TreeWithSerialization treeIndex;
+    private SerializedRecord startAt;
     private boolean forward;
-    private Iterator<Map.Entry<SpatialObjectKey, ByteBuffer>> treeIterator;
+    private Iterator<SerializedRecord> treeIterator;
 }

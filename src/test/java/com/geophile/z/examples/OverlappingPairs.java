@@ -29,8 +29,8 @@ public class OverlappingPairs
         SpatialIndex left = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex());
         SpatialIndex right = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex());
         for (int i = 0; i < N_BOXES; i++) {
-            left.add(randomBox());
-            right.add(randomBox());
+            left.add(new RecordWithId(randomBox(), i));
+            right.add(new RecordWithId(randomBox(), i));
         }
         // Find overlapping pairs
         Iterator<Pair> iterator =
@@ -66,10 +66,10 @@ public class OverlappingPairs
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(SpatialObject s, SpatialObject t)
+            public boolean overlap(Record r, Record s)
             {
-                Box a = (Box) s;
-                Box b = (Box) t;
+                Box a = (Box) r.spatialObject();
+                Box b = (Box) s.spatialObject();
                 return
                     a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
                     a.yLo() <= b.yHi() && b.yLo() <= a.yHi();

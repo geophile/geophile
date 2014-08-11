@@ -6,17 +6,11 @@
 
 package com.geophile.z.index.tree;
 
-import com.geophile.z.DuplicateSpatialObjectException;
-import com.geophile.z.Index;
-import com.geophile.z.SpatialObject;
-import com.geophile.z.Cursor;
-import com.geophile.z.Record;
-import com.geophile.z.RecordImpl;
-import com.geophile.z.SpatialObjectKey;
+import com.geophile.z.*;
 
+import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -24,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A TreeIndex is not safe for use for simultaneous use by multiple threads.
  */
 
-public class TreeIndex implements Index
+public class TreeIndex extends Index
 {
     // Object interface
 
@@ -37,82 +31,85 @@ public class TreeIndex implements Index
     // Index interface
 
     @Override
-    public boolean blindUpdates()
+    public void add(Record record)
     {
-        return false;
-    }
-
-    @Override
-    public void add(long z, SpatialObject spatialObject)
-    {
-        SpatialObject replaced = tree.put(key(z, spatialObject.id()), spatialObject);
-        if (replaced != null) {
-            throw new DuplicateSpatialObjectException(replaced);
+        TestRecord copy = (TestRecord) newRecord();
+        record.copyTo(copy);
+        boolean added = tree.add(copy);
+        if (!added) {
+            throw new DuplicateRecordException(copy);
         }
     }
 
     @Override
-    public boolean remove(long z, long soid)
+    public boolean remove(long z, RecordFilter recordFilter)
     {
-        boolean removed = false;
-        Iterator<Map.Entry<SpatialObjectKey, SpatialObject>> zScan =
-            tree.tailMap(key(z, soid)).entrySet().iterator();
-        if (zScan.hasNext()) {
-            Map.Entry<SpatialObjectKey, SpatialObject> entry = zScan.next();
-            if (entry.getKey().z() == z) {
-                SpatialObjectKey key = entry.getKey();
-                assert key.z() == z : key;
-                if (key.soid() == soid) {
-                    zScan.remove();
-                    removed = true;
-                }
+        boolean foundRecord = false;
+        boolean zMatch = true;
+        Iterator<TestRecord> iterator = tree.tailSet(key(z)).iterator();
+        while (zMatch && iterator.hasNext() && !foundRecord) {
+            Record record = iterator.next();
+            if (record.z() == z) {
+                foundRecord = recordFilter.select(record);
+            } else {
+                zMatch = false;
             }
         }
-        return removed;
+        if (foundRecord) {
+            iterator.remove();
+        }
+        return foundRecord;
     }
 
     @Override
-    public Cursor cursor(long z)
+    public Cursor cursor()
     {
-        return new TreeIndexCursor(this, key(z));
-    }
-
-    @Override
-    public SpatialObjectKey key(long z)
-    {
-        return SpatialObjectKey.keyLowerBound(z);
-    }
-
-    @Override
-    public SpatialObjectKey key(long z, long soid)
-    {
-        return SpatialObjectKey.key(z, soid);
+        return new TreeIndexCursor(this);
     }
 
     @Override
     public Record newRecord()
     {
-        return new RecordImpl();
+        return new TestRecord();
     }
 
     // TreeIndex
 
     public TreeIndex()
-    {}
+    {
+    }
 
     // For use by this package
 
-    TreeMap<SpatialObjectKey, SpatialObject> tree()
+    TreeSet<TestRecord> tree()
     {
         return tree;
+    }
+
+    // For use by this class
+
+    private TestRecord key(long z)
+    {
+        TestRecord keyRecord = new TestRecord(null, 0);
+        keyRecord.z(z);
+        return keyRecord;
     }
 
     // Class state
 
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
+    private static final Comparator<TestRecord> RECORD_COMPARATOR =
+        new Comparator<TestRecord>()
+        {
+            @Override
+            public int compare(TestRecord r, TestRecord s)
+            {
+                return r.keyCompare(s);
+            }
+        };
 
     // Object state
 
     private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
-    private final TreeMap<SpatialObjectKey, SpatialObject> tree = new TreeMap<>();
+    private final TreeSet<TestRecord> tree = new TreeSet<>(RECORD_COMPARATOR);
 }

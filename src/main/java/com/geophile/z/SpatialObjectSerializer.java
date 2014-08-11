@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
  * A Serializer implements serialization of {@link com.geophile.z.SpatialObject}s.
  */
 
-public abstract class Serializer
+public abstract class SpatialObjectSerializer
 {
     /**
      * Serializes the given SpatialObject into the given ByteBuffer.
@@ -37,7 +37,7 @@ public abstract class Serializer
      * Create a new Serializer.
      * @return A new Serializer.
      */
-    public static Serializer newSerializer()
+    public static SpatialObjectSerializer newSerializer()
     {
         return new SerializerImpl();
     }

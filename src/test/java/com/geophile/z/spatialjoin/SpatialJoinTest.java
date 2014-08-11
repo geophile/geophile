@@ -90,10 +90,11 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     @Test
     public void testSpatialJoin() throws IOException, InterruptedException
     {
-        SpatialJoin spatialJoinExcludeDuplicates = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         SpatialJoin spatialJoinIncludeDuplicates = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.INCLUDE);
+        SpatialJoin spatialJoinExcludeDuplicates = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         TestInput leftInput = null;
         TestInput rightInput = null;
+        int testCount = 0;
         for (int nLeft : COUNTS) {
             int nRight = MAX_COUNT / nLeft;
             assertEquals(MAX_COUNT, nLeft * nRight);
@@ -112,8 +113,9 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                                 if (trial == 0 || nRight <= nLeft) {
                                     rightInput = newTestInput(nRight, rightBoxGenerator);
                                 }
-                                testJoin(spatialJoinExcludeDuplicates, leftInput, rightInput);
                                 testJoin(spatialJoinIncludeDuplicates, leftInput, rightInput);
+                                testJoin(spatialJoinExcludeDuplicates, leftInput, rightInput);
+                                testCount++;
                             }
                         }
                     }
@@ -168,7 +170,7 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     }
 
     private static final int MAX_COUNT = 100_000;
-    private static final int[] COUNTS = new int[]{1, 10, 100, 1_000, 10_000, 100_000};
+    private static final int[] COUNTS = new int[]{1, 10, 100, 1_000, 10_000};
     private static final int[] MAX_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
@@ -184,10 +186,10 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     private final SpatialJoinFilter filter = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(SpatialObject x, SpatialObject y)
+        public boolean overlap(Record r, Record s)
         {
             testStats.filterCount++;
-            boolean overlap = OVERLAP_TESTER.overlap(x, y);
+            boolean overlap = OVERLAP_TESTER.overlap(r.spatialObject(), s.spatialObject());
             if (overlap) {
                 testStats.overlapCount++;
             }

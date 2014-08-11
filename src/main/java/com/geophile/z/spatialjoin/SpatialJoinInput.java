@@ -1,9 +1,8 @@
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.SpatialObject;
 import com.geophile.z.Cursor;
+import com.geophile.z.Index;
 import com.geophile.z.Record;
-import com.geophile.z.SpatialObjectKey;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
 
@@ -336,23 +335,23 @@ class SpatialJoinInput
 
     public long nextEntry()
     {
-        return eof ? EOF : SpaceImpl.zLo(current.key().z());
+        return eof ? EOF : SpaceImpl.zLo(current.z());
     }
 
     public long nextExit()
     {
-        return nest.isEmpty() ? EOF : SpaceImpl.zHi(nest.peek().key().z());
+        return nest.isEmpty() ? EOF : SpaceImpl.zHi(nest.peek().z());
     }
 
     public void enterZ() throws IOException, InterruptedException
     {
         assert !eof;
         if (currentOverlapsOtherNest() ||
-            !that.eof && overlap(current.key().z(), that.current.key().z())) {
+            !that.eof && overlap(current.z(), that.current.z())) {
             // Enter current
             if (!nest.isEmpty()) {
-                long topZ = nest.peek().key().z();
-                assert SpaceImpl.contains(topZ, current.key().z());
+                long topZ = nest.peek().z();
+                assert SpaceImpl.contains(topZ, current.z());
             }
             Record currentCopy = spatialIndex.index().newRecord();
             current.copyTo(currentCopy);
@@ -369,25 +368,8 @@ class SpatialJoinInput
     {
         assert !nest.isEmpty();
         Record top = nest.pop();
-        that.generateSpatialJoinOutput(top.spatialObject());
+        that.generateSpatialJoinOutput(top);
         log("exit");
-    }
-
-    public void generateSpatialJoinOutput(SpatialObject thatSpatialObject)
-    {
-        for (Record thisRecord : nest) {
-            spatialJoinOutput.add(thisRecord.spatialObject(), thatSpatialObject);
-        }
-    }
-
-    public Record nestTop()
-    {
-        return nest.peek();
-    }
-
-    public Record nestBottom()
-    {
-        return nest.peekLast();
     }
 
     public final void otherInput(SpatialJoinInput that)
@@ -402,13 +384,6 @@ class SpatialJoinInput
         return new SpatialJoinInput(spatialIndex, spatialJoinOutput);
     }
 
-    // For use by this package
-
-    static Cursor newCursor(SpatialIndexImpl spatialIndex) throws IOException, InterruptedException
-    {
-        return spatialIndex.index().cursor(SpaceImpl.Z_MIN);
-    }
-
     // For use by this class
 
     private void advanceCursor() throws IOException, InterruptedException
@@ -419,16 +394,17 @@ class SpatialJoinInput
             this.eof = true;
         } else {
             assert !eof; // Should have been checked in caller, but just to be sure.
-            long thisCurrentZ = this.current.key().z();
-            long thatCurrentZ = that.current.key().z();
+            long thisCurrentZ = this.current.z();
+            long thatCurrentZ = that.current.z();
             assert thatCurrentZ >= thisCurrentZ; // otherwise, we would have entered that.current
             if (thatCurrentZ > thisCurrentZ) {
-                cursor.goTo(SpatialObjectKey.keyLowerBound(thatCurrentZ));
+                key(thatCurrentZ);
+                cursor.goTo(key);
                 copyToCurrent(cursor.next());
                 if (!singleCellOptimization || !singleCell) {
-                    if (!eof && SpaceImpl.contains(thatCurrentZ, current.key().z())) {
+                    if (!eof && SpaceImpl.contains(thatCurrentZ, current.z())) {
                         // that.current contains this.current. Find the largest ancestor.
-                        findAncestorToResume(current.key().z(), thisCurrentZ);
+                        findAncestorToResume(current.z(), thisCurrentZ);
                     } else {
                         // that.current does not contain this.current. Look for a z-value in this containing
                         // that.current.
@@ -446,12 +422,11 @@ class SpatialJoinInput
         // Find the largest ancestor of current that exists and that is past zLowerBound.
         long zCandidate = SpaceImpl.parent(zStart);
         while (zCandidate > zLowerBound) {
-            SpatialObjectKey key = SpatialObjectKey.keyLowerBound(zCandidate);
+            key(zCandidate);
             cursor.goTo(key);
             Record ancestor = cursor.next();
-            if (ancestor != null && ancestor.key().z() == zCandidate) {
+            if (ancestor != null && ancestor.z() == zCandidate) {
                 copyToCurrent(ancestor);
-                // ancestor.copyTo(current);
             }
             zCandidate = SpaceImpl.parent(zCandidate);
             counters.countAncestorFind();
@@ -460,8 +435,8 @@ class SpatialJoinInput
         if (eof) {
             cursor.close();
         } else {
-            assert current.key().z() >= zLowerBound;
-            cursor.goTo(current.key());
+            assert current.z() >= zLowerBound;
+            cursor.goTo(current);
             copyToCurrent(cursor.next());
         }
     }
@@ -471,12 +446,39 @@ class SpatialJoinInput
         boolean overlap = false;
         Record thatNestTop = that.nestTop();
         if (thatNestTop != null) {
-            long thisCurrentZ = current.key().z();
+            long thisCurrentZ = current.z();
             overlap =
-                SpaceImpl.contains(thisCurrentZ, thatNestTop.key().z()) ||
-                SpaceImpl.contains(that.nestBottom().key().z(), thisCurrentZ);
+                SpaceImpl.contains(thisCurrentZ, thatNestTop.z()) ||
+                SpaceImpl.contains(that.nestBottom().z(), thisCurrentZ);
         }
         return overlap;
+    }
+
+    private Record nestTop()
+    {
+        return nest.peek();
+    }
+
+    private Record nestBottom()
+    {
+        return nest.peekLast();
+    }
+
+    private static Cursor newCursor(SpatialIndexImpl spatialIndex) throws IOException, InterruptedException
+    {
+        Index index = spatialIndex.index();
+        Cursor cursor = index.cursor();
+        Record key = index.newKeyRecord();
+        key.z(SpaceImpl.Z_MIN);
+        cursor.goTo(key);
+        return cursor;
+    }
+
+    private void generateSpatialJoinOutput(Record thatRecord)
+    {
+        for (Record thisRecord : nest) {
+            spatialJoinOutput.add(thisRecord, thatRecord);
+        }
     }
 
     private boolean overlap(long z1, long z2)
@@ -493,13 +495,21 @@ class SpatialJoinInput
         throws IOException, InterruptedException
     {
         this.spatialIndex = spatialIndex;
+        this.keyTemplate = spatialIndex.index().newKeyRecord();
         this.cursor = newCursor(spatialIndex);
         this.current = spatialIndex.index().newRecord();
+        this.key = spatialIndex.index().newRecord();
         copyToCurrent(this.cursor.next());
         this.spatialJoinOutput = spatialJoinOutput;
         this.singleCell = spatialIndex.singleCell();
         this.singleCellOptimization = SpatialJoinImpl.singleCellOptimization();
         log("initialize");
+    }
+
+    private void key(long z)
+    {
+        keyTemplate.copyTo(key);
+        key.z(z);
     }
 
     private void copyToCurrent(Record record)
@@ -520,9 +530,9 @@ class SpatialJoinInput
             while (nestScan.hasNext()) {
                 Record record = nestScan.next();
                 buffer.append(' ');
-                buffer.append(formatZ(record.key().z()));
+                buffer.append(formatZ(record.z()));
             }
-            String nextZ = eof ? "eof" : formatZ(current.key().z());
+            String nextZ = eof ? "eof" : formatZ(current.z());
             LOG.log(Level.FINE,
                     "{0} {1}: nest:{2}, current: {3}",
                     new Object[]{this, label, buffer.toString(), nextZ});
@@ -543,6 +553,7 @@ class SpatialJoinInput
 
     private final int id = idGenerator.getAndIncrement();
     private final SpatialIndexImpl spatialIndex;
+    private final Record keyTemplate;
     private final boolean singleCell;
     private SpatialJoinInput that;
     private final SpatialJoinOutput spatialJoinOutput;
@@ -551,6 +562,7 @@ class SpatialJoinInput
     private final Deque<Record> nest = new ArrayDeque<>();
     private final Cursor cursor;
     private final Record current;
+    private final Record key;
     private boolean eof = false;
     private final boolean singleCellOptimization;
     private final Counters counters = Counters.forThread();

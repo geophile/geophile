@@ -13,14 +13,23 @@
 package com.geophile.z.index.sortedarray;
 
 import com.geophile.z.Index;
+import com.geophile.z.Record;
 import com.geophile.z.index.IndexTestBase;
-import com.geophile.z.index.tree.TreeIndex;
+import com.geophile.z.TestRecord;
 
 public class SortedArrayTest extends IndexTestBase
 {
     @Override
     protected Index newIndex()
     {
-        return new SortedArray();
+        return
+            new SortedArray()
+            {
+                @Override
+                public Record newRecord()
+                {
+                    return new TestRecord();
+                }
+            };
     }
 }

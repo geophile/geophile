@@ -20,18 +20,6 @@ import java.nio.ByteBuffer;
 public interface SpatialObject
 {
     /**
-     * Sets the identifier.
-     * @param id This object's unique identifier.
-     */
-    void id(long id);
-
-    /**
-     * Returns the identifier, which must be unique within the containing {@link com.geophile.z.SpatialIndex}.
-     * @return This object's unique identifier.
-     */
-    long id();
-
-    /**
      * Returns the coordinates of an arbitrary point inside this spatial object.
      * @return The coordinates of an arbitrary point inside this spatial object.
      */
@@ -42,16 +30,6 @@ public interface SpatialObject
      * @return The maximum number of z-values to be used in approximating this object.
      */
     int maxZ();
-
-    /**
-     * Returns true if this and that describe the same points in space, false otherwise.
-     * Two spatial objects, x and y, are considered to be equal iff for every point p in the space,
-     * x.contains(p) = y.contains(p). Spatial object identity, returned by {@link #id()}, has no relevance for
-     * determining equality. x.id() = y.id() implies x.equalTo(y), but the converse is not true.
-     * @param that Spatial object to compare.
-     * @return true if this and that describe the same spatial object, false otherwise.
-     */
-    boolean equalTo(SpatialObject that);
 
     /**
      * Returns true iff this spatial object is contained by the given Region.

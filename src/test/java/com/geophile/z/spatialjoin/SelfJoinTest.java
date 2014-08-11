@@ -40,10 +40,10 @@ public class SelfJoinTest extends SpatialJoinTestBase
             new SpatialJoinFilter()
             {
                 @Override
-                public boolean overlap(SpatialObject s, SpatialObject t)
+                public boolean overlap(Record r, Record s)
                 {
                     testStats.filterCount++;
-                    boolean overlap = OVERLAP_TESTER.overlap(s, t);
+                    boolean overlap = OVERLAP_TESTER.overlap(r.spatialObject(), s.spatialObject());
                     if (overlap) {
                         testStats.overlapCount++;
                     }
@@ -64,14 +64,18 @@ public class SelfJoinTest extends SpatialJoinTestBase
     @Test
     public void checkEqualSpatialObjects() throws IOException, InterruptedException
     {
-        Index index = new SortedArray();
+        Index index =
+            new SortedArray()
+            {
+                @Override
+                public Record newRecord()
+                {
+                    return new TestRecord();
+                }
+            };
         SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
-        Box b1 = new Box(10, 20, 30, 40);
-        b1.id(1);
-        Box b2 = new Box(10, 20, 30, 40);
-        b2.id(2);
-        spatialIndex.add(b1);
-        spatialIndex.add(b2);
+        spatialIndex.add(new TestRecord(new Box(10, 20, 30, 40), 1));
+        spatialIndex.add(new TestRecord(new Box(10, 20, 30, 40), 2));
         SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(KEEP_ALL, SpatialJoin.Duplicates.EXCLUDE);
         Iterator<Pair> iterator = spatialJoin.iterator(spatialIndex, spatialIndex);
         // Should see all combinations of b1 and b2
@@ -79,15 +83,15 @@ public class SelfJoinTest extends SpatialJoinTestBase
         int mask = 0;
         while(iterator.hasNext()) {
             Pair pair = iterator.next();
-            SpatialObject left = pair.left();
-            SpatialObject right = pair.right();
-            if (left == b1 && right == b1) {
+            TestRecord left = (TestRecord) pair.left();
+            TestRecord right = (TestRecord) pair.right();
+            if (left.soid() == 1 && right.soid() == 1) {
                 mask |= 0x1;
-            } else if (left == b1 && right == b2) {
+            } else if (left.soid() == 1 && right.soid() == 2) {
                 mask |= 0x2;
-            } else if (left == b2 && right == b1) {
+            } else if (left.soid() == 2 && right.soid() == 1) {
                 mask |= 0x4;
-            } else if (left == b2 && right == b2) {
+            } else if (left.soid() == 2 && right.soid() == 2) {
                 mask |= 0x8;
             } else {
                 fail();
@@ -157,7 +161,7 @@ public class SelfJoinTest extends SpatialJoinTestBase
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(SpatialObject left, SpatialObject right)
+            public boolean overlap(Record left, Record right)
             {
                 return true;
             }

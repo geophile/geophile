@@ -67,7 +67,7 @@ public abstract class SpatialJoin
      * @param data Set of {@link com.geophile.z.SpatialObject}s to be searched.
      * @return An {@link java.util.Iterator} providing access to spatial join results.
      */
-    public abstract Iterator<SpatialObject> iterator(SpatialObject query, SpatialIndex data)
+    public abstract Iterator<Record> iterator(SpatialObject query, SpatialIndex data)
         throws IOException, InterruptedException;
 
     public final SpatialJoinFilter filter()

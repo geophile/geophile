@@ -43,7 +43,7 @@ public class SpatialJoinManyPointsOneBox
                         public Object action() throws IOException, InterruptedException
                         {
                             SpatialIndex queryIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray());
-                            queryIndex.add(query);
+                            queryIndex.add(new TestRecord(query));
                             for (int trial = 0; trial < TRIALS; trial++) {
                                 Iterator<Pair> iterator = spatialJoin.iterator(queryIndex, dataIndex);
                                 while (iterator.hasNext()) {
@@ -64,7 +64,7 @@ public class SpatialJoinManyPointsOneBox
                         public Object action() throws IOException, InterruptedException
                         {
                             for (int trial = 0; trial < TRIALS; trial++) {
-                                Iterator<SpatialObject> iterator = spatialJoin.iterator(query, dataIndex);
+                                Iterator<Record> iterator = spatialJoin.iterator(query, dataIndex);
                                 while (iterator.hasNext()) {
                                     iterator.next();
                                 }
@@ -83,7 +83,7 @@ public class SpatialJoinManyPointsOneBox
     {
         SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray());
         for (int i = 0; i < n; i++) {
-            spatialIndex.add(generator.newSpatialObject());
+            spatialIndex.add(new TestRecord(generator.newSpatialObject(), i));
         }
         return spatialIndex;
     }
@@ -104,10 +104,10 @@ public class SpatialJoinManyPointsOneBox
     private final SpatialJoinFilter filter = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(SpatialObject x, SpatialObject y)
+        public boolean overlap(Record x, Record y)
         {
             testStats.filterCount++;
-            boolean overlap = overlapTester.overlap(x, y);
+            boolean overlap = overlapTester.overlap(x.spatialObject(), y.spatialObject());
             if (overlap) {
                 testStats.overlapCount++;
             }

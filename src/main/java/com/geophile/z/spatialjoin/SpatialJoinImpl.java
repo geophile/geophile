@@ -7,6 +7,7 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
+import com.geophile.z.index.BaseRecord;
 import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.space.SpatialIndexImpl;
 
@@ -36,18 +37,21 @@ public class SpatialJoinImpl extends SpatialJoin
         return iterator;
     }
 
-    public Iterator<SpatialObject> iterator(SpatialObject query, SpatialIndex dataIndex)
+    public Iterator<Record> iterator(SpatialObject query, SpatialIndex dataSpatialIndex)
         throws IOException, InterruptedException
     {
-        SpatialIndex queryIndex = SpatialIndex.newSpatialIndex(dataIndex.space(),
-                                                               new SortedArray(),
-                                                               query.maxZ() == 1
-                                                               ? SpatialIndex.Options.SINGLE_CELL
-                                                               : SpatialIndex.Options.DEFAULT);
-        queryIndex.add(query);
-        Iterator<SpatialObject> iterator =
-            SpatialJoinIterator.spatialObjectIterator((SpatialIndexImpl) queryIndex,
-                                                      (SpatialIndexImpl) dataIndex,
+        SortedArray queryIndex = new SortedArray();
+        SpatialIndex querySpatialIndex = SpatialIndex.newSpatialIndex(dataSpatialIndex.space(),
+                                                                      queryIndex,
+                                                                      query.maxZ() == 1
+                                                                      ? SpatialIndex.Options.SINGLE_CELL
+                                                                      : SpatialIndex.Options.DEFAULT);
+        BaseRecord queryRecord = (BaseRecord) queryIndex.newRecord();
+        queryRecord.spatialObject(query);
+        querySpatialIndex.add(queryRecord);
+        Iterator<Record> iterator =
+            SpatialJoinIterator.spatialObjectIterator((SpatialIndexImpl) querySpatialIndex,
+                                                      (SpatialIndexImpl) dataSpatialIndex,
                                                       filter);
         if (duplicates == Duplicates.EXCLUDE) {
             iterator = new DuplicateEliminatingIterator<>(iterator);

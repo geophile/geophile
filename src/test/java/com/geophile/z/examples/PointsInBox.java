@@ -29,20 +29,20 @@ public class PointsInBox
         // Load spatial index with points
         SpatialIndex points = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex());
         for (int i = 0; i < N_POINTS; i++) {
-            points.add(randomPoint());
+            points.add(new RecordWithId(randomPoint(), i));
         }
         // Run queries
         for (int q = 0; q < N_QUERIES; q++) {
             // Create Iterator over spatial join output
             Box box = randomBox();
-            Iterator<SpatialObject> iterator =
+            Iterator<Record> iterator =
                 SpatialJoin.newSpatialJoin(BOX_CONTAINS_POINT, SpatialJoinImpl.Duplicates.EXCLUDE)
                            .iterator(box, points);
             // Print points contained in box
             System.out.println(String.format("Points inside %s", box));
             while (iterator.hasNext()) {
-                SpatialObject pointInBox = iterator.next();
-                System.out.println(String.format("    %s", pointInBox));
+                Record record = iterator.next();
+                System.out.println(String.format("    %s", record.spatialObject()));
             }
         }
     }
@@ -78,10 +78,10 @@ public class PointsInBox
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(SpatialObject s, SpatialObject t)
+            public boolean overlap(Record r, Record s)
             {
-                Box box = (Box) s;
-                Point point = (Point) t;
+                Box box = (Box) r.spatialObject();
+                Point point = (Point) s.spatialObject();
                 return
                     box.xLo() <= point.x() && point.x() <= box.xHi() &&
                     box.yLo() <= point.y() && point.y() <= box.yHi();

@@ -24,10 +24,7 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.Index;
-import com.geophile.z.Space;
-import com.geophile.z.SpatialJoin;
-import com.geophile.z.SpatialObject;
+import com.geophile.z.*;
 import com.geophile.z.index.tree.TreeIndex;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.junit.Test;
@@ -150,10 +147,10 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     private final SpatialJoinFilter filter = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(SpatialObject x, SpatialObject y)
+        public boolean overlap(Record x, Record y)
         {
             testStats.filterCount++;
-            boolean overlap = OVERLAP_TESTER.overlap(x, y);
+            boolean overlap = OVERLAP_TESTER.overlap(x.spatialObject(), y.spatialObject());
             if (overlap) {
                 testStats.overlapCount++;
             }

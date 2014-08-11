@@ -6,12 +6,8 @@
 
 package com.geophile.z.index.sortedarray;
 
-import com.geophile.z.Index;
-import com.geophile.z.SpatialObject;
-import com.geophile.z.Cursor;
-import com.geophile.z.Record;
-import com.geophile.z.RecordImpl;
-import com.geophile.z.SpatialObjectKey;
+import com.geophile.z.*;
+import com.geophile.z.index.BaseRecord;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -22,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Intended to be used internally, for a spatial join between a SpatialIndex and a SpatialObject.
  */
 
-public class SortedArray implements Index
+public class SortedArray extends Index
 {
     // Object interface
 
@@ -35,59 +31,77 @@ public class SortedArray implements Index
     // Index interface
 
     @Override
-    public boolean blindUpdates()
-    {
-        return false;
-    }
-
-    @Override
-    public void add(long z, SpatialObject spatialObject)
+    public void add(Record record)
     {
         ensureSpace(n + 1);
-        Record record = newRecord();
-        record.set(z, spatialObject);
-        records[n++] = record;
+        Record copy = newRecord();
+        record.copyTo(copy);
+        records[n++] = copy;
         sorted = false;
     }
 
     @Override
-    public boolean remove(long z, long soid)
+    public boolean remove(long z, RecordFilter recordFilter)
     {
         boolean removed = false;
-        Record record = newRecord();
-        record.set(z, soid);
-        int position = Arrays.binarySearch(records, 0, n, record, SortedArray.RECORD_COMPARATOR);
-        if (position >= 0) {
-            System.arraycopy(records, position + 1, records, position, n - 1 - position);
-            n--;
-            removed = true;
+        Record key = newKeyRecord();
+        key.z(z);
+        int binarySearchPosition = binarySearch(key);
+        if (binarySearchPosition >= 0) {
+            // There might be multiple occurrences of the same z. Search backward and forward for matching zs, looking
+            // for a record satisfying the record filter.
+            boolean sameZ = true;
+            boolean removeRecordFound = false;
+            int position = binarySearchPosition;
+            while (position >= 0 && sameZ && !removeRecordFound) {
+                Record record = (Record)records[position];
+                if (record.z() == z) {
+                    if (recordFilter.select(record)) {
+                        removeRecordFound = true;
+                    } else {
+                        position--;
+                    }
+                } else {
+                    sameZ = false;
+                }
+            }
+            if (!removeRecordFound) {
+                // Search forward
+                sameZ = true;
+                position = binarySearchPosition + 1;
+                while (position < n && sameZ && !removeRecordFound) {
+                    Record record = (Record)records[position];
+                    if (record.z() == z) {
+                        if (recordFilter.select(record)) {
+                            removeRecordFound = true;
+                        } else {
+                            position++;
+                        }
+                    } else {
+                        sameZ = false;
+                    }
+                }
+            }
+            if (removeRecordFound) {
+                System.arraycopy(records, position + 1, records, position, n - 1 - position);
+                n--;
+                removed = true;
+            }
         }
         return removed;
     }
 
     @Override
-    public Cursor cursor(long z)
+    public Cursor cursor()
     {
         ensureSorted();
-        return new SortedArrayCursor(this, key(z));
-    }
-
-    @Override
-    public SpatialObjectKey key(long z)
-    {
-        return SpatialObjectKey.keyLowerBound(z);
-    }
-
-    @Override
-    public SpatialObjectKey key(long z, long soid)
-    {
-        return SpatialObjectKey.key(z, soid);
+        return new SortedArrayCursor(this);
     }
 
     @Override
     public Record newRecord()
     {
-        return new RecordImpl();
+        return new BaseRecord();
     }
 
     // SortedArray
@@ -97,8 +111,16 @@ public class SortedArray implements Index
         n = 0;
     }
 
+    public SortedArray()
+    {}
+
     // For use by this package
-    
+
+    int binarySearch(Record key)
+    {
+        return Arrays.binarySearch(records, 0, n, key, SortedArray.Z_COMPARATOR);
+    }
+
     void deleteRecord(int at)
     {
         System.arraycopy(records, at + 1, records, at, n - at - 1);
@@ -113,7 +135,7 @@ public class SortedArray implements Index
             if (n == 0) {
                 records = new Object[0];
             } else {
-                Arrays.sort(records, 0, n, RECORD_COMPARATOR);
+                Arrays.sort(records, 0, n, Z_COMPARATOR);
             }
             sorted = true;
         }
@@ -133,13 +155,15 @@ public class SortedArray implements Index
 
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
     private static final int MIN_ARRAY_SIZE = 20;
-    static final Comparator RECORD_COMPARATOR =
+    static final Comparator Z_COMPARATOR =
         new Comparator()
         {
             @Override
-            public int compare(Object x, Object y)
+            public int compare(Object r, Object s)
             {
-                return ((Record)x).key().compareTo(((Record)y).key());
+                long rz = ((Record)r).z();
+                long sz = ((Record)s).z();
+                return rz < sz ? -1 : rz > sz ? 1 : 0;
             }
         };
 

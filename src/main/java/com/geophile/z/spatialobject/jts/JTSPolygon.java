@@ -32,18 +32,6 @@ public class JTSPolygon extends JTSBaseWithBoundingBox
         return point;
     }
 
-    @Override
-    public boolean equalTo(SpatialObject that)
-    {
-        boolean eq = false;
-        ensureGeometry();
-        if (that != null && that instanceof JTSPolygon) {
-            Polygon thatPolygon = ((JTSPolygon) that).polygon();
-            eq = polygon().equals(thatPolygon);
-        }
-        return eq;
-    }
-
     // JTSPolygon interface
 
     public JTSPolygon(Space space, Polygon polygon)

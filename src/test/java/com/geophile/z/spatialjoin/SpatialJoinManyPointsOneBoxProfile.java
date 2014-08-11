@@ -127,7 +127,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     {
         SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex(), SpatialIndex.Options.SINGLE_CELL);
         for (int i = 0; i < n; i++) {
-            index.add(testPoint());
+            index.add(new TestRecord(testPoint(), i));
         }
         return index;
     }
@@ -135,7 +135,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     protected SpatialIndex loadOneBox(BoxGenerator boxGenerator) throws IOException, InterruptedException
     {
         SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex(), SpatialIndex.Options.DEFAULT);
-        index.add(boxGenerator.newSpatialObject());
+        index.add(new TestRecord(boxGenerator.newSpatialObject()));
         return index;
     }
 
@@ -167,10 +167,10 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     private static final class TestFilter implements SpatialJoinFilter
     {
         @Override
-        public boolean overlap(SpatialObject a, SpatialObject b)
+        public boolean overlap(Record a, Record b)
         {
-            Box box = (Box) a;
-            Point point = (Point) b;
+            Box box = (Box) a.spatialObject();
+            Point point = (Point) b.spatialObject();
             double px = point.x();
             double py = point.y();
             return
@@ -182,10 +182,10 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     private static final class TestFilterJTS implements SpatialJoinFilter
     {
         @Override
-        public boolean overlap(SpatialObject a, SpatialObject b)
+        public boolean overlap(Record a, Record b)
         {
-            Box box = (Box) a;
-            JTSPoint point = (JTSPoint) b;
+            Box box = (Box) a.spatialObject();
+            JTSPoint point = (JTSPoint) b.spatialObject();
             Coordinate coordinate = point.point().getCoordinate();
             double px = coordinate.x;
             double py = coordinate.y;

@@ -6,10 +6,9 @@
 
 package com.geophile.z.spatialobject;
 
-import com.geophile.z.Serializer;
+import com.geophile.z.SpatialObjectSerializer;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.SpatialObjectException;
-import com.geophile.z.space.SpatialIndexMetadata;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -19,7 +18,7 @@ import java.util.Map;
 // Serializer is not type-safe. Each SpatialIndex has a serializer, and it is expected that type registration
 // will be done in a single thread.
 
-public class SerializerImpl extends Serializer implements Serializable
+public class SerializerImpl extends SpatialObjectSerializer implements Serializable
 {
     // Serializer interface
 
@@ -55,7 +54,7 @@ public class SerializerImpl extends Serializer implements Serializable
     @Override
     public void register(int typeId, Class<? extends SpatialObject> spatialObjectClass)
     {
-        assert typeId >= 0 || spatialObjectClass == SpatialIndexMetadata.class;
+        assert typeId >= 0;
         Class<? extends SpatialObject> klass = typeIdToClass.get(typeId);
         if (klass == null) {
             typeIdToClass.put(typeId, spatialObjectClass);
@@ -67,9 +66,7 @@ public class SerializerImpl extends Serializer implements Serializable
     // SerializerImpl interface
 
     public SerializerImpl()
-    {
-        register(SpatialIndexMetadata.SPATIAL_INDEX_METADATA_TYPE_ID, SpatialIndexMetadata.class);
-    }
+    {}
 
     // Object state
 

@@ -26,18 +26,6 @@ public class JTSLineString extends JTSBaseWithBoundingBox
         return point;
     }
 
-    @Override
-    public boolean equalTo(SpatialObject that)
-    {
-        boolean eq = false;
-        ensureGeometry();
-        if (that != null && that instanceof JTSLineString) {
-            LineString thatLineString = ((JTSLineString) that).lineString();
-            eq = lineString().equals(thatLineString);
-        }
-        return eq;
-    }
-
     // JTSLineString interface
 
     public JTSLineString(Space space, LineString lineString)

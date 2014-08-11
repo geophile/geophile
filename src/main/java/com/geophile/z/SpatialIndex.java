@@ -28,9 +28,9 @@ public abstract class SpatialIndex
 
     /**
      * Adds the given spatial object to the index.
-     * @param spatialObject The object to be added.
+     * @param record The record to be added.
      */
-    public abstract void add(SpatialObject spatialObject) throws IOException, InterruptedException;
+    public abstract void add(Record record) throws IOException, InterruptedException;
 
     /**
      * Removes the given spatial object from the index.

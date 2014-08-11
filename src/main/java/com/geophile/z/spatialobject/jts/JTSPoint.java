@@ -30,17 +30,6 @@ public class JTSPoint extends JTSBase
     }
 
     @Override
-    public boolean equalTo(SpatialObject that)
-    {
-        boolean eq = false;
-        if (that != null && that instanceof JTSPoint) {
-            Point thatPoint = ((JTSPoint) that).point();
-            eq = point().equalsExact(thatPoint);
-        }
-        return eq;
-    }
-
-    @Override
     public boolean containedBy(Region region)
     {
         Point point = point();
@@ -54,7 +43,6 @@ public class JTSPoint extends JTSBase
     {
         assert space == this.space;
         Coordinate coordinate = point().getCoordinate();
-        Envelope envelope = geometry.getEnvelopeInternal();
         return
             space.lo(0) <= coordinate.x && coordinate.x <= space.hi(0) &&
             space.lo(1) <= coordinate.y && coordinate.y <= space.hi(1);

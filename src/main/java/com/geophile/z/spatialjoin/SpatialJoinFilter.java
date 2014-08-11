@@ -6,9 +6,10 @@
 
 package com.geophile.z.spatialjoin;
 
+import com.geophile.z.Record;
 import com.geophile.z.SpatialObject;
 
 public interface SpatialJoinFilter
 {
-    boolean overlap(SpatialObject left, SpatialObject right);
+    boolean overlap(Record left, Record right);
 }

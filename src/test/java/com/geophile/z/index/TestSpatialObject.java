@@ -12,14 +12,21 @@ import static org.junit.Assert.fail;
 public class TestSpatialObject implements SpatialObject
 {
     @Override
-    public void id(long id)
+    public String toString()
     {
+        return String.format("TestSpatialObject(%d)", id);
     }
 
     @Override
-    public long id()
+    public int hashCode()
     {
-        return id;
+        return (int) id * 9987001;
+    }
+
+    @Override
+    public boolean equals(Object that)
+    {
+        return that != null && that instanceof TestSpatialObject && this.id == ((TestSpatialObject)that).id;
     }
 
     @Override
@@ -33,12 +40,6 @@ public class TestSpatialObject implements SpatialObject
     public int maxZ()
     {
         return 1;
-    }
-
-    @Override
-    public boolean equalTo(SpatialObject that)
-    {
-        return this.id == ((TestSpatialObject)that).id;
     }
 
     @Override

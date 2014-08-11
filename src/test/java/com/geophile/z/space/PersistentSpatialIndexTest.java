@@ -7,7 +7,7 @@
 package com.geophile.z.space;
 
 import com.geophile.z.Index;
-import com.geophile.z.Serializer;
+import com.geophile.z.SpatialObjectSerializer;
 import com.geophile.z.index.tree.TreeWithSerialization;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
@@ -17,7 +17,7 @@ public class PersistentSpatialIndexTest extends SpatialIndexTestBase
     @Override
     public Index newIndex()
     {
-        Serializer serializer = Serializer.newSerializer();
+        SpatialObjectSerializer serializer = SpatialObjectSerializer.newSerializer();
         serializer.register(1, Point.class);
         serializer.register(2, Box.class);
         return new TreeWithSerialization(serializer);

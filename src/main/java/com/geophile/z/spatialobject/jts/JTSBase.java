@@ -36,23 +36,17 @@ public abstract class JTSBase implements SpatialObject
     @Override
     public final boolean equals(Object obj)
     {
-        // Relies on Geometry.equals(Geometry), which does not override Object.equals(Object).
-        return this == obj || obj != null && obj instanceof JTSBase && geometry.equals(((JTSBase)obj).geometry);
+        boolean eq = this == obj;
+        if (!eq && obj != null && obj instanceof JTSBase) {
+            JTSBase that = (JTSBase) obj;
+            this.ensureGeometry();
+            that.ensureGeometry();
+            eq = this.geometry.equals(that.geometry);
+        }
+        return eq;
     }
 
     // SpatialObject interface
-
-    @Override
-    public final void id(long id)
-    {
-        this.id = id;
-    }
-
-    @Override
-    public final long id()
-    {
-        return id;
-    }
 
     @Override
     public abstract double[] arbitraryPoint();
@@ -62,9 +56,6 @@ public abstract class JTSBase implements SpatialObject
     {
         return MAX_Z;
     }
-
-    @Override
-    public abstract boolean equalTo(SpatialObject that);
 
     @Override
     public abstract boolean containedBy(Region region);

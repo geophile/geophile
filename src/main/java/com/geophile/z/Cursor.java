@@ -14,7 +14,7 @@ public abstract class Cursor
 
     public abstract Record previous() throws IOException, InterruptedException;
 
-    public abstract void goTo(SpatialObjectKey key) throws IOException, InterruptedException;
+    public abstract void goTo(Record record) throws IOException, InterruptedException;
 
     /**
      * Delete the record returned by the immediately preceding call to next or previous.
@@ -40,10 +40,10 @@ public abstract class Cursor
         return state == State.DONE ? null : current;
     }
 
-    protected final void current(long z, SpatialObject spatialObject)
+    protected final void current(Record record)
     {
         assert state != State.DONE;
-        current.set(z, spatialObject);
+        record.copyTo(current);
     }
 
     protected State state()

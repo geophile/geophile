@@ -17,6 +17,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public abstract class SpatialIndexTestBase
 {
@@ -33,9 +34,10 @@ public abstract class SpatialIndexTestBase
     {
         Index index = newIndex();
         SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(new Point(x, y));
+                spatialIndex.add(new TestRecord(new Point(x, y), id++));
             }
         }
         commitTransaction();
@@ -60,9 +62,10 @@ public abstract class SpatialIndexTestBase
     {
         Index index = newIndex();
         SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(new Point(x, y));
+                spatialIndex.add(new TestRecord(new Point(x, y), id++));
             }
         }
         commitTransaction();
@@ -97,9 +100,10 @@ public abstract class SpatialIndexTestBase
     {
         Index index = newIndex();
         SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(new Point(x, y));
+                spatialIndex.add(new TestRecord(new Point(x, y), id++));
             }
         }
         commitTransaction();
@@ -111,7 +115,8 @@ public abstract class SpatialIndexTestBase
                     if ((y / 10) % 2 == 0) {
                         Point point = new Point(x, y);
                         removalFilter.spatialObject(point);
-                        spatialIndex.remove(point, removalFilter);
+                        boolean removed = spatialIndex.remove(point, removalFilter);
+                        assertTrue(removed);
                     }
                 }
             }
@@ -149,67 +154,53 @@ public abstract class SpatialIndexTestBase
     public void testRemovalVsDuplicates() throws Exception
     {
         final int COPIES = 10;
+        TestRecord[] records = new TestRecord[COPIES];
         Index index = newIndex();
         SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         Box box = new Box(250, 750, 250, 750);
         for (int c = 0; c < COPIES; c++) {
-            spatialIndex.add(box);
+            TestRecord record = (TestRecord) index.newRecord();
+            record.spatialObject(box);
+            record.soid(c);
+            spatialIndex.add(record);
+            records[c] = record;
+        }
+        // Generate a permutation of records
+        Random random = new Random(123456);
+        if (COPIES > 1) {
+            for (int i = 0; i < 100; i++) {
+                int a = random.nextInt(COPIES);
+                int b;
+                do {
+                    b = random.nextInt(COPIES);
+                } while (a == b);
+                TestRecord recordA = records[a];
+                records[a] = records[b];
+                records[b] = recordA;
+            }
+        }
+        for (int c = 0; c < COPIES; c++) {
+            final TestRecord victim = records[c];
+            RecordFilter recordFilter = new RecordFilter()
+            {
+                @Override
+                public boolean select(Record record)
+                {
+                    return ((TestRecord) record).soid() == victim.soid();
+                }
+            };
+            assertTrue(spatialIndex.remove(box, recordFilter));
+            // Try it again, to make sure the removal doesn't happen
+            assertTrue(!spatialIndex.remove(box, recordFilter));
         }
         commitTransaction();
-    }
-
-    @Test
-    public void spatialIdGeneratorRestore() throws Exception
-    {
-        Index index = newIndex();
-        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
-        // pX: expected id is X
-        Point p0 = new Point(0, 0);
-        spatialIndex.add(p0);
-        assertEquals(0, p0.id());
-        Point p1 = new Point(1, 1);
-        spatialIndex.add(p1);
-        assertEquals(1, p1.id());
-        Point p2 = new Point(2, 2);
-        spatialIndex.add(p2);
-        assertEquals(2, p2.id());
-        // Creating a new SpatialIndexImpl restores the id generator
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
-        Point q0 = new Point(0, 0);
-        spatialIndex.add(q0);
-        assertEquals(SpatialIndexImpl.soidReservationBlockSize() + 0, q0.id());
-        Point q1 = new Point(1, 1);
-        spatialIndex.add(q1);
-        assertEquals(SpatialIndexImpl.soidReservationBlockSize() + 1, q1.id());
-        Point q2 = new Point(2, 2);
-        spatialIndex.add(q2);
-        assertEquals(SpatialIndexImpl.soidReservationBlockSize() + 2, q2.id());
-    }
-
-    @Test
-    public void spatialIdGeneratorTracking() throws Exception
-    {
-        final int SOID_RESERVATION_BLOCK_SIZE = 3;
-        System.setProperty(SpatialIndexImpl.SOID_RESERVALTION_BLOCK_SIZE_PROPERTY,
-                           Integer.toString(SOID_RESERVATION_BLOCK_SIZE));
-        Index index = newIndex();
-        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoid());
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoidStored());
-        spatialIndex.add(new Point(0, 0));
-        spatialIndex.add(new Point(1, 1));
-        spatialIndex.add(new Point(2, 2));
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoid());
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoidStored());
-        spatialIndex.add(new Point(3, 3));
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE * 2, spatialIndex.firstUnreservedSoid());
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE * 2, spatialIndex.firstUnreservedSoidStored());
     }
 
     public abstract Index newIndex() throws Exception;
 
     public void commitTransaction() throws Exception
-    {}
+    {
+    }
 
     private void test(SpatialIndexImpl spatialIndex,
                       int xLo, int xHi, int yLo, int yHi,
@@ -218,12 +209,13 @@ public abstract class SpatialIndexTestBase
         Box box = new Box(xLo, xHi, yLo, yHi);
         Index index = newIndex();
         SpatialIndex query = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
-        query.add(box);
+        TestRecord record = new TestRecord(box);
+        query.add(record);
         Iterator<Pair> iterator =
             SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
         List<Point> actual = new ArrayList<>();
         while (iterator.hasNext()) {
-            Point point = (Point) iterator.next().right();
+            Point point = (Point) iterator.next().right().spatialObject();
             if (!actual.contains(point)) {
                 actual.add(point);
             }
@@ -237,8 +229,6 @@ public abstract class SpatialIndexTestBase
                 }
             }
         }
-        clearIds(actual);
-        clearIds(expected);
         Collections.sort(actual, POINT_RANKING);
         Collections.sort(expected, POINT_RANKING);
         assertEquals(expected, actual);
@@ -254,13 +244,6 @@ public abstract class SpatialIndexTestBase
             yLo = random.nextInt(Y_MAX);
             yHi = yLo + random.nextInt(Y_MAX - yLo);
         } while (yHi <= yLo);
-    }
-
-    private void clearIds(Collection<Point> points)
-    {
-        for (Point point : points) {
-            point.id(0);
-        }
     }
 
     private static final int SEED = 123456;
@@ -283,16 +266,16 @@ public abstract class SpatialIndexTestBase
     private static final SpatialJoinFilter FILTER = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(SpatialObject x, SpatialObject y)
+        public boolean overlap(Record x, Record y)
         {
-            Box b = (Box) x;
-            Point p = (Point) y;
+            Box b = (Box) x.spatialObject();
+            Point p = (Point) y.spatialObject();
             return
                 b.xLo() <= p.x() && p.x() <= b.xHi() &&
                 b.yLo() <= p.y() && p.y() <= b.yHi();
         }
     };
-    protected static final Serializer SERIALIZER = Serializer.newSerializer();
+    protected static final SpatialObjectSerializer SERIALIZER = SpatialObjectSerializer.newSerializer();
 
     private static interface Filter
     {

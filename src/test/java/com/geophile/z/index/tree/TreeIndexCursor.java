@@ -6,15 +6,14 @@
 
 package com.geophile.z.index.tree;
 
-import com.geophile.z.SpatialObject;
 import com.geophile.z.Cursor;
 import com.geophile.z.Record;
-import com.geophile.z.SpatialObjectKey;
+import com.geophile.z.TestRecord;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class TreeIndexCursor extends Cursor
 {
@@ -33,9 +32,9 @@ public class TreeIndexCursor extends Cursor
     }
 
     @Override
-    public void goTo(SpatialObjectKey key)
+    public void goTo(Record key)
     {
-        this.startAt = key;
+        this.startAt = (TestRecord) key;
         state(State.NEVER_USED);
     }
 
@@ -52,11 +51,10 @@ public class TreeIndexCursor extends Cursor
 
 // TreeIndexCursor interface
 
-    public TreeIndexCursor(TreeIndex treeIndex, SpatialObjectKey key)
+    public TreeIndexCursor(TreeIndex treeIndex)
     {
         super(treeIndex);
         this.tree = treeIndex.tree();
-        this.startAt = key;
     }
 
     // For use by this class
@@ -77,10 +75,10 @@ public class TreeIndexCursor extends Cursor
                 return null;
         }
         if (treeIterator.hasNext()) {
-            Map.Entry<SpatialObjectKey, SpatialObject> neighbor = treeIterator.next();
-            current(neighbor.getKey().z(), neighbor.getValue());
+            Record neighbor = treeIterator.next();
+            current(neighbor);
+            neighbor.copyTo(startAt);
             state(State.IN_USE);
-            startAt = neighbor.getKey();
         } else {
             close();
         }
@@ -91,15 +89,15 @@ public class TreeIndexCursor extends Cursor
     {
         treeIterator =
             forwardMove
-            ? tree.tailMap(startAt, includeStartKey).entrySet().iterator()
-            : tree.headMap(startAt, includeStartKey).descendingMap().entrySet().iterator();
+            ? tree.tailSet(startAt, includeStartKey).iterator()
+            : tree.headSet(startAt, includeStartKey).descendingIterator();
         forward = forwardMove;
     }
 
     // Object state
 
-    private final TreeMap<SpatialObjectKey, SpatialObject> tree;
-    private SpatialObjectKey startAt;
+    private final TreeSet<TestRecord> tree;
+    private TestRecord startAt;
     private boolean forward;
-    private Iterator<Map.Entry<SpatialObjectKey, SpatialObject>> treeIterator;
+    private Iterator<TestRecord> treeIterator;
 }

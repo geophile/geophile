@@ -37,9 +37,10 @@ public class SpatialIndexJTSPointAndBoxTest
     {
         TreeIndex index = new TreeIndex();
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(point(x, y));
+                spatialIndex.add(new TestRecord(point(x, y), id++));
             }
         }
         Random random = new Random(SEED);
@@ -62,9 +63,10 @@ public class SpatialIndexJTSPointAndBoxTest
     {
         TreeIndex index = new TreeIndex();
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(point(x, y));
+                spatialIndex.add(new TestRecord(point(x, y), id++));
             }
         }
         // Remove everything
@@ -93,9 +95,10 @@ public class SpatialIndexJTSPointAndBoxTest
     {
         TreeIndex index = new TreeIndex();
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(point(x, y));
+                spatialIndex.add(new TestRecord(point(x, y), id++));
             }
         }
         // Remove (x, y), for odd x/10 and even y/10
@@ -124,66 +127,18 @@ public class SpatialIndexJTSPointAndBoxTest
         }
     }
 
-    @Test
-    public void spatialIdGeneratorRestore() throws IOException, InterruptedException
-    {
-        TreeIndex index = new TreeIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
-        // pX: expected id is X
-        JTSPoint p0 = point(0, 0);
-        spatialIndex.add(p0);
-        assertEquals(0, p0.id());
-        JTSPoint p1 = point(1, 1);
-        spatialIndex.add(p1);
-        assertEquals(1, p1.id());
-        JTSPoint p2 = point(2, 2);
-        spatialIndex.add(p2);
-        assertEquals(2, p2.id());
-        // Creating a new SpatialIndexImpl restores the id generator
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
-        JTSPoint q0 = point(0, 0);
-        spatialIndex.add(q0);
-        assertEquals(SpatialIndexImpl.soidReservationBlockSize() + 0, q0.id());
-        JTSPoint q1 = point(1, 1);
-        spatialIndex.add(q1);
-        assertEquals(SpatialIndexImpl.soidReservationBlockSize() + 1, q1.id());
-        JTSPoint q2 = point(2, 2);
-        spatialIndex.add(q2);
-        assertEquals(SpatialIndexImpl.soidReservationBlockSize() + 2, q2.id());
-    }
-
-    @Test
-    public void spatialIdGeneratorTracking() throws IOException, InterruptedException
-    {
-        final int SOID_RESERVATION_BLOCK_SIZE = 3;
-        System.setProperty(SpatialIndexImpl.SOID_RESERVALTION_BLOCK_SIZE_PROPERTY,
-                           Integer.toString(SOID_RESERVATION_BLOCK_SIZE));
-        TreeIndex index = new TreeIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoid());
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoidStored());
-        spatialIndex.add(point(0, 0));
-        spatialIndex.add(point(1, 1));
-        spatialIndex.add(point(2, 2));
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoid());
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE, spatialIndex.firstUnreservedSoidStored());
-        spatialIndex.add(point(3, 3));
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE * 2, spatialIndex.firstUnreservedSoid());
-        assertEquals(SOID_RESERVATION_BLOCK_SIZE * 2, spatialIndex.firstUnreservedSoidStored());
-    }
-
     private void test(int xLo, int xHi, int yLo, int yHi, Filter filter) throws IOException, InterruptedException
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
         TreeIndex boxTreeIndex = new TreeIndex();
         SpatialIndex query = new SpatialIndexImpl(SPACE, boxTreeIndex, SpatialIndex.Options.DEFAULT);
-        query.add(box);
+        query.add(new TestRecord(box));
         Iterator<Pair> iterator =
             SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
         List<JTSPoint> actual = new ArrayList<>();
         JTSPoint point;
         while (iterator.hasNext()) {
-            point = (JTSPoint) iterator.next().right();
+            point = (JTSPoint) iterator.next().right().spatialObject();
             if (!actual.contains(point)) {
                 actual.add(point);
             }
@@ -239,10 +194,10 @@ public class SpatialIndexJTSPointAndBoxTest
     private static final SpatialJoinFilter FILTER = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(SpatialObject x, SpatialObject y)
+        public boolean overlap(Record r, Record s)
         {
-            Box b = (Box) x;
-            JTSPoint p = (JTSPoint) y;
+            Box b = (Box) r.spatialObject();
+            JTSPoint p = (JTSPoint) s.spatialObject();
             return
                 b.xLo() <= p.point().getX() && p.point().getX() <= b.xHi() &&
                 b.yLo() <= p.point().getY() && p.point().getY() <= b.yHi();

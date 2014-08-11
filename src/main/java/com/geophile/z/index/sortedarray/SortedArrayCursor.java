@@ -8,10 +8,8 @@ package com.geophile.z.index.sortedarray;
 
 import com.geophile.z.Cursor;
 import com.geophile.z.Record;
-import com.geophile.z.SpatialObjectKey;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 public class SortedArrayCursor extends Cursor
 {
@@ -30,9 +28,9 @@ public class SortedArrayCursor extends Cursor
     }
 
     @Override
-    public void goTo(SpatialObjectKey key)
+    public void goTo(Record key)
     {
-        this.startAt.set(key.z(), key.soid());
+        this.startAt = key;
         state(State.NEVER_USED);
     }
 
@@ -53,12 +51,10 @@ public class SortedArrayCursor extends Cursor
 
     // SortedArrayCursor interface
 
-    public SortedArrayCursor(SortedArray sortedArray, SpatialObjectKey startAt)
+    public SortedArrayCursor(SortedArray sortedArray)
     {
         super(sortedArray);
         this.sortedArray = sortedArray;
-        this.startAt = sortedArray.newRecord();
-        this.startAt.set(startAt.z(), startAt.soid());
     }
 
     // For use by this class
@@ -80,8 +76,8 @@ public class SortedArrayCursor extends Cursor
         }
         if (position != DONE) {
             Record record = record(position);
-            current(record.key().z(), record.spatialObject());
-            current().copyTo(startAt);
+            current(record);
+            record.copyTo(startAt);
             lastReportedPosition = position;
             state(State.IN_USE);
             position += forwardMove ? 1 : -1;
@@ -98,7 +94,7 @@ public class SortedArrayCursor extends Cursor
 
     private void startIteration(boolean forwardMove, boolean includeStartKey)
     {
-        position = Arrays.binarySearch(sortedArray.records, 0, sortedArray.n, startAt, SortedArray.RECORD_COMPARATOR);
+        position = sortedArray.binarySearch(startAt);
         if (position < 0) {
             // Key not found
             position = -position - 1; // See javadoc for binarySearch
@@ -134,7 +130,7 @@ public class SortedArrayCursor extends Cursor
     private static final int UNDEFINED = -1;
 
     private final SortedArray sortedArray;
-    private final Record startAt;
+    private Record startAt;
     private boolean forward;
     private int position;
     // Position of the last record returned via next() or previous(). Needed to support deleteCurrent().

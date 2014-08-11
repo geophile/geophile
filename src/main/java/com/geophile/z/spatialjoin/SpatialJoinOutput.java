@@ -6,9 +6,9 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.SpatialObject;
+import com.geophile.z.Record;
 
 interface SpatialJoinOutput
 {
-    void add(SpatialObject s, SpatialObject t);
+    void add(Record r, Record s);
 }
