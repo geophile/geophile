@@ -39,10 +39,10 @@ public class SelfJoinTest extends SpatialJoinTestBase
             new SpatialJoinFilter()
             {
                 @Override
-                public boolean overlap(Record r, Record s)
+                public boolean overlap(SpatialObject r, SpatialObject s)
                 {
                     testStats.filterCount++;
-                    boolean overlap = OVERLAP_TESTER.overlap(r.spatialObject(), s.spatialObject());
+                    boolean overlap = OVERLAP_TESTER.overlap(r, s);
                     if (overlap) {
                         testStats.overlapCount++;
                     }
@@ -160,7 +160,7 @@ public class SelfJoinTest extends SpatialJoinTestBase
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(Record left, Record right)
+            public boolean overlap(SpatialObject r, SpatialObject s)
             {
                 return true;
             }

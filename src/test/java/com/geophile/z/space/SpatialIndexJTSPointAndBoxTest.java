@@ -198,10 +198,10 @@ public class SpatialIndexJTSPointAndBoxTest
     private static final SpatialJoinFilter FILTER = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(Record r, Record s)
+        public boolean overlap(SpatialObject r, SpatialObject s)
         {
-            Box b = (Box) r.spatialObject();
-            JTSPoint p = (JTSPoint) s.spatialObject();
+            Box b = (Box) r;
+            JTSPoint p = (JTSPoint) s;
             return
                 b.xLo() <= p.point().getX() && p.point().getX() <= b.xHi() &&
                 b.yLo() <= p.point().getY() && p.point().getY() <= b.yHi();

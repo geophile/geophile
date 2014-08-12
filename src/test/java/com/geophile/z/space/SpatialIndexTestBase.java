@@ -277,10 +277,10 @@ public abstract class SpatialIndexTestBase
     private static final SpatialJoinFilter FILTER = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(Record x, Record y)
+        public boolean overlap(SpatialObject r, SpatialObject s)
         {
-            Box b = (Box) x.spatialObject();
-            Point p = (Point) y.spatialObject();
+            Box b = (Box) r;
+            Point p = (Point) s;
             return
                 b.xLo() <= p.x() && p.x() <= b.xHi() &&
                 b.yLo() <= p.y() && p.y() <= b.yHi();

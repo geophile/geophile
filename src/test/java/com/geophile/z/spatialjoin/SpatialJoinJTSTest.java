@@ -146,10 +146,10 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     private final SpatialJoinFilter filter = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(Record x, Record y)
+        public boolean overlap(SpatialObject r, SpatialObject s)
         {
             testStats.filterCount++;
-            boolean overlap = OVERLAP_TESTER.overlap(x.spatialObject(), y.spatialObject());
+            boolean overlap = OVERLAP_TESTER.overlap(r, s);
             if (overlap) {
                 testStats.overlapCount++;
             }

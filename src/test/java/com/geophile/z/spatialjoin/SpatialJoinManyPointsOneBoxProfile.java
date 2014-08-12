@@ -167,10 +167,10 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     private static final class TestFilter implements SpatialJoinFilter
     {
         @Override
-        public boolean overlap(Record a, Record b)
+        public boolean overlap(SpatialObject a, SpatialObject b)
         {
-            Box box = (Box) a.spatialObject();
-            Point point = (Point) b.spatialObject();
+            Box box = (Box) a;
+            Point point = (Point) b;
             double px = point.x();
             double py = point.y();
             return
@@ -182,10 +182,10 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     private static final class TestFilterJTS implements SpatialJoinFilter
     {
         @Override
-        public boolean overlap(Record a, Record b)
+        public boolean overlap(SpatialObject a, SpatialObject b)
         {
-            Box box = (Box) a.spatialObject();
-            JTSPoint point = (JTSPoint) b.spatialObject();
+            Box box = (Box) a;
+            JTSPoint point = (JTSPoint) b;
             Coordinate coordinate = point.point().getCoordinate();
             double px = coordinate.x;
             double py = coordinate.y;

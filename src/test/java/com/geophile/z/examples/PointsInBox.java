@@ -77,10 +77,10 @@ public class PointsInBox
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(com.geophile.z.Record r, com.geophile.z.Record s)
+            public boolean overlap(SpatialObject r, SpatialObject s)
             {
-                Box box = (Box) r.spatialObject();
-                Point point = (Point) s.spatialObject();
+                Box box = (Box) r;
+                Point point = (Point) s;
                 return
                     box.xLo() <= point.x() && point.x() <= box.xHi() &&
                     box.yLo() <= point.y() && point.y() <= box.yHi();

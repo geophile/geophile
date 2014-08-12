@@ -107,10 +107,10 @@ public class SpatialJoinManyPointsOneBox
     private final SpatialJoinFilter filter = new SpatialJoinFilter()
     {
         @Override
-        public boolean overlap(Record x, Record y)
+        public boolean overlap(SpatialObject r, SpatialObject s)
         {
             testStats.filterCount++;
-            boolean overlap = overlapTester.overlap(x.spatialObject(), y.spatialObject());
+            boolean overlap = overlapTester.overlap(r, s);
             if (overlap) {
                 testStats.overlapCount++;
             }

@@ -65,10 +65,10 @@ public class OverlappingPairs
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(com.geophile.z.Record r, com.geophile.z.Record s)
+            public boolean overlap(SpatialObject r, SpatialObject s)
             {
-                Box a = (Box) r.spatialObject();
-                Box b = (Box) s.spatialObject();
+                Box a = (Box) r;
+                Box b = (Box) s;
                 return
                     a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
                     a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
