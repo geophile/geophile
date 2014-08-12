@@ -2,6 +2,7 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.z.Pair;
 import com.geophile.z.Record;
+import com.geophile.z.SpatialJoinFilter;
 import com.geophile.z.SpatialJoinRuntimeException;
 import com.geophile.z.space.SpatialIndexImpl;
 

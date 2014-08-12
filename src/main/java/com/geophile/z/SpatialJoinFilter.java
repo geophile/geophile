@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.spatialjoin;
+package com.geophile.z;
 
 import com.geophile.z.Record;
 import com.geophile.z.SpatialObject;

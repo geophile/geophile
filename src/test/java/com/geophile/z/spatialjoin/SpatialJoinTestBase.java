@@ -81,8 +81,8 @@ public abstract class SpatialJoinTestBase
         this.rightInput = rightInput;
         this.testStats = new TestStats();
         try {
-            Map<Pair, Integer> actual = computeManyManySpatialJoin();
-            Set<Pair> expected = null;
+            Map<Pair<TestRecord, TestRecord>, Integer> actual = computeManyManySpatialJoin();
+            Set<Pair<TestRecord, TestRecord>> expected = null;
             if (verify()) {
                 if (spatialJoin.duplicates() == SpatialJoin.Duplicates.EXCLUDE) {
                     checkNoDuplicates(actual);
@@ -98,7 +98,7 @@ public abstract class SpatialJoinTestBase
                     }
                 }
                 print("actual");
-                for (Map.Entry<Pair, Integer> entry : actual.entrySet()) {
+                for (Map.Entry<Pair<TestRecord, TestRecord>, Integer> entry : actual.entrySet()) {
                     print("    %s: %s", entry.getKey(), entry.getValue());
                 }
             }
@@ -122,7 +122,7 @@ public abstract class SpatialJoinTestBase
     protected final TestInput newTestInput(int n, SpatialObjectGenerator spatialObjectGenerator)
         throws IOException, InterruptedException
     {
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(space(), newIndex());
+        SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(space(), newIndex());
         TestInput testInput = new TestInput(spatialIndex, spatialObjectGenerator.description());
         load(n, spatialObjectGenerator, testInput);
         commit();
@@ -174,9 +174,9 @@ public abstract class SpatialJoinTestBase
     {
         Map<Record, Integer> actual = new HashMap<>(); // Record -> occurrence count
         long start = System.nanoTime();
-        Iterator<Record> joinScan = spatialJoin.iterator(query, rightInput.spatialIndex());
+        Iterator<TestRecord> joinScan = spatialJoin.iterator(query, rightInput.spatialIndex());
         while (joinScan.hasNext()) {
-            Record record = joinScan.next();
+            TestRecord record = joinScan.next();
             if (verify()) {
                 Integer count = actual.get(record);
                 if (count == null) {
@@ -191,13 +191,14 @@ public abstract class SpatialJoinTestBase
         return actual;
     }
 
-    private Map<Pair, Integer> computeManyManySpatialJoin() throws IOException, InterruptedException
+    private Map<Pair<TestRecord, TestRecord>, Integer> computeManyManySpatialJoin() throws IOException, InterruptedException
     {
-        Map<Pair, Integer> actual = new HashMap<>(); // Pair -> occurrence count
+        Map<Pair<TestRecord, TestRecord>, Integer> actual = new HashMap<>(); // Pair -> occurrence count
         long start = System.nanoTime();
-        Iterator<Pair> joinScan = spatialJoin.iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
+        Iterator<Pair<TestRecord, TestRecord>> joinScan =
+            spatialJoin.iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
         while (joinScan.hasNext()) {
-            Pair pair = joinScan.next();
+            Pair<TestRecord, TestRecord> pair = joinScan.next();
             if (verify()) {
                 Integer count = actual.get(pair);
                 if (count == null) {
@@ -226,14 +227,14 @@ public abstract class SpatialJoinTestBase
         return expected;
     }
 
-    private Set<Pair> computeExpectedManyManySpatialJoin()
+    private Set<Pair<TestRecord, TestRecord>> computeExpectedManyManySpatialJoin()
     {
-        Set<Pair> expected = new HashSet<>();
+        Set<Pair<TestRecord, TestRecord>> expected = new HashSet<>();
         long start = System.nanoTime();
-        for (Record r : leftInput.records()) {
-            for (Record s : rightInput.records()) {
+        for (TestRecord r : leftInput.records()) {
+            for (TestRecord s : rightInput.records()) {
                 if (overlap(r.spatialObject(), s.spatialObject())) {
-                    expected.add(new Pair(r, s));
+                    expected.add(new Pair<TestRecord, TestRecord>(r, s));
                 }
             }
         }

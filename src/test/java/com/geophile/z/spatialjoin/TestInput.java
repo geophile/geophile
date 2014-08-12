@@ -4,6 +4,7 @@ import com.geophile.z.Record;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.TestRecord;
+import com.geophile.z.space.SpatialIndexImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,17 +19,19 @@ public class TestInput
 
     public void add(SpatialObject spatialObject) throws IOException, InterruptedException
     {
-        TestRecord record = new TestRecord(spatialObject, soidCounter++);
+        TestRecord record = (TestRecord) ((SpatialIndexImpl<TestRecord>)spatialIndex).index().newRecord();
+        record.spatialObject(spatialObject);
+        record.soid(soidCounter++);
         records.add(record);
         spatialIndex.add(record);
     }
 
-    public List<Record> records()
+    public List<TestRecord> records()
     {
         return records;
     }
 
-    public SpatialIndex spatialIndex()
+    public SpatialIndex<TestRecord> spatialIndex()
     {
         return spatialIndex;
     }
@@ -39,7 +42,7 @@ public class TestInput
         return records.get(0);
     }
 
-    public TestInput(SpatialIndex spatialIndex, String description)
+    public TestInput(SpatialIndex<TestRecord> spatialIndex, String description)
         throws IOException, InterruptedException
     {
         this.description = description;
@@ -48,7 +51,7 @@ public class TestInput
     }
 
     private final String description;
-    private final List<Record> records;
-    private final SpatialIndex spatialIndex;
+    private final List<TestRecord> records;
+    private final SpatialIndex<TestRecord> spatialIndex;
     private int soidCounter = 0;
 }

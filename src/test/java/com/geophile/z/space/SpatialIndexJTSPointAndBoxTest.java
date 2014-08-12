@@ -14,7 +14,7 @@ package com.geophile.z.space;
 
 import com.geophile.z.*;
 import com.geophile.z.Record;
-import com.geophile.z.spatialjoin.SpatialJoinFilter;
+import com.geophile.z.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.jts.JTSPoint;

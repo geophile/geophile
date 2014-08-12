@@ -4,7 +4,7 @@ package com.geophile.z;
  * A pair of overlapping {@link SpatialObject}s, obtained via spatial join.
  */
 
-public class Pair
+public class Pair<LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
 {
     // Object interface
 
@@ -42,7 +42,7 @@ public class Pair
      * The left side of the Pair.
      * @return The left side of the Pair.
      */
-    public Record left()
+    public LEFT_RECORD left()
     {
         return left;
     }
@@ -51,12 +51,12 @@ public class Pair
      * The right side of the Pair.
      * @return The right side of the Pair.
      */
-    public Record right()
+    public RIGHT_RECORD right()
     {
         return right;
     }
 
-    public Pair(Record left, Record right)
+    public Pair(LEFT_RECORD left, RIGHT_RECORD right)
     {
         this.left = left;
         this.right = right;
@@ -64,6 +64,6 @@ public class Pair
 
     // Object state
 
-    private final Record left;
-    private final Record right;
+    private final LEFT_RECORD left;
+    private final RIGHT_RECORD right;
 }

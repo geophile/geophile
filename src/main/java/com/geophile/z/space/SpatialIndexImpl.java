@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 import static com.geophile.z.space.SpaceImpl.formatZ;
 
-public class SpatialIndexImpl extends SpatialIndex
+public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD>
 {
     // Object interface
 
@@ -26,7 +26,7 @@ public class SpatialIndexImpl extends SpatialIndex
 
     // SpatialIndex interface
 
-    public void add(Record record) throws IOException, InterruptedException
+    public void add(RECORD record) throws IOException, InterruptedException
     {
         SpatialObject spatialObject = record.spatialObject();
         long[] zs = decompose(spatialObject);
@@ -43,13 +43,13 @@ public class SpatialIndexImpl extends SpatialIndex
     }
 
     public boolean remove(SpatialObject spatialObject,
-                          RecordFilter recordFilter) throws IOException, InterruptedException
+                          RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException
     {
         long[] zs = decompose(spatialObject);
         int recordsDeleted = 0;
         int zCount = 0;
-        Cursor cursor = index.cursor();
-        Record key = index.newKeyRecord();
+        Cursor<RECORD> cursor = index.cursor();
+        RECORD key = index.newKeyRecord();
         for (int i = 0; i < zs.length; i++) {
             long z = zs[i];
             if (z != SpaceImpl.Z_NULL) {
@@ -58,7 +58,7 @@ public class SpatialIndexImpl extends SpatialIndex
                 boolean more = true;
                 boolean found = false;
                 while (more && !found) {
-                    Record record = cursor.next();
+                    RECORD record = cursor.next();
                     if (record == null) {
                         more = false;
                     } else {
@@ -94,45 +94,11 @@ public class SpatialIndexImpl extends SpatialIndex
         return index;
     }
 
-    public SpatialIndexImpl(SpaceImpl space, Index index, Options options)
+    public SpatialIndexImpl(SpaceImpl space, Index<RECORD> index, Options options)
         throws IOException, InterruptedException
     {
         super(space, index, options);
         singleCell = options == Options.SINGLE_CELL;
-    }
-
-    // For use by this package (testing)
-
-    long firstUnreservedSoid()
-    {
-        assert false;
-        return -1L;
-/*
-        return firstUnreservedSoid;
-*/
-    }
-
-    long firstUnreservedSoidStored() throws IOException, InterruptedException
-    {
-        assert false;
-        return -1L;
-/*
-        Cursor cursor = index.cursor(SpatialIndexMetadata.SPATIAL_INDEX_METADATA_KEY.z());
-        try {
-            return firstUnreservedSoid(cursor.next());
-        } finally {
-            cursor.close();
-        }
-*/
-    }
-
-    static long soidReservationBlockSize()
-    {
-        assert false;
-        return -1L;
-/*
-        return Long.getLong(SOID_RESERVALTION_BLOCK_SIZE_PROPERTY, SOID_RESERVATION_BLOCK_SIZE);
-*/
     }
 
     // For use by this class

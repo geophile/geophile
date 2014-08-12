@@ -15,7 +15,7 @@ import java.io.IOException;
  * A SpatialIndex organizes a set of {@link SpatialObject}s for the efficient execution of spatial searches.
  */
 
-public abstract class SpatialIndex
+public abstract class SpatialIndex<RECORD extends Record>
 {
     /**
      * Returns the {@link com.geophile.z.Space} associated with this SpatialIndex.
@@ -30,7 +30,7 @@ public abstract class SpatialIndex
      * Adds the given spatial object to the index.
      * @param record The record to be added.
      */
-    public abstract void add(Record record) throws IOException, InterruptedException;
+    public abstract void add(RECORD record) throws IOException, InterruptedException;
 
     /**
      * Removes the given spatial object from the index.
@@ -39,7 +39,7 @@ public abstract class SpatialIndex
      * @return true if spatialObject was found and removed, false otherwise
      */
     public abstract boolean remove(SpatialObject spatialObject,
-                                   RecordFilter recordFilter) throws IOException, InterruptedException;
+                                   RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException;
 
     /**
      * Creates a SpatialIndex. The index
@@ -48,7 +48,9 @@ public abstract class SpatialIndex
      * @param space The {@link Space} containing the {@link SpatialObject}s to be indexed.
      * @param index The {@link Index} that will store the indexed {@link SpatialObject}s.
      */
-    public static SpatialIndex newSpatialIndex(Space space, Index index) throws IOException, InterruptedException
+    public static <RECORD extends Record> SpatialIndex<RECORD> newSpatialIndex(Space space,
+                                                                               Index<RECORD> index)
+        throws IOException, InterruptedException
     {
         return newSpatialIndex(space, index, Options.DEFAULT);
     }
@@ -60,15 +62,17 @@ public abstract class SpatialIndex
      * @param space The {@link Space} containing the {@link SpatialObject}s to be indexed.
      * @param index The {@link Index} that will store the indexed {@link SpatialObject}s.
      */
-    public static SpatialIndex newSpatialIndex(Space space, Index index, Options options)
+    public static <RECORD extends Record> SpatialIndex<RECORD> newSpatialIndex(Space space,
+                                                                               Index<RECORD> index,
+                                                                               Options options)
         throws IOException, InterruptedException
     {
-        return new SpatialIndexImpl((SpaceImpl) space, index, options);
+        return new SpatialIndexImpl<>((SpaceImpl) space, index, options);
     }
 
     // For use by subclasses
 
-    protected SpatialIndex(SpaceImpl space, Index index, Options options)
+    protected SpatialIndex(SpaceImpl space, Index<RECORD> index, Options options)
     {
         this.space = space;
         this.index = index;
@@ -78,14 +82,14 @@ public abstract class SpatialIndex
     // Object state
 
     protected final SpaceImpl space;
-    protected final Index index;
+    protected final Index<RECORD> index;
     protected final Options options;
 
     // Inner classes
 
     public enum Options {DEFAULT, SINGLE_CELL}
 
-    public class Exception extends RuntimeException
+    public static class Exception extends RuntimeException
     {
         public Exception(String message)
         {

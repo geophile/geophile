@@ -21,40 +21,43 @@ public class SpatialJoinImpl extends SpatialJoin
         super(filter, duplicates);
     }
 
-    public Iterator<Pair> iterator(SpatialIndex leftSpatialIndex, SpatialIndex rightSpatialIndex)
+    public <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
+    Iterator<Pair<LEFT_RECORD, RIGHT_RECORD>> iterator(SpatialIndex<LEFT_RECORD> leftSpatialIndex,
+                                                       SpatialIndex<RIGHT_RECORD> rightSpatialIndex)
         throws IOException, InterruptedException
     {
         if (!leftSpatialIndex.space().equals(rightSpatialIndex.space())) {
             throw new SpatialJoinException("Attempt to join spatial indexes with incompatible spaces");
         }
-        Iterator<Pair> iterator =
+        Iterator iterator =
             SpatialJoinIterator.pairIterator((SpatialIndexImpl) leftSpatialIndex,
                                              (SpatialIndexImpl) rightSpatialIndex,
                                              filter);
         if (duplicates == Duplicates.EXCLUDE) {
-            iterator = new DuplicateEliminatingIterator<>(iterator);
+            iterator = new DuplicateEliminatingIterator<Pair<LEFT_RECORD, RIGHT_RECORD>>(iterator);
         }
         return iterator;
     }
 
-    public Iterator<Record> iterator(SpatialObject query, SpatialIndex dataSpatialIndex)
+    public <RECORD extends Record>
+    Iterator<RECORD> iterator(SpatialObject query, SpatialIndex<RECORD> dataSpatialIndex)
         throws IOException, InterruptedException
     {
-        SortedArray queryIndex = new SortedArray.OfBaseRecord();
-        SpatialIndex querySpatialIndex = SpatialIndex.newSpatialIndex(dataSpatialIndex.space(),
-                                                                      queryIndex,
-                                                                      query.maxZ() == 1
-                                                                      ? SpatialIndex.Options.SINGLE_CELL
-                                                                      : SpatialIndex.Options.DEFAULT);
-        BaseRecord queryRecord = (BaseRecord) queryIndex.newRecord();
+        SortedArray<BaseRecord> queryIndex = new SortedArray.OfBaseRecord();
+        SpatialIndex<BaseRecord> querySpatialIndex = SpatialIndex.newSpatialIndex(dataSpatialIndex.space(),
+                                                                                  queryIndex,
+                                                                                  query.maxZ() == 1
+                                                                                  ? SpatialIndex.Options.SINGLE_CELL
+                                                                                  : SpatialIndex.Options.DEFAULT);
+        BaseRecord queryRecord = queryIndex.newRecord();
         queryRecord.spatialObject(query);
         querySpatialIndex.add(queryRecord);
-        Iterator<Record> iterator =
+        Iterator iterator =
             SpatialJoinIterator.spatialObjectIterator((SpatialIndexImpl) querySpatialIndex,
                                                       (SpatialIndexImpl) dataSpatialIndex,
                                                       filter);
         if (duplicates == Duplicates.EXCLUDE) {
-            iterator = new DuplicateEliminatingIterator<>(iterator);
+            iterator = new DuplicateEliminatingIterator<RECORD>(iterator);
         }
         return iterator;
     }
