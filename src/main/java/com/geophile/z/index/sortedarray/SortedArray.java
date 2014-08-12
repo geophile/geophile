@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Intended to be used internally, for a spatial join between a SpatialIndex and a SpatialObject.
  */
 
-public class SortedArray extends Index
+public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
 {
     // Object interface
 
@@ -31,20 +31,20 @@ public class SortedArray extends Index
     // Index interface
 
     @Override
-    public void add(Record record)
+    public void add(RECORD record)
     {
         ensureSpace(n + 1);
-        Record copy = newRecord();
+        RECORD copy = newRecord();
         record.copyTo(copy);
         records[n++] = copy;
         sorted = false;
     }
 
     @Override
-    public boolean remove(long z, RecordFilter recordFilter)
+    public boolean remove(long z, RecordFilter<RECORD> recordFilter)
     {
         boolean removed = false;
-        Record key = newKeyRecord();
+        RECORD key = newKeyRecord();
         key.z(z);
         int binarySearchPosition = binarySearch(key);
         if (binarySearchPosition >= 0) {
@@ -54,7 +54,7 @@ public class SortedArray extends Index
             boolean removeRecordFound = false;
             int position = binarySearchPosition;
             while (position >= 0 && sameZ && !removeRecordFound) {
-                Record record = (Record)records[position];
+                RECORD record = (RECORD) records[position];
                 if (record.z() == z) {
                     if (recordFilter.select(record)) {
                         removeRecordFound = true;
@@ -70,7 +70,7 @@ public class SortedArray extends Index
                 sameZ = true;
                 position = binarySearchPosition + 1;
                 while (position < n && sameZ && !removeRecordFound) {
-                    Record record = (Record)records[position];
+                    RECORD record = (RECORD) records[position];
                     if (record.z() == z) {
                         if (recordFilter.select(record)) {
                             removeRecordFound = true;
@@ -92,17 +92,14 @@ public class SortedArray extends Index
     }
 
     @Override
-    public Cursor cursor()
+    public Cursor<RECORD> cursor()
     {
         ensureSorted();
-        return new SortedArrayCursor(this);
+        return new SortedArrayCursor<RECORD>(this);
     }
 
     @Override
-    public Record newRecord()
-    {
-        return new BaseRecord();
-    }
+    public abstract RECORD newRecord();
 
     // SortedArray
 
@@ -116,7 +113,7 @@ public class SortedArray extends Index
 
     // For use by this package
 
-    int binarySearch(Record key)
+    int binarySearch(RECORD key)
     {
         return Arrays.binarySearch(records, 0, n, key, SortedArray.Z_COMPARATOR);
     }
@@ -173,4 +170,15 @@ public class SortedArray extends Index
     Object[] records;
     int n = 0;
     private boolean sorted = false;
+
+    // Inner classes
+
+    public static class OfBaseRecord extends SortedArray<BaseRecord>
+    {
+        @Override
+        public BaseRecord newRecord()
+        {
+            return new BaseRecord();
+        }
+    }
 }

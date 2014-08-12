@@ -8,13 +8,13 @@ package com.geophile.z;
 
 import java.io.IOException;
 
-public abstract class Cursor
+public abstract class Cursor<RECORD extends Record>
 {
-    public abstract Record next() throws IOException, InterruptedException;
+    public abstract RECORD next() throws IOException, InterruptedException;
 
-    public abstract Record previous() throws IOException, InterruptedException;
+    public abstract RECORD previous() throws IOException, InterruptedException;
 
-    public abstract void goTo(Record record) throws IOException, InterruptedException;
+    public abstract void goTo(RECORD record) throws IOException, InterruptedException;
 
     /**
      * Delete the record returned by the immediately preceding call to next or previous.
@@ -35,12 +35,12 @@ public abstract class Cursor
         state = State.DONE;
     }
 
-    public final Record current() throws IOException, InterruptedException
+    public final RECORD current() throws IOException, InterruptedException
     {
         return state == State.DONE ? null : current;
     }
 
-    protected final void current(Record record)
+    protected final void current(RECORD record)
     {
         assert state != State.DONE;
         record.copyTo(current);
@@ -57,14 +57,14 @@ public abstract class Cursor
         state = newState;
     }
 
-    protected Cursor(Index index)
+    protected Cursor(Index<RECORD> index)
     {
         current = index.newRecord();
     }
 
     // Object state
 
-    private final Record current;
+    private final RECORD current;
     private State state = State.NEVER_USED;
 
     // Inner classes

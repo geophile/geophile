@@ -7,31 +7,30 @@
 package com.geophile.z.index.tree;
 
 import com.geophile.z.Cursor;
-import com.geophile.z.Record;
 
 import java.io.IOException;
 import java.util.Iterator;
 
-public class TreeWithSerializationCursor extends Cursor
+public class TreeWithSerializationCursor extends Cursor<SerializedRecord>
 {
     // Cursor interface
 
     @Override
-    public Record next() throws IOException, InterruptedException
+    public SerializedRecord next() throws IOException, InterruptedException
     {
         return neighbor(true);
     }
 
     @Override
-    public Record previous() throws IOException, InterruptedException
+    public SerializedRecord previous() throws IOException, InterruptedException
     {
         return neighbor(false);
     }
 
     @Override
-    public void goTo(Record key)
+    public void goTo(SerializedRecord key)
     {
-        this.startAt = (SerializedRecord) key;
+        this.startAt = key;
         state(State.NEVER_USED);
     }
 
@@ -56,7 +55,7 @@ public class TreeWithSerializationCursor extends Cursor
 
     // For use by this class
 
-    private Record neighbor(boolean forwardMove) throws IOException, InterruptedException
+    private SerializedRecord neighbor(boolean forwardMove) throws IOException, InterruptedException
     {
         switch (state()) {
             case NEVER_USED:

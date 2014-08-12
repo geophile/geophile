@@ -8,33 +8,31 @@ package com.geophile.z.index.tree;
 
 import com.geophile.z.Cursor;
 import com.geophile.z.Record;
-import com.geophile.z.TestRecord;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-public class TreeIndexCursor extends Cursor
+public class TreeIndexCursor<RECORD extends Record> extends Cursor<RECORD>
 {
     // Cursor interface
 
     @Override
-    public Record next() throws IOException, InterruptedException
+    public RECORD next() throws IOException, InterruptedException
     {
         return neighbor(true);
     }
 
     @Override
-    public Record previous() throws IOException, InterruptedException
+    public RECORD previous() throws IOException, InterruptedException
     {
         return neighbor(false);
     }
 
     @Override
-    public void goTo(Record key)
+    public void goTo(RECORD key)
     {
-        this.startAt = (TestRecord) key;
+        this.startAt = key;
         state(State.NEVER_USED);
     }
 
@@ -49,9 +47,9 @@ public class TreeIndexCursor extends Cursor
         return removed;
     }
 
-// TreeIndexCursor interface
+    // TreeIndexCursor interface
 
-    public TreeIndexCursor(TreeIndex treeIndex)
+    public TreeIndexCursor(TreeIndex<RECORD> treeIndex)
     {
         super(treeIndex);
         this.tree = treeIndex.tree();
@@ -59,7 +57,7 @@ public class TreeIndexCursor extends Cursor
 
     // For use by this class
 
-    private Record neighbor(boolean forwardMove) throws IOException, InterruptedException
+    private RECORD neighbor(boolean forwardMove) throws IOException, InterruptedException
     {
         switch (state()) {
             case NEVER_USED:
@@ -75,7 +73,7 @@ public class TreeIndexCursor extends Cursor
                 return null;
         }
         if (treeIterator.hasNext()) {
-            Record neighbor = treeIterator.next();
+            RECORD neighbor = treeIterator.next();
             current(neighbor);
             neighbor.copyTo(startAt);
             state(State.IN_USE);
@@ -96,8 +94,8 @@ public class TreeIndexCursor extends Cursor
 
     // Object state
 
-    private final TreeSet<TestRecord> tree;
-    private TestRecord startAt;
+    private final TreeSet<RECORD> tree;
+    private RECORD startAt;
     private boolean forward;
-    private Iterator<TestRecord> treeIterator;
+    private Iterator<RECORD> treeIterator;
 }

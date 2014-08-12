@@ -31,7 +31,7 @@ public abstract class IndexTestBase
     public void testIndex() throws Exception
     {
         try {
-            Index index = newIndex();
+            Index<TestRecord> index = newIndex();
             for (int nObjects = 0; nObjects <= 1000; nObjects += 100) {
                 for (int copies = 1; copies <= 8; copies++) {
                     long start = System.currentTimeMillis();
@@ -66,7 +66,7 @@ public abstract class IndexTestBase
         }
     }
 
-    protected abstract Index newIndex() throws IOException, InterruptedException;
+    protected abstract Index<TestRecord> newIndex() throws IOException, InterruptedException;
 
     protected void commit()
     {}
@@ -74,7 +74,7 @@ public abstract class IndexTestBase
     protected void shutdown() throws IOException, InterruptedException
     {}
 
-    private void load(Index index, int nObjects, int zCount)
+    private void load(Index<TestRecord> index, int nObjects, int zCount)
         throws IOException, InterruptedException
     {
         /*
@@ -94,7 +94,7 @@ public abstract class IndexTestBase
             TestSpatialObject spatialObject = new TestSpatialObject(id);
             for (long c = 0; c < zCount; c++) {
                 long z = z((id + c) * GAP);
-                TestRecord record = (TestRecord) index.newRecord();
+                TestRecord record = index.newRecord();
                 record.z(z);
                 record.spatialObject(spatialObject);
                 record.soid(id);
@@ -104,7 +104,7 @@ public abstract class IndexTestBase
         commit();
     }
 
-    private void removeAll(Index index, int nObjects, int zCount)
+    private void removeAll(Index<TestRecord> index, int nObjects, int zCount)
         throws IOException, InterruptedException
     {
         Stopwatch removeTimer = new Stopwatch();
@@ -137,17 +137,17 @@ public abstract class IndexTestBase
 */
     }
 
-    private void checkContents(Index index, int nObjects, int zCount, Set<Integer> removedIds)
+    private void checkContents(Index<TestRecord> index, int nObjects, int zCount, Set<Integer> removedIds)
         throws IOException, InterruptedException
     {
         Set<Integer> presentIds = new HashSet<>();
-        Cursor cursor = newCursor(index, SpaceImpl.Z_MIN);
+        Cursor<TestRecord> cursor = newCursor(index, SpaceImpl.Z_MIN);
         TestRecord record;
         List<List<Long>> zById = new ArrayList<>();
         for (int id = 0; id < nObjects; id++) {
             zById.add(new ArrayList<Long>());
         }
-        while ((record = (TestRecord) cursor.next()) != null) {
+        while ((record = cursor.next()) != null) {
             int id = record.soid();
             assertTrue(!removedIds.contains(id));
             presentIds.add(id);
@@ -168,7 +168,7 @@ public abstract class IndexTestBase
         }
     }
 
-    private void checkRetrieval(Index index, int nObjects, int zCount)
+    private void checkRetrieval(Index<TestRecord> index, int nObjects, int zCount)
         throws IOException, InterruptedException
     {
         // Expected
@@ -182,7 +182,7 @@ public abstract class IndexTestBase
                 allKeys.put(key, null);
             }
         }
-        Cursor cursor;
+        Cursor<TestRecord> cursor;
         TestRecord record;
         TestRecord start;
         Iterator<TestRecord> expected;
@@ -191,7 +191,7 @@ public abstract class IndexTestBase
         cursor = newCursor(index, SpaceImpl.Z_MIN);
         expected = allKeys.keySet().iterator();
         count = 0;
-        while ((record = (TestRecord) cursor.next()) != null) {
+        while ((record = cursor.next()) != null) {
             TestRecord next = expected.next();
             assertEquals(next, record);
             count++;
@@ -202,7 +202,7 @@ public abstract class IndexTestBase
         start = key(index, z(GAP * nObjects / 2 + GAP / 2));
         expected = allKeys.tailMap(start, true).keySet().iterator();
         cursor = newCursor(index, start.z());
-        while ((record = (TestRecord) cursor.next()) != null) {
+        while ((record = cursor.next()) != null) {
             assertEquals(expected.next(), record);
         }
         assertTrue(!expected.hasNext());
@@ -210,23 +210,19 @@ public abstract class IndexTestBase
         start = key(index, SpaceImpl.Z_MAX, Integer.MAX_VALUE);
         expected = allKeys.tailMap(start, true).keySet().iterator();
         cursor = newCursor(index, start.z());
-        while ((record = (TestRecord) cursor.next()) != null) {
-            fail();
-        }
+        assertNull(cursor.next());
         assertTrue(!expected.hasNext());
         // Try traversal backward from the beginning (lower bound is before first key)
         start = key(index, SpaceImpl.Z_MIN);
         expected = allKeys.headMap(start, true).descendingKeySet().iterator();
         cursor = newCursor(index, start.z());
-        while ((record = (TestRecord) cursor.previous()) != null) {
-            fail();
-        }
+        assertNull(cursor.previous());
         assertTrue(!expected.hasNext());
         // Try traversal backward from halfway
         start = key(index, z(GAP * nObjects / 2 + GAP / 2), Integer.MAX_VALUE);
         expected = allKeys.headMap(start, true).descendingKeySet().iterator();
         cursor = newCursor(index, start.z());
-        while ((record = (TestRecord) cursor.previous()) != null) {
+        while ((record = cursor.previous()) != null) {
             assertEquals(expected.next(), record);
         }
         assertTrue(!expected.hasNext());
@@ -235,7 +231,7 @@ public abstract class IndexTestBase
         expected = allKeys.descendingKeySet().iterator();
         cursor = newCursor(index, start.z());
         count = 0;
-        while ((record = (TestRecord) cursor.previous()) != null) {
+        while ((record = cursor.previous()) != null) {
             assertEquals(expected.next(), record);
             count++;
         }
@@ -245,13 +241,13 @@ public abstract class IndexTestBase
 
     private void testCursor(int nObjects) throws Exception
     {
-        Index index = newIndex();
+        Index<TestRecord> index = newIndex();
         try {
             // Delete everything in scan
             {
                 load(index, nObjects, 1);
-                Cursor cursor = newCursor(index, SpaceImpl.Z_MIN);
-                Record record;
+                Cursor<TestRecord> cursor = newCursor(index, SpaceImpl.Z_MIN);
+                TestRecord record;
                 int id = 0;
                 while ((record = cursor.next()) != null) {
                     assertEquals(z(id * GAP), record.z());
@@ -265,7 +261,7 @@ public abstract class IndexTestBase
             // Same thing, backwards
             {
                 load(index, nObjects, 1);
-                Cursor cursor = newCursor(index, SpaceImpl.Z_MAX);
+                Cursor<TestRecord> cursor = newCursor(index, SpaceImpl.Z_MAX);
                 Record record;
                 int id = nObjects;
                 while ((record = cursor.previous()) != null) {
@@ -280,7 +276,7 @@ public abstract class IndexTestBase
             // Skip every other
             {
                 load(index, nObjects, 1);
-                Cursor cursor = newCursor(index, SpaceImpl.Z_MIN);
+                Cursor<TestRecord> cursor = newCursor(index, SpaceImpl.Z_MIN);
                 Record record;
                 int id = 0;
                 while ((record = cursor.next()) != null) {
@@ -306,7 +302,7 @@ public abstract class IndexTestBase
             // Skip every other going backward
             {
                 load(index, nObjects, 1);
-                Cursor cursor = newCursor(index, SpaceImpl.Z_MAX);
+                Cursor<TestRecord> cursor = newCursor(index, SpaceImpl.Z_MAX);
                 Record record;
                 int id = nObjects;
                 while ((record = cursor.previous()) != null) {
@@ -336,8 +332,8 @@ public abstract class IndexTestBase
                 load(index, nObjects, 1);
                 // Get copy of keys for control
                 long[] control = new long[nObjects];
-                Cursor cursor = newCursor(index, SpaceImpl.Z_MIN);
-                Record record;
+                Cursor<TestRecord> cursor = newCursor(index, SpaceImpl.Z_MIN);
+                TestRecord record;
                 int c = 0;
                 while ((record = cursor.next()) != null) {
                     control[c++] = record.z();
@@ -395,7 +391,7 @@ public abstract class IndexTestBase
         }
     }
 
-    private void dumpContents(Index index, String label)
+    private void dumpContents(Index<TestRecord> index, String label)
         throws IOException, InterruptedException
     {
         print(label);
@@ -413,38 +409,37 @@ public abstract class IndexTestBase
         return SpaceImpl.z(x << SpaceImpl.LENGTH_BITS, SpaceImpl.MAX_Z_BITS);
     }
 
-    private RecordFilter recordFilter(final long z, final int soid)
+    private RecordFilter<TestRecord> recordFilter(final long z, final int soid)
     {
         return
-            new RecordFilter()
+            new RecordFilter<TestRecord>()
             {
                 @Override
-                public boolean select(Record record)
+                public boolean select(TestRecord record)
                 {
                     assert record.z() == z;
-                    TestRecord testRecord = (TestRecord) record;
-                    return testRecord.soid() == soid;
+                    return record.soid() == soid;
                 }
             };
     }
 
-    private Cursor newCursor(Index index, long z) throws IOException, InterruptedException
+    private Cursor<TestRecord> newCursor(Index<TestRecord> index, long z) throws IOException, InterruptedException
     {
-        Cursor cursor = index.cursor();
-        Record key= index.newKeyRecord();
+        Cursor<TestRecord> cursor = index.cursor();
+        TestRecord key= index.newKeyRecord();
         key.z(z);
         cursor.goTo(key);
         return cursor;
     }
 
-    private TestRecord key(Index index, long z)
+    private TestRecord key(Index<TestRecord> index, long z)
     {
         return key(index, z, 0);
     }
 
-    private TestRecord key(Index index, long z, int soid)
+    private TestRecord key(Index<TestRecord> index, long z, int soid)
     {
-        TestRecord key = (TestRecord) index.newKeyRecord();
+        TestRecord key = index.newKeyRecord();
         key.z(z);
         key.soid(soid);
         return key;

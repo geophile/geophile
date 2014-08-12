@@ -70,9 +70,6 @@ public class TestRecord extends BaseRecord
 
     public void soid(int newId)
     {
-        if (newId < 0) {
-            throw new IllegalArgumentException();
-        }
         soid = newId;
     }
 

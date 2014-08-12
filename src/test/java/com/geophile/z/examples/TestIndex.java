@@ -4,16 +4,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.space;
+package com.geophile.z.examples;
 
-import com.geophile.z.Index;
-import com.geophile.z.TestIndex;
+import com.geophile.z.index.tree.TreeIndex;
 
-public class SpatialIndexTest extends SpatialIndexTestBase
+public class TestIndex extends TreeIndex<RecordWithId>
 {
     @Override
-    public Index newIndex()
+    public RecordWithId newRecord()
     {
-        return new TestIndex();
+        return new RecordWithId();
     }
 }

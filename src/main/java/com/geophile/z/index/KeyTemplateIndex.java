@@ -10,39 +10,39 @@ import com.geophile.z.*;
 
 import java.io.IOException;
 
-public class KeyTemplateIndex extends Index
+public class KeyTemplateIndex<RECORD extends Record> extends Index<RECORD>
 {
     // Index interface
 
     @Override
-    public void add(Record record)
+    public void add(RECORD record)
         throws IOException, InterruptedException, DuplicateRecordException
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean remove(long z, RecordFilter recordFilter) throws IOException, InterruptedException
+    public boolean remove(long z, RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Cursor cursor() throws IOException, InterruptedException
+    public Cursor<RECORD> cursor() throws IOException, InterruptedException
     {
         return index.cursor();
     }
 
     @Override
-    public Record newRecord()
+    public RECORD newRecord()
     {
         return index.newRecord();
     }
 
     @Override
-    public Record newKeyRecord()
+    public RECORD newKeyRecord()
     {
-        Record keyRecord = index.newRecord();
+        RECORD keyRecord = index.newRecord();
         keyTemplate.copyTo(keyRecord);
         return keyRecord;
     }
@@ -54,14 +54,14 @@ public class KeyTemplateIndex extends Index
     }
 
     @Override
-    public Index restrict(Record keyTemplate)
+    public Index<RECORD> restrict(RECORD keyTemplate)
     {
         throw new UnsupportedOperationException();
     }
 
     // KeyTemplateIndex interface
 
-    public KeyTemplateIndex(Index index, Record keyTemplate)
+    public KeyTemplateIndex(Index<RECORD> index, RECORD keyTemplate)
     {
         this.index = index;
         this.keyTemplate = keyTemplate;
@@ -69,6 +69,6 @@ public class KeyTemplateIndex extends Index
 
     // Object state
 
-    private final Index index;
-    private final Record keyTemplate;
+    private final Index<RECORD> index;
+    private final RECORD keyTemplate;
 }

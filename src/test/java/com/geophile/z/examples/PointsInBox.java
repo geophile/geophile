@@ -27,7 +27,7 @@ public class PointsInBox
     private void run() throws IOException, InterruptedException
     {
         // Load spatial index with points
-        SpatialIndex points = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex());
+        SpatialIndex points = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         for (int i = 0; i < N_POINTS; i++) {
             points.add(new RecordWithId(randomPoint(), i));
         }

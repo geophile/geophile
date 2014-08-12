@@ -20,13 +20,13 @@ import com.geophile.z.TestRecord;
 public class SortedArrayTest extends IndexTestBase
 {
     @Override
-    protected Index newIndex()
+    protected Index<TestRecord> newIndex()
     {
         return
-            new SortedArray()
+            new SortedArray<TestRecord>()
             {
                 @Override
-                public Record newRecord()
+                public TestRecord newRecord()
                 {
                     return new TestRecord();
                 }

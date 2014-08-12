@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 // Like TreeIndex, but with serialization of spatial objects
 
-public class TreeWithSerialization extends Index
+public class TreeWithSerialization extends Index<SerializedRecord>
 {
     // Object interface
 
@@ -28,9 +28,9 @@ public class TreeWithSerialization extends Index
     // Index interface
 
     @Override
-    public void add(Record record)
+    public void add(SerializedRecord record)
     {
-        SerializedRecord copy = (SerializedRecord) newRecord();
+        SerializedRecord copy = newRecord();
         record.copyTo(copy);
         copy.serialize();
         boolean added = tree.add(copy);
@@ -40,13 +40,13 @@ public class TreeWithSerialization extends Index
     }
 
     @Override
-    public boolean remove(long z, RecordFilter recordFilter)
+    public boolean remove(long z, RecordFilter<SerializedRecord> recordFilter)
     {
         boolean foundRecord = false;
         boolean zMatch = true;
         Iterator<SerializedRecord> iterator = tree.tailSet(key(z)).iterator();
         while (zMatch && iterator.hasNext() && !foundRecord) {
-            Record record = iterator.next();
+            SerializedRecord record = iterator.next();
             if (record.z() == z) {
                 foundRecord = recordFilter.select(record);
             } else {
@@ -60,13 +60,13 @@ public class TreeWithSerialization extends Index
     }
 
     @Override
-    public Cursor cursor()
+    public Cursor<SerializedRecord> cursor()
     {
         return new TreeWithSerializationCursor(this);
     }
 
     @Override
-    public Record newRecord()
+    public SerializedRecord newRecord()
     {
         return new SerializedRecord(serializer);
     }
@@ -95,11 +95,11 @@ public class TreeWithSerialization extends Index
     // Class state
 
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
-    private static final Comparator<TestRecord> RECORD_COMPARATOR =
-        new Comparator<TestRecord>()
+    private static final Comparator<SerializedRecord> RECORD_COMPARATOR =
+        new Comparator<SerializedRecord>()
         {
             @Override
-            public int compare(TestRecord r, TestRecord s)
+            public int compare(SerializedRecord r, SerializedRecord s)
             {
                 return r.keyCompare(s);
             }

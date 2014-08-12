@@ -32,7 +32,7 @@ import java.io.IOException;
  *
  */
 
-public abstract class Index
+public abstract class Index<RECORD extends Record>
 {
     /**
      * Adds a spatial object to this index, associated with the given z-value.
@@ -41,7 +41,7 @@ public abstract class Index
      * @throws DuplicateRecordException if (z, spatialObject.id()) is already present. This exception cannot
      *         be thrown by an index that does blind updates.
      */
-    public abstract void add(Record record)
+    public abstract void add(RECORD record)
         throws IOException, InterruptedException, DuplicateRecordException;
 
     /**
@@ -52,17 +52,17 @@ public abstract class Index
      * @return false if this index does blind updates. Otherwise, the return value is true
      *               if the record with key (z, spatialObject.id()) was found and removed, false otherwise.
      */
-    public abstract boolean remove(long z, RecordFilter recordFilter) throws IOException, InterruptedException;
+    public abstract boolean remove(long z, RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException;
 
     /**
      * Returns a {@link Cursor} positioned at the given z-value.
      * @return A {@link Cursor} postioned at the given z-value.
      */
-    public abstract Cursor cursor() throws IOException, InterruptedException;
+    public abstract Cursor<RECORD> cursor() throws IOException, InterruptedException;
 
-    public abstract Record newRecord();
+    public abstract RECORD newRecord();
 
-    public Record newKeyRecord()
+    public RECORD newKeyRecord()
     {
         return newRecord();
     }
@@ -76,8 +76,8 @@ public abstract class Index
         return false;
     }
 
-    public Index restrict(Record keyTemplate)
+    public Index<RECORD> restrict(RECORD keyTemplate)
     {
-        return new KeyTemplateIndex(this, keyTemplate);
+        return new KeyTemplateIndex<>(this, keyTemplate);
     }
 }

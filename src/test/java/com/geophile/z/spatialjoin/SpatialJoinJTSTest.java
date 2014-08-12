@@ -25,7 +25,6 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
-import com.geophile.z.index.tree.TreeIndex;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.junit.Test;
 
@@ -97,9 +96,9 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     }
 
     @Override
-    protected Index newIndex()
+    protected Index<TestRecord> newIndex()
     {
-        return new TreeIndex();
+        return new TestIndex();
     }
 
     @Override

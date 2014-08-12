@@ -26,8 +26,8 @@ public class OverlappingPairs
     private void run() throws IOException, InterruptedException
     {
         // Load spatial indexes with boxes
-        SpatialIndex left = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex());
-        SpatialIndex right = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex());
+        SpatialIndex left = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
+        SpatialIndex right = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         for (int i = 0; i < N_BOXES; i++) {
             left.add(new RecordWithId(randomBox(), i));
             right.add(new RecordWithId(randomBox(), i));

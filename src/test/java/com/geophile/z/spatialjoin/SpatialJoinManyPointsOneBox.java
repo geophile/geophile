@@ -42,7 +42,8 @@ public class SpatialJoinManyPointsOneBox
                         @Override
                         public Object action() throws IOException, InterruptedException
                         {
-                            SpatialIndex queryIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray());
+                            SpatialIndex queryIndex =
+                                SpatialIndex.newSpatialIndex(SPACE, new SortedArray.OfBaseRecord());
                             queryIndex.add(new TestRecord(query));
                             for (int trial = 0; trial < TRIALS; trial++) {
                                 Iterator<Pair> iterator = spatialJoin.iterator(queryIndex, dataIndex);
@@ -81,7 +82,7 @@ public class SpatialJoinManyPointsOneBox
     private SpatialIndex loadSpatialIndex(int n, SpatialObjectGenerator generator)
         throws IOException, InterruptedException
     {
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray());
+        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray.OfBaseRecord());
         for (int i = 0; i < n; i++) {
             spatialIndex.add(new TestRecord(generator.newSpatialObject(), i));
         }

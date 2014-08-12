@@ -86,7 +86,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     @Override
     protected Index newIndex()
     {
-        return new TreeIndex();
+        return new TestIndex();
     }
 
     @Override
@@ -125,7 +125,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
 
     protected SpatialIndex loadPoints(int n) throws IOException, InterruptedException
     {
-        SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex(), SpatialIndex.Options.SINGLE_CELL);
+        SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, newIndex(), SpatialIndex.Options.SINGLE_CELL);
         for (int i = 0; i < n; i++) {
             index.add(new TestRecord(testPoint(), i));
         }
@@ -134,7 +134,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
 
     protected SpatialIndex loadOneBox(BoxGenerator boxGenerator) throws IOException, InterruptedException
     {
-        SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, new TreeIndex(), SpatialIndex.Options.DEFAULT);
+        SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, newIndex(), SpatialIndex.Options.DEFAULT);
         index.add(new TestRecord(boxGenerator.newSpatialObject()));
         return index;
     }

@@ -7,7 +7,6 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
-import com.geophile.z.index.tree.TreeIndex;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -34,12 +33,12 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0, 0},
                                                             new double[]{1000, 1000, 1000},
                                                             new int[]{10, 10, 10}),
-                                             new TreeIndex());
+                                             newIndex());
             SpatialIndex rightSpatialIndex =
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                             new double[]{1000, 1000},
                                                             new int[]{10, 10}),
-                                             new TreeIndex());
+                                             newIndex());
             SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
             try {
                 spatialJoin.iterator(leftSpatialIndex, rightSpatialIndex);
@@ -54,12 +53,12 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                             new double[]{1000, 1000},
                                                             new int[]{10, 10}),
-                                             new TreeIndex());
+                                             newIndex());
             SpatialIndex rightSpatialIndex =
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                             new double[]{2000, 1000},
                                                             new int[]{10, 10}),
-                                             new TreeIndex());
+                                             newIndex());
             SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
             try {
                 spatialJoin.iterator(leftSpatialIndex, rightSpatialIndex);
@@ -77,12 +76,12 @@ public class SpatialJoinTest extends SpatialJoinTestBase
             SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                         new double[]{1000, 1000},
                                                         new int[]{10, 10}),
-                                         new TreeIndex());
+                                         newIndex());
         SpatialIndex rightSpatialIndex =
             SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                         new double[]{1000, 1000},
                                                         new int[]{10, 10}),
-                                         new TreeIndex());
+                                         newIndex());
         SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         spatialJoin.iterator(leftSpatialIndex, rightSpatialIndex);
     }
@@ -131,9 +130,9 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     }
 
     @Override
-    protected Index newIndex()
+    protected Index<TestRecord> newIndex()
     {
-        return new TreeIndex();
+        return new TestIndex();
     }
 
     @Override
@@ -162,7 +161,7 @@ public class SpatialJoinTest extends SpatialJoinTestBase
 
     private TestInput newTestInput(int n, BoxGenerator boxGenerator) throws IOException, InterruptedException
     {
-        Index index = new TreeIndex();
+        Index<TestRecord> index = newIndex();
         SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         TestInput testInput = new TestInput(spatialIndex, boxGenerator.description());
         load(n, boxGenerator, testInput);

@@ -40,7 +40,7 @@ public class SpatialJoinImpl extends SpatialJoin
     public Iterator<Record> iterator(SpatialObject query, SpatialIndex dataSpatialIndex)
         throws IOException, InterruptedException
     {
-        SortedArray queryIndex = new SortedArray();
+        SortedArray queryIndex = new SortedArray.OfBaseRecord();
         SpatialIndex querySpatialIndex = SpatialIndex.newSpatialIndex(dataSpatialIndex.space(),
                                                                       queryIndex,
                                                                       query.maxZ() == 1

@@ -6,7 +6,13 @@
 
 package com.geophile.z;
 
-public interface RecordFilter<RECORD extends Record>
+import com.geophile.z.index.tree.TreeIndex;
+
+public class TestIndex extends TreeIndex<TestRecord>
 {
-    boolean select(RECORD record);
+    @Override
+    public TestRecord newRecord()
+    {
+        return new TestRecord();
+    }
 }

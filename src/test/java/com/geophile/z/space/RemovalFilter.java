@@ -10,10 +10,10 @@ import com.geophile.z.RecordFilter;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.Record;
 
-class RemovalFilter implements RecordFilter
+class RemovalFilter<RECORD extends Record> implements RecordFilter<RECORD>
 {
     @Override
-    public boolean select(Record record)
+    public boolean select(RECORD record)
     {
         return record.spatialObject().equals(target);
     }

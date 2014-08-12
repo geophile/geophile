@@ -11,24 +11,24 @@ import com.geophile.z.Record;
 
 import java.io.IOException;
 
-public class SortedArrayCursor extends Cursor
+public class SortedArrayCursor<RECORD extends Record> extends Cursor<RECORD>
 {
     // Cursor interface
 
     @Override
-    public Record next() throws IOException, InterruptedException
+    public RECORD next() throws IOException, InterruptedException
     {
         return neighbor(true);
     }
 
     @Override
-    public Record previous() throws IOException, InterruptedException
+    public RECORD previous() throws IOException, InterruptedException
     {
         return neighbor(false);
     }
 
     @Override
-    public void goTo(Record key)
+    public void goTo(RECORD key)
     {
         this.startAt = key;
         state(State.NEVER_USED);
@@ -51,7 +51,7 @@ public class SortedArrayCursor extends Cursor
 
     // SortedArrayCursor interface
 
-    public SortedArrayCursor(SortedArray sortedArray)
+    public SortedArrayCursor(SortedArray<RECORD> sortedArray)
     {
         super(sortedArray);
         this.sortedArray = sortedArray;
@@ -59,7 +59,7 @@ public class SortedArrayCursor extends Cursor
 
     // For use by this class
 
-    private Record neighbor(boolean forwardMove) throws IOException, InterruptedException
+    private RECORD neighbor(boolean forwardMove) throws IOException, InterruptedException
     {
         switch (state()) {
             case NEVER_USED:
@@ -75,7 +75,7 @@ public class SortedArrayCursor extends Cursor
                 return null;
         }
         if (position != DONE) {
-            Record record = record(position);
+            RECORD record = record(position);
             current(record);
             record.copyTo(startAt);
             lastReportedPosition = position;
@@ -119,9 +119,9 @@ public class SortedArrayCursor extends Cursor
         forward = forwardMove;
     }
 
-    private Record record(int i)
+    private RECORD record(int i)
     {
-        return (Record) sortedArray.records[i];
+        return (RECORD) sortedArray.records[i];
     }
 
     // Object state
@@ -129,8 +129,8 @@ public class SortedArrayCursor extends Cursor
     private static final int DONE = -1;
     private static final int UNDEFINED = -1;
 
-    private final SortedArray sortedArray;
-    private Record startAt;
+    private final SortedArray<RECORD> sortedArray;
+    private RECORD startAt;
     private boolean forward;
     private int position;
     // Position of the last record returned via next() or previous(). Needed to support deleteCurrent().

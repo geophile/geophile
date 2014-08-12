@@ -9,6 +9,7 @@ package com.geophile.z.index;
 import com.geophile.z.Cursor;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
+import com.geophile.z.examples.TestIndex;
 import com.geophile.z.index.tree.TreeIndex;
 import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;
@@ -174,7 +175,7 @@ public class CursorTest
 
     private Index testIndex(int n) throws IOException, InterruptedException
     {
-        Index index = new TreeIndex();
+        Index index = new TestIndex();
         assertTrue(GAP > 1);
         // Populate map with keys 0, GAP, ..., GAP * (n - 1)
         for (int i = 0; i < n; i++) {

@@ -14,7 +14,6 @@ package com.geophile.z.space;
 
 import com.geophile.z.*;
 import com.geophile.z.Record;
-import com.geophile.z.index.tree.TreeIndex;
 import com.geophile.z.spatialjoin.SpatialJoinFilter;
 import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
@@ -35,7 +34,7 @@ public class SpatialIndexJTSPointAndBoxTest
     @Test
     public void testRetrieval() throws IOException, InterruptedException
     {
-        TreeIndex index = new TreeIndex();
+        Index index = newIndex();
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
@@ -60,8 +59,8 @@ public class SpatialIndexJTSPointAndBoxTest
 
     @Test
     public void testRemoveAll() throws IOException, InterruptedException
-    {
-        TreeIndex index = new TreeIndex();
+    {;
+        Index index = newIndex();
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
@@ -93,7 +92,7 @@ public class SpatialIndexJTSPointAndBoxTest
     @Test
     public void testRemoveSome() throws IOException, InterruptedException
     {
-        TreeIndex index = new TreeIndex();
+        Index index = newIndex();
         spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
@@ -130,8 +129,8 @@ public class SpatialIndexJTSPointAndBoxTest
     private void test(int xLo, int xHi, int yLo, int yHi, Filter filter) throws IOException, InterruptedException
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
-        TreeIndex boxTreeIndex = new TreeIndex();
-        SpatialIndex query = new SpatialIndexImpl(SPACE, boxTreeIndex, SpatialIndex.Options.DEFAULT);
+        TestIndex boxTestIndex = new TestIndex();
+        SpatialIndex query = new SpatialIndexImpl(SPACE, boxTestIndex, SpatialIndex.Options.DEFAULT);
         query.add(new TestRecord(box));
         Iterator<Pair> iterator =
             SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
@@ -172,6 +171,11 @@ public class SpatialIndexJTSPointAndBoxTest
             yLo = random.nextInt(Y_MAX);
             yHi = random.nextInt(Y_MAX - yLo);
         } while (yHi <= yLo);
+    }
+    
+    private static Index newIndex()
+    {
+        return new TestIndex();
     }
 
     private static final int SEED = 123456;

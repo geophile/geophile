@@ -131,7 +131,7 @@ public abstract class SpatialJoinTestBase
 
     protected abstract Space space();
 
-    protected abstract Index newIndex();
+    protected abstract Index<TestRecord> newIndex();
 
     protected void commit()
     {

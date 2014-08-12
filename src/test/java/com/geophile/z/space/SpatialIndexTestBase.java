@@ -32,12 +32,15 @@ public abstract class SpatialIndexTestBase
     @Test
     public void testRetrieval() throws Exception
     {
-        Index index = newIndex();
+        Index<? extends TestRecord> index = newIndex();
         SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(new TestRecord(new Point(x, y), id++));
+                TestRecord record = index.newRecord();
+                record.spatialObject(new Point(x, y));
+                record.soid(id++);
+                spatialIndex.add(record);
             }
         }
         commitTransaction();
@@ -60,12 +63,15 @@ public abstract class SpatialIndexTestBase
     @Test
     public void testRemoveAll() throws Exception
     {
-        Index index = newIndex();
+        Index<? extends TestRecord> index = newIndex();
         SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(new TestRecord(new Point(x, y), id++));
+                TestRecord record = index.newRecord();
+                record.spatialObject(new Point(x, y));
+                record.soid(id++);
+                spatialIndex.add(record);
             }
         }
         commitTransaction();
@@ -98,12 +104,15 @@ public abstract class SpatialIndexTestBase
     @Test
     public void testRemoveSome() throws Exception
     {
-        Index index = newIndex();
+        Index<? extends TestRecord> index = newIndex();
         SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(new TestRecord(new Point(x, y), id++));
+                TestRecord record = index.newRecord();
+                record.spatialObject(new Point(x, y));
+                record.soid(id++);
+                spatialIndex.add(record);
             }
         }
         commitTransaction();
@@ -155,11 +164,11 @@ public abstract class SpatialIndexTestBase
     {
         final int COPIES = 10;
         TestRecord[] records = new TestRecord[COPIES];
-        Index index = newIndex();
+        Index<? extends TestRecord> index = newIndex();
         SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
         Box box = new Box(250, 750, 250, 750);
         for (int c = 0; c < COPIES; c++) {
-            TestRecord record = (TestRecord) index.newRecord();
+            TestRecord record = index.newRecord();
             record.spatialObject(box);
             record.soid(c);
             spatialIndex.add(record);
@@ -181,12 +190,12 @@ public abstract class SpatialIndexTestBase
         }
         for (int c = 0; c < COPIES; c++) {
             final TestRecord victim = records[c];
-            RecordFilter recordFilter = new RecordFilter()
+            RecordFilter<TestRecord> recordFilter = new RecordFilter<TestRecord>()
             {
                 @Override
-                public boolean select(Record record)
+                public boolean select(TestRecord record)
                 {
-                    return ((TestRecord) record).soid() == victim.soid();
+                    return record.soid() == victim.soid();
                 }
             };
             assertTrue(spatialIndex.remove(box, recordFilter));
@@ -196,7 +205,7 @@ public abstract class SpatialIndexTestBase
         commitTransaction();
     }
 
-    public abstract Index newIndex() throws Exception;
+    public abstract Index<? extends TestRecord> newIndex() throws Exception;
 
     public void commitTransaction() throws Exception
     {
@@ -207,9 +216,10 @@ public abstract class SpatialIndexTestBase
                       Filter filter) throws Exception
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
-        Index index = newIndex();
+        Index<? extends TestRecord> index = newIndex();
         SpatialIndex query = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
-        TestRecord record = new TestRecord(box);
+        TestRecord record = index.newRecord();
+        record.spatialObject(box);
         query.add(record);
         Iterator<Pair> iterator =
             SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);

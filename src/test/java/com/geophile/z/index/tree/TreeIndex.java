@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A TreeIndex is not safe for use for simultaneous use by multiple threads.
  */
 
-public class TreeIndex extends Index
+public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
 {
     // Object interface
 
@@ -31,9 +31,9 @@ public class TreeIndex extends Index
     // Index interface
 
     @Override
-    public void add(Record record)
+    public void add(RECORD record)
     {
-        TestRecord copy = (TestRecord) newRecord();
+        RECORD copy = newRecord();
         record.copyTo(copy);
         boolean added = tree.add(copy);
         if (!added) {
@@ -42,13 +42,13 @@ public class TreeIndex extends Index
     }
 
     @Override
-    public boolean remove(long z, RecordFilter recordFilter)
+    public boolean remove(long z, RecordFilter<RECORD> recordFilter)
     {
         boolean foundRecord = false;
         boolean zMatch = true;
-        Iterator<TestRecord> iterator = tree.tailSet(key(z)).iterator();
+        Iterator<RECORD> iterator = tree.tailSet(key(z)).iterator();
         while (zMatch && iterator.hasNext() && !foundRecord) {
-            Record record = iterator.next();
+            RECORD record = iterator.next();
             if (record.z() == z) {
                 foundRecord = recordFilter.select(record);
             } else {
@@ -62,16 +62,13 @@ public class TreeIndex extends Index
     }
 
     @Override
-    public Cursor cursor()
+    public Cursor<RECORD> cursor()
     {
-        return new TreeIndexCursor(this);
+        return new TreeIndexCursor<RECORD>(this);
     }
 
     @Override
-    public Record newRecord()
-    {
-        return new TestRecord();
-    }
+    public abstract RECORD newRecord();
 
     // TreeIndex
 
@@ -81,16 +78,16 @@ public class TreeIndex extends Index
 
     // For use by this package
 
-    TreeSet<TestRecord> tree()
+    TreeSet<RECORD> tree()
     {
         return tree;
     }
 
     // For use by this class
 
-    private TestRecord key(long z)
+    private RECORD key(long z)
     {
-        TestRecord keyRecord = new TestRecord(null, 0);
+        RECORD keyRecord = newRecord();
         keyRecord.z(z);
         return keyRecord;
     }
@@ -98,11 +95,11 @@ public class TreeIndex extends Index
     // Class state
 
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
-    private static final Comparator<TestRecord> RECORD_COMPARATOR =
-        new Comparator<TestRecord>()
+    private static final Comparator<Record> RECORD_COMPARATOR =
+        new Comparator<Record>()
         {
             @Override
-            public int compare(TestRecord r, TestRecord s)
+            public int compare(Record r, Record s)
             {
                 return r.keyCompare(s);
             }
@@ -111,5 +108,5 @@ public class TreeIndex extends Index
     // Object state
 
     private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
-    private final TreeSet<TestRecord> tree = new TreeSet<>(RECORD_COMPARATOR);
+    private final TreeSet<RECORD> tree = new TreeSet<>(RECORD_COMPARATOR);
 }

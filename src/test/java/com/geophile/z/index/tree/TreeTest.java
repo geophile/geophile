@@ -14,13 +14,13 @@ import com.geophile.z.index.IndexTestBase;
 public class TreeTest extends IndexTestBase
 {
     @Override
-    protected Index newIndex()
+    protected Index<TestRecord> newIndex()
     {
         return
-            new TreeIndex()
+            new TreeIndex<TestRecord>()
             {
                 @Override
-                public Record newRecord()
+                public TestRecord newRecord()
                 {
                     return new TestRecord();
                 }
