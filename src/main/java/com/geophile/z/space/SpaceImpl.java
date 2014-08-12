@@ -64,7 +64,7 @@ public class SpaceImpl extends Space
         return eq;
     }
 
-    // SpaceImpl interface
+    // Space interface
 
     public int dimensions()
     {
@@ -84,23 +84,6 @@ public class SpaceImpl extends Space
     }
 
     @Override
-    public long spatialIndexKey(double[] point)
-    {
-        if (point.length != dimensions) {
-            throw new IllegalArgumentException(Arrays.toString(point));
-        }
-        long[] zPoint = new long[point.length];
-        for (int d = 0; d < dimensions; d++) {
-            zPoint[d] = appToZ(d, point[d]);
-        }
-        return shuffle(zPoint);
-    }
-
-    public long shuffle(long x[])
-    {
-        return shuffle(x, zBits);
-    }
-
     public void decompose(SpatialObject spatialObject, long[] zs)
     {
         if (!spatialObject.containedBy(this)) {
@@ -224,28 +207,27 @@ public class SpaceImpl extends Space
         } while (merge);
     }
 
+    // SpaceImpl interface
+
+    public long shuffle(long x[])
+    {
+        return shuffle(x, zBits);
+    }
+
     public long shuffle(long x[], int length)
     {
         long z = 0;
         for (int d = 0; d < dimensions; d++) {
             long xd = x[d];
             switch (xBytes[d]) {
-                case 8:
-                    z |= shuffle7[d][(int) (xd >>> 56) & 0xff];
-                case 7:
-                    z |= shuffle6[d][(int) (xd >>> 48) & 0xff];
-                case 6:
-                    z |= shuffle5[d][(int) (xd >>> 40) & 0xff];
-                case 5:
-                    z |= shuffle4[d][(int) (xd >>> 32) & 0xff];
-                case 4:
-                    z |= shuffle3[d][(int) (xd >>> 24) & 0xff];
-                case 3:
-                    z |= shuffle2[d][(int) (xd >>> 16) & 0xff];
-                case 2:
-                    z |= shuffle1[d][(int) (xd >>> 8) & 0xff];
-                case 1:
-                    z |= shuffle0[d][(int) (xd) & 0xff];
+                case 8: z |= shuffle7[d][(int) (xd >>> 56) & 0xff];
+                case 7: z |= shuffle6[d][(int) (xd >>> 48) & 0xff];
+                case 6: z |= shuffle5[d][(int) (xd >>> 40) & 0xff];
+                case 5: z |= shuffle4[d][(int) (xd >>> 32) & 0xff];
+                case 4: z |= shuffle3[d][(int) (xd >>> 24) & 0xff];
+                case 3: z |= shuffle2[d][(int) (xd >>> 16) & 0xff];
+                case 2: z |= shuffle1[d][(int) (xd >>> 8) & 0xff];
+                case 1: z |= shuffle0[d][(int) (xd) & 0xff];
             }
         }
         return z | length;
@@ -491,7 +473,6 @@ public class SpaceImpl extends Space
     public static final int MAX_Z_BITS = 57; // MSB is unused. 6 LSBs contain the number of z-value bits.
     public static final long Z_MIN = 0x0L;
     public static final long Z_MAX = ((1L << MAX_Z_BITS) - 1) << LENGTH_BITS | LENGTH_MASK;
-    public static final long Z_NULL = -1L;
 
     // Object state
 

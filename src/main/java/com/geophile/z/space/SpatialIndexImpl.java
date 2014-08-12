@@ -52,7 +52,7 @@ public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD
         RECORD key = index.newKeyRecord();
         for (int i = 0; i < zs.length; i++) {
             long z = zs[i];
-            if (z != SpaceImpl.Z_NULL) {
+            if (z != Space.Z_NULL) {
                 key.z(z);
                 cursor.goTo(key);
                 boolean more = true;

@@ -7,7 +7,6 @@
 package com.geophile.z.spatialobject.jts;
 
 import com.geophile.z.Space;
-import com.geophile.z.SpatialObject;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 

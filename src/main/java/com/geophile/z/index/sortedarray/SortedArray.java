@@ -6,7 +6,10 @@
 
 package com.geophile.z.index.sortedarray;
 
-import com.geophile.z.*;
+import com.geophile.z.Cursor;
+import com.geophile.z.Index;
+import com.geophile.z.Record;
+import com.geophile.z.RecordFilter;
 import com.geophile.z.index.BaseRecord;
 
 import java.util.Arrays;

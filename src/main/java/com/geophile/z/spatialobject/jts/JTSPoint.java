@@ -1,12 +1,10 @@
 package com.geophile.z.spatialobject.jts;
 
 import com.geophile.z.Space;
-import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import com.geophile.z.space.SpaceImpl;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Point;
 
 public class JTSPoint extends JTSBase

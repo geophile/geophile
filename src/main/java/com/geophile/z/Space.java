@@ -10,9 +10,8 @@ import com.geophile.z.space.ApplicationSpace;
 import com.geophile.z.space.SpaceImpl;
 
 /**
- * A Space represents the space in which {@link SpatialObject}s reside. The lower bound
- * of each dimension is zero, and the upper bounds are given when the Space is created. Conceptually, a Space is a
- * multi-dimensional grid of cells.
+ * A Space represents the space in which {@link SpatialObject}s reside.
+ * Conceptually, a Space is a multi-dimensional grid of cells.
  */
 
 public abstract class Space
@@ -24,14 +23,14 @@ public abstract class Space
     public abstract int dimensions();
 
     /**
-     * The low coordinate of dimension d.
+     * The low bound of dimension d.
      * @param d A dimension of the space, 0 <= d < dimensions()
      * @return The low coordinate of dimension d.
      */
     public abstract double lo(int d);
 
     /**
-     * The high coordinate of dimension d.
+     * The high bound of dimension d.
      * @param d A dimension of the space, 0 <= d < dimensions()
      * @return The high coordinate of dimension d.
      */
@@ -39,41 +38,14 @@ public abstract class Space
 
     /**
      * Decompose spatialObject into z-values, stored in the zs array. The maximum number of z-values is
-     * zs.length. If fewer are needed, then the unused array positions are denoted by -1 at the end of the array.
+     * zs.length. If fewer are needed, then the unused array positions are denoted by Z_NULL at the end of the array.
      * @param spatialObject The SpatialObject to be decomposed.
      * @param zs The array containing the z-values resulting from the decomposition.
      */
     public abstract void decompose(SpatialObject spatialObject, long[] zs);
 
     /**
-     * Returns the z-value for a point in the application space.
-     * @param point Point coordinates.
-     * @return z-value of the point.
-     */
-    public abstract long spatialIndexKey(double[] point);
-
-    /**
-     * The low point of the given z-value.
-     * @param z A z-value
-     * @return low point of the given z-value
-     */
-    public static long zLo(long z)
-    {
-        return SpaceImpl.zLo(z);
-    }
-
-    /**
-     * The high point of the given z-value.
-     * @param z A z-value
-     * @return high point of the given z-value
-     */
-    public static long zHi(long z)
-    {
-        return SpaceImpl.zHi(z);
-    }
-
-    /**
-     * Creates a {@link Space}.
+     * Creates a Space.
      * The space has xBits.length dimensions. A coordinate of dimension d
      * must lie between 0 inclusive and 2**xBits[d] exclusive. The sum of the xBits must not exceed 57.
      * @param lo Low coordinates of the space.
@@ -86,7 +58,7 @@ public abstract class Space
     }
 
     /**
-     * Creates a {@link Space}, providing a greater degree of control over performance than
+     * Creates a Space, providing a greater degree of control over performance than
      * {@link Space#newSpace(double[], double[], int[])}.
      * The space has xBits.length dimensions. A coordinate of dimension d
      * must lie between 0 inclusive and 2**xBits[d] exclusive.
@@ -108,10 +80,18 @@ public abstract class Space
      */
     public static final int MAX_DIMENSIONS = 6;
 
+    // For use by subclasses
+
     protected Space(double[] lo, double[] hi)
     {
         this.applicationSpace = new ApplicationSpace(lo, hi);
     }
+
+    // Class state
+
+    public static final long Z_NULL = -1;
+
+    // Object state
 
     protected ApplicationSpace applicationSpace;
 }

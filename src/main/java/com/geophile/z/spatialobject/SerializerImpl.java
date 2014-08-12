@@ -6,9 +6,9 @@
 
 package com.geophile.z.spatialobject;
 
-import com.geophile.z.SpatialObjectSerializer;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.SpatialObjectException;
+import com.geophile.z.SpatialObjectSerializer;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
