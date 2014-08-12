@@ -234,7 +234,7 @@ public abstract class SpatialJoinTestBase
         for (TestRecord r : leftInput.records()) {
             for (TestRecord s : rightInput.records()) {
                 if (overlap(r.spatialObject(), s.spatialObject())) {
-                    expected.add(new Pair<TestRecord, TestRecord>(r, s));
+                    expected.add(new Pair<>(r, s));
                 }
             }
         }

@@ -32,8 +32,9 @@ public abstract class SpatialIndexTestBase
     @Test
     public void testRetrieval() throws Exception
     {
-        Index<? extends TestRecord> index = newIndex();
-        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Index<TestRecord> index = newIndex();
+        SpatialIndexImpl<TestRecord> spatialIndex =
+            new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
@@ -63,8 +64,8 @@ public abstract class SpatialIndexTestBase
     @Test
     public void testRemoveAll() throws Exception
     {
-        Index<? extends TestRecord> index = newIndex();
-        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Index<TestRecord> index = newIndex();
+        SpatialIndexImpl<TestRecord> spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
@@ -76,7 +77,7 @@ public abstract class SpatialIndexTestBase
         }
         commitTransaction();
         // Remove everything
-        RemovalFilter removalFilter = new RemovalFilter();
+        RemovalFilter<TestRecord> removalFilter = new RemovalFilter<>();
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 Point point = new Point(x, y);
@@ -104,8 +105,8 @@ public abstract class SpatialIndexTestBase
     @Test
     public void testRemoveSome() throws Exception
     {
-        Index<? extends TestRecord> index = newIndex();
-        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Index<TestRecord> index = newIndex();
+        SpatialIndexImpl<TestRecord> spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
@@ -117,7 +118,7 @@ public abstract class SpatialIndexTestBase
         }
         commitTransaction();
         // Remove (x, y), for odd x/10 and even y/10
-        RemovalFilter removalFilter = new RemovalFilter();
+        RemovalFilter<TestRecord> removalFilter = new RemovalFilter<>();
         for (long x = 0; x < X_MAX; x += 10) {
             if ((x / 10) % 2 == 1) {
                 for (long y = 0; y < Y_MAX; y += 10) {
@@ -164,8 +165,8 @@ public abstract class SpatialIndexTestBase
     {
         final int COPIES = 10;
         TestRecord[] records = new TestRecord[COPIES];
-        Index<? extends TestRecord> index = newIndex();
-        SpatialIndexImpl spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Index<TestRecord> index = newIndex();
+        SpatialIndexImpl<TestRecord> spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         Box box = new Box(250, 750, 250, 750);
         for (int c = 0; c < COPIES; c++) {
             TestRecord record = index.newRecord();
@@ -205,23 +206,23 @@ public abstract class SpatialIndexTestBase
         commitTransaction();
     }
 
-    public abstract Index<? extends TestRecord> newIndex() throws Exception;
+    public abstract Index<TestRecord> newIndex() throws Exception;
 
     public void commitTransaction() throws Exception
     {
     }
 
-    private void test(SpatialIndexImpl spatialIndex,
+    private void test(SpatialIndexImpl<TestRecord> spatialIndex,
                       int xLo, int xHi, int yLo, int yHi,
                       Filter filter) throws Exception
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
-        Index<? extends TestRecord> index = newIndex();
-        SpatialIndex query = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Index<TestRecord> index = newIndex();
+        SpatialIndex<TestRecord> query = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         TestRecord record = index.newRecord();
         record.spatialObject(box);
         query.add(record);
-        Iterator<Pair> iterator =
+        Iterator<Pair<TestRecord, TestRecord>> iterator =
             SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
         List<Point> actual = new ArrayList<>();
         while (iterator.hasNext()) {

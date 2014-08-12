@@ -8,11 +8,11 @@ package com.geophile.z.examples;
 
 import com.geophile.z.index.tree.TreeIndex;
 
-public class TestIndex extends TreeIndex<RecordWithId>
+public class TestIndex extends TreeIndex<Record>
 {
     @Override
-    public RecordWithId newRecord()
+    public Record newRecord()
     {
-        return new RecordWithId();
+        return new Record();
     }
 }

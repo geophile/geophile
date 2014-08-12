@@ -34,8 +34,8 @@ public class SpatialIndexJTSPointAndBoxTest
     @Test
     public void testRetrieval() throws IOException, InterruptedException
     {
-        Index index = newIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Index<TestRecord> index = newIndex();
+        spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
@@ -59,9 +59,9 @@ public class SpatialIndexJTSPointAndBoxTest
 
     @Test
     public void testRemoveAll() throws IOException, InterruptedException
-    {;
-        Index index = newIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+    {
+        Index<TestRecord> index = newIndex();
+        spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
@@ -92,8 +92,8 @@ public class SpatialIndexJTSPointAndBoxTest
     @Test
     public void testRemoveSome() throws IOException, InterruptedException
     {
-        Index index = newIndex();
-        spatialIndex = new SpatialIndexImpl(SPACE, index, SpatialIndex.Options.DEFAULT);
+        Index<TestRecord> index = newIndex();
+        spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
@@ -130,9 +130,9 @@ public class SpatialIndexJTSPointAndBoxTest
     {
         Box box = new Box(xLo, xHi, yLo, yHi);
         TestIndex boxTestIndex = new TestIndex();
-        SpatialIndex query = new SpatialIndexImpl(SPACE, boxTestIndex, SpatialIndex.Options.DEFAULT);
+        SpatialIndex<TestRecord> query = new SpatialIndexImpl<>(SPACE, boxTestIndex, SpatialIndex.Options.DEFAULT);
         query.add(new TestRecord(box));
-        Iterator<Pair> iterator =
+        Iterator<Pair<TestRecord, TestRecord>> iterator =
             SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
         List<JTSPoint> actual = new ArrayList<>();
         JTSPoint point;
@@ -173,7 +173,7 @@ public class SpatialIndexJTSPointAndBoxTest
         } while (yHi <= yLo);
     }
     
-    private static Index newIndex()
+    private static Index<TestRecord> newIndex()
     {
         return new TestIndex();
     }
@@ -207,16 +207,16 @@ public class SpatialIndexJTSPointAndBoxTest
                 b.yLo() <= p.point().getY() && p.point().getY() <= b.yHi();
         }
     };
-    private static final RecordFilter RECORD_FILTER = new RecordFilter()
+    private static final RecordFilter<TestRecord> RECORD_FILTER = new RecordFilter<TestRecord>()
     {
         @Override
-        public boolean select(Record record)
+        public boolean select(TestRecord record)
         {
             return true;
         }
     };
 
-    private SpatialIndexImpl spatialIndex;
+    private SpatialIndexImpl<TestRecord> spatialIndex;
     private final GeometryFactory factory = new GeometryFactory();
 
     private static interface Filter

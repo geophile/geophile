@@ -15,14 +15,14 @@ package com.geophile.z.examples;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.BaseRecord;
 
-public class RecordWithId extends BaseRecord
+public class Record extends BaseRecord
 {
     @Override
     public boolean equals(Object obj)
     {
         boolean eq = false;
-        if (obj != null && obj instanceof RecordWithId) {
-            RecordWithId that = (RecordWithId) obj;
+        if (obj != null && obj instanceof Record) {
+            Record that = (Record) obj;
             eq = this.z() == that.z() && this.id == that.id;
         }
         return eq;
@@ -38,19 +38,19 @@ public class RecordWithId extends BaseRecord
         id = newId;
     }
 
-    public RecordWithId(SpatialObject spatialObject)
+    public Record(SpatialObject spatialObject)
     {
         spatialObject(spatialObject);
         id = 0;
     }
 
-    public RecordWithId(SpatialObject spatialObject, int id)
+    public Record(SpatialObject spatialObject, int id)
     {
         spatialObject(spatialObject);
         this.id = id;
     }
 
-    public RecordWithId()
+    public Record()
     {}
 
     private int id;

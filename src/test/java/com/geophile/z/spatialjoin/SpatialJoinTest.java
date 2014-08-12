@@ -162,7 +162,7 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     private TestInput newTestInput(int n, BoxGenerator boxGenerator) throws IOException, InterruptedException
     {
         Index<TestRecord> index = newIndex();
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
+        SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         TestInput testInput = new TestInput(spatialIndex, boxGenerator.description());
         load(n, boxGenerator, testInput);
         return testInput;

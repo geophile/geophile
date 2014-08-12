@@ -57,14 +57,14 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
         final int N_POINTS = 1_000_000;
         final int QUERY_X_SIZE = NX / 100;
         final int QUERY_Y_SIZE = NY / 100;
-        SpatialIndex rightInput = loadPoints(N_POINTS);
+        SpatialIndex<TestRecord> rightInput = loadPoints(N_POINTS);
         BoxGenerator boxGenerator = new BoxGenerator(SPACE, random, QUERY_X_SIZE, QUERY_Y_SIZE);
         long totalOutputCount = 0;
         long totalMsec = 0;
         for (int trial = 0; trial < TRIALS; trial++) {
-            SpatialIndex leftInput = loadOneBox(boxGenerator);
+            SpatialIndex<TestRecord> leftInput = loadOneBox(boxGenerator);
             long start = System.currentTimeMillis();
-            Iterator<Pair> joinScan = spatialJoin.iterator(leftInput, rightInput);
+            Iterator<Pair<TestRecord, TestRecord>> joinScan = spatialJoin.iterator(leftInput, rightInput);
             while (joinScan.hasNext()) {
                 joinScan.next();
                 totalOutputCount++;
@@ -83,7 +83,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     }
 
     @Override
-    protected Index newIndex()
+    protected Index<TestRecord> newIndex()
     {
         return new TestIndex();
     }
@@ -122,18 +122,19 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
         assert expected.equals(actual);
     }
 
-    protected SpatialIndex loadPoints(int n) throws IOException, InterruptedException
+    protected SpatialIndex<TestRecord> loadPoints(int n) throws IOException, InterruptedException
     {
-        SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, newIndex(), SpatialIndex.Options.SINGLE_CELL);
+        SpatialIndex<TestRecord> index =
+            SpatialIndex.newSpatialIndex(SPACE, newIndex(), SpatialIndex.Options.SINGLE_CELL);
         for (int i = 0; i < n; i++) {
             index.add(new TestRecord(testPoint(), i));
         }
         return index;
     }
 
-    protected SpatialIndex loadOneBox(BoxGenerator boxGenerator) throws IOException, InterruptedException
+    protected SpatialIndex<TestRecord> loadOneBox(BoxGenerator boxGenerator) throws IOException, InterruptedException
     {
-        SpatialIndex index = SpatialIndex.newSpatialIndex(SPACE, newIndex(), SpatialIndex.Options.DEFAULT);
+        SpatialIndex<TestRecord> index = SpatialIndex.newSpatialIndex(SPACE, newIndex(), SpatialIndex.Options.DEFAULT);
         index.add(new TestRecord(boxGenerator.newSpatialObject()));
         return index;
     }

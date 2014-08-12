@@ -6,11 +6,7 @@
 
 package com.geophile.z.index;
 
-import com.geophile.z.Cursor;
-import com.geophile.z.Index;
-import com.geophile.z.Record;
-import com.geophile.z.examples.TestIndex;
-import com.geophile.z.index.tree.TreeIndex;
+import com.geophile.z.*;
 import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;
 
@@ -29,13 +25,13 @@ public class CursorTest
         }
     }
 
-    private void testCursor(Index index, int n) throws IOException, InterruptedException
+    private void testCursor(Index<TestRecord> index, int n) throws IOException, InterruptedException
     {
-        Cursor cursor;
+        Cursor<TestRecord> cursor;
         int expectedKey;
         int expectedLastKey;
         boolean expectedEmpty;
-        Record record;
+        TestRecord record;
         // Full cursor
         // debug("Full cursor %s\n", n);
         {
@@ -173,14 +169,14 @@ public class CursorTest
         }
     }
 
-    private Index testIndex(int n) throws IOException, InterruptedException
+    private Index<TestRecord> testIndex(int n) throws IOException, InterruptedException
     {
-        Index index = new TestIndex();
+        Index<TestRecord> index = new TestIndex();
         assertTrue(GAP > 1);
         // Populate map with keys 0, GAP, ..., GAP * (n - 1)
         for (int i = 0; i < n; i++) {
             long key = GAP * i;
-            BaseRecord record = new BaseRecord();
+            TestRecord record = index.newRecord();
             record.z(key);
             record.spatialObject(new Point(key, key));
             index.add(record);
@@ -188,25 +184,25 @@ public class CursorTest
         return index;
     }
 
+    private Cursor<TestRecord> newCursor(Index<TestRecord> index, long z) throws IOException, InterruptedException
+    {
+        Cursor<TestRecord> cursor = index.cursor();
+        TestRecord key= index.newKeyRecord();
+        key.z(z);
+        cursor.goTo(key);
+        return cursor;
+    }
+
     private long key(Record record)
     {
         return record.z();
     }
 
-    private Record key(Index index, long z)
+    private TestRecord key(Index<TestRecord> index, long z)
     {
-        Record key = index.newKeyRecord();
+        TestRecord key = index.newKeyRecord();
         key.z(z);
         return key;
-    }
-
-    private Cursor newCursor(Index index, long z) throws IOException, InterruptedException
-    {
-        Cursor cursor = index.cursor();
-        Record key= index.newKeyRecord();
-        key.z(z);
-        cursor.goTo(key);
-        return cursor;
     }
 
     private void debug(String template, Object ... args)

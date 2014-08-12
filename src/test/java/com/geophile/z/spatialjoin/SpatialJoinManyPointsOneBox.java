@@ -8,6 +8,7 @@ package com.geophile.z.spatialjoin;
 
 import com.geophile.util.MicroBenchmark;
 import com.geophile.z.*;
+import com.geophile.z.index.BaseRecord;
 import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.spatialobject.d2.Box;
 
@@ -27,7 +28,7 @@ public class SpatialJoinManyPointsOneBox
     private void run() throws IOException, InterruptedException
     {
         BoxGenerator pointGenerator = new BoxGenerator(SPACE, random, 1, 1);
-        final SpatialIndex dataIndex = loadSpatialIndex(N_POINTS, pointGenerator);
+        final SpatialIndex<BaseRecord> dataIndex = loadSpatialIndex(N_POINTS, pointGenerator);
         final SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.INCLUDE);
         for (int size = MIN_QUERY_BOX_SIZE; size <= MAX_QUERY_BOX_SIZE; size *= 2) {
             BoxGenerator boxGenerator = new BoxGenerator(SPACE, random, size, size);
@@ -42,11 +43,12 @@ public class SpatialJoinManyPointsOneBox
                         @Override
                         public Object action() throws IOException, InterruptedException
                         {
-                            SpatialIndex queryIndex =
+                            SpatialIndex<BaseRecord> queryIndex =
                                 SpatialIndex.newSpatialIndex(SPACE, new SortedArray.OfBaseRecord());
                             queryIndex.add(new TestRecord(query));
                             for (int trial = 0; trial < TRIALS; trial++) {
-                                Iterator<Pair> iterator = spatialJoin.iterator(queryIndex, dataIndex);
+                                Iterator<Pair<BaseRecord, BaseRecord>> iterator =
+                                    spatialJoin.iterator(queryIndex, dataIndex);
                                 while (iterator.hasNext()) {
                                     iterator.next();
                                 }
@@ -65,7 +67,7 @@ public class SpatialJoinManyPointsOneBox
                         public Object action() throws IOException, InterruptedException
                         {
                             for (int trial = 0; trial < TRIALS; trial++) {
-                                Iterator<Record> iterator = spatialJoin.iterator(query, dataIndex);
+                                Iterator<BaseRecord> iterator = spatialJoin.iterator(query, dataIndex);
                                 while (iterator.hasNext()) {
                                     iterator.next();
                                 }
@@ -79,10 +81,10 @@ public class SpatialJoinManyPointsOneBox
                               size, size, manyManyJoinMsec, oneManyJoinMsec);
         }
     }
-    private SpatialIndex loadSpatialIndex(int n, SpatialObjectGenerator generator)
+    private SpatialIndex<BaseRecord> loadSpatialIndex(int n, SpatialObjectGenerator generator)
         throws IOException, InterruptedException
     {
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray.OfBaseRecord());
+        SpatialIndex<BaseRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray.OfBaseRecord());
         for (int i = 0; i < n; i++) {
             spatialIndex.add(new TestRecord(generator.newSpatialObject(), i));
         }

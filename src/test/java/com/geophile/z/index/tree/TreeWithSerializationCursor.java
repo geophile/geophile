@@ -7,28 +7,29 @@
 package com.geophile.z.index.tree;
 
 import com.geophile.z.Cursor;
+import com.geophile.z.TestRecord;
 
 import java.io.IOException;
 import java.util.Iterator;
 
-public class TreeWithSerializationCursor extends Cursor<SerializedRecord>
+public class TreeWithSerializationCursor extends Cursor<TestRecord>
 {
     // Cursor interface
 
     @Override
-    public SerializedRecord next() throws IOException, InterruptedException
+    public TestRecord next() throws IOException, InterruptedException
     {
         return neighbor(true);
     }
 
     @Override
-    public SerializedRecord previous() throws IOException, InterruptedException
+    public TestRecord previous() throws IOException, InterruptedException
     {
         return neighbor(false);
     }
 
     @Override
-    public void goTo(SerializedRecord key)
+    public void goTo(TestRecord key)
     {
         this.startAt = key;
         state(State.NEVER_USED);
@@ -55,7 +56,7 @@ public class TreeWithSerializationCursor extends Cursor<SerializedRecord>
 
     // For use by this class
 
-    private SerializedRecord neighbor(boolean forwardMove) throws IOException, InterruptedException
+    private TestRecord neighbor(boolean forwardMove) throws IOException, InterruptedException
     {
         switch (state()) {
             case NEVER_USED:
@@ -71,7 +72,7 @@ public class TreeWithSerializationCursor extends Cursor<SerializedRecord>
                 return null;
         }
         if (treeIterator.hasNext()) {
-            SerializedRecord neighbor = treeIterator.next();
+            TestRecord neighbor = treeIterator.next();
             current(neighbor);
             neighbor.copyTo(startAt);
             state(State.IN_USE);
@@ -93,7 +94,7 @@ public class TreeWithSerializationCursor extends Cursor<SerializedRecord>
     // Object state
 
     private final TreeWithSerialization treeIndex;
-    private SerializedRecord startAt;
+    private TestRecord startAt;
     private boolean forward;
-    private Iterator<SerializedRecord> treeIterator;
+    private Iterator<TestRecord> treeIterator;
 }

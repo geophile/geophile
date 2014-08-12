@@ -16,7 +16,7 @@ import com.geophile.z.spatialobject.d2.Point;
 public class PersistentSpatialIndexTest extends SpatialIndexTestBase
 {
     @Override
-    public Index<? extends TestRecord> newIndex()
+    public Index<TestRecord> newIndex()
     {
         SpatialObjectSerializer serializer = SpatialObjectSerializer.newSerializer();
         serializer.register(1, Point.class);

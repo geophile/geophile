@@ -84,15 +84,15 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     {
         // An n x n grid is superimposed on the space, and a random point is selected from each grid cell.
         int gridCellSize = APP_SPACE_WIDTH / n;
-        Index index = new TreeIndex()
+        Index<TestRecord> index = new TreeIndex<TestRecord>()
         {
             @Override
-            public Record newRecord()
+            public TestRecord newRecord()
             {
                 return new TestRecord();
             }
         };
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index, SpatialIndex.Options.SINGLE_CELL);
+        SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index, SpatialIndex.Options.SINGLE_CELL);
         TestInput input = new TestInput(spatialIndex, String.format("grid(%s x %s)", gridCellSize, gridCellSize));
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -109,7 +109,7 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
         int xSize = random.nextInt(GRID_CELL_WIDTH * 3);
         int ySize = random.nextInt(GRID_CELL_WIDTH * 3);
         Index<TestRecord> index = newIndex();
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
+        SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         TestInput input = new TestInput(spatialIndex, String.format("box(%s x %s)", xSize, ySize));
         double xLo = APP_SPACE_LO + random.nextInt(APP_SPACE_WIDTH - xSize);
         double xHi = xLo + xSize;

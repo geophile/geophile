@@ -25,14 +25,14 @@ public class OverlappingPairs
     private void run() throws IOException, InterruptedException
     {
         // Load spatial indexes with boxes
-        SpatialIndex left = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
-        SpatialIndex right = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
+        SpatialIndex<Record> left = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
+        SpatialIndex<Record> right = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         for (int i = 0; i < N_BOXES; i++) {
-            left.add(new RecordWithId(randomBox(), i));
-            right.add(new RecordWithId(randomBox(), i));
+            left.add(new Record(randomBox(), i));
+            right.add(new Record(randomBox(), i));
         }
         // Find overlapping pairs
-        Iterator<Pair> iterator =
+        Iterator<Pair<Record, Record>> iterator =
             SpatialJoin.newSpatialJoin(BOX_OVERLAP, SpatialJoinImpl.Duplicates.EXCLUDE).iterator(left, right);
         // Print points contained in box
         System.out.println("Overlapping pairs");
@@ -65,7 +65,7 @@ public class OverlappingPairs
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(Record r, Record s)
+            public boolean overlap(com.geophile.z.Record r, com.geophile.z.Record s)
             {
                 Box a = (Box) r.spatialObject();
                 Box b = (Box) s.spatialObject();

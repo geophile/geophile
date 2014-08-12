@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 // Like TreeIndex, but with serialization of spatial objects
 
-public class TreeWithSerialization extends Index<SerializedRecord>
+public class TreeWithSerialization extends Index<TestRecord>
 {
     // Object interface
 
@@ -28,7 +28,7 @@ public class TreeWithSerialization extends Index<SerializedRecord>
     // Index interface
 
     @Override
-    public void add(SerializedRecord record)
+    public void add(TestRecord record)
     {
         SerializedRecord copy = newRecord();
         record.copyTo(copy);
@@ -40,13 +40,13 @@ public class TreeWithSerialization extends Index<SerializedRecord>
     }
 
     @Override
-    public boolean remove(long z, RecordFilter<SerializedRecord> recordFilter)
+    public boolean remove(long z, RecordFilter<TestRecord> recordFilter)
     {
         boolean foundRecord = false;
         boolean zMatch = true;
-        Iterator<SerializedRecord> iterator = tree.tailSet(key(z)).iterator();
+        Iterator<TestRecord> iterator = tree.tailSet(key(z)).iterator();
         while (zMatch && iterator.hasNext() && !foundRecord) {
-            SerializedRecord record = iterator.next();
+            TestRecord record = iterator.next();
             if (record.z() == z) {
                 foundRecord = recordFilter.select(record);
             } else {
@@ -60,7 +60,7 @@ public class TreeWithSerialization extends Index<SerializedRecord>
     }
 
     @Override
-    public Cursor<SerializedRecord> cursor()
+    public Cursor<TestRecord> cursor()
     {
         return new TreeWithSerializationCursor(this);
     }
@@ -80,7 +80,7 @@ public class TreeWithSerialization extends Index<SerializedRecord>
 
     // For use by this package
 
-    TreeSet<SerializedRecord> tree()
+    TreeSet<TestRecord> tree()
     {
         return tree;
     }
@@ -95,11 +95,11 @@ public class TreeWithSerialization extends Index<SerializedRecord>
     // Class state
 
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
-    private static final Comparator<SerializedRecord> RECORD_COMPARATOR =
-        new Comparator<SerializedRecord>()
+    private static final Comparator<TestRecord> RECORD_COMPARATOR =
+        new Comparator<TestRecord>()
         {
             @Override
-            public int compare(SerializedRecord r, SerializedRecord s)
+            public int compare(TestRecord r, TestRecord s)
             {
                 return r.keyCompare(s);
             }
@@ -109,5 +109,5 @@ public class TreeWithSerialization extends Index<SerializedRecord>
 
     private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
     private final SpatialObjectSerializer serializer;
-    private final TreeSet<SerializedRecord> tree = new TreeSet<>(RECORD_COMPARATOR);
+    private final TreeSet<TestRecord> tree = new TreeSet<TestRecord>(RECORD_COMPARATOR);
 }

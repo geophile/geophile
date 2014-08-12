@@ -26,9 +26,9 @@ public class PointsInBox
     private void run() throws IOException, InterruptedException
     {
         // Load spatial index with points
-        SpatialIndex points = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
+        SpatialIndex<Record> points = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         for (int i = 0; i < N_POINTS; i++) {
-            points.add(new RecordWithId(randomPoint(), i));
+            points.add(new Record(randomPoint(), i));
         }
         // Run queries
         for (int q = 0; q < N_QUERIES; q++) {
@@ -40,7 +40,7 @@ public class PointsInBox
             // Print points contained in box
             System.out.println(String.format("Points inside %s", box));
             while (iterator.hasNext()) {
-                Record record = iterator.next();
+                com.geophile.z.Record record = iterator.next();
                 System.out.println(String.format("    %s", record.spatialObject()));
             }
         }
@@ -77,7 +77,7 @@ public class PointsInBox
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(Record r, Record s)
+            public boolean overlap(com.geophile.z.Record r, com.geophile.z.Record s)
             {
                 Box box = (Box) r.spatialObject();
                 Point point = (Point) s.spatialObject();

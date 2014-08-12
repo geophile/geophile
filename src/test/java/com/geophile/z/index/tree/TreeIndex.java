@@ -64,7 +64,7 @@ public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
     @Override
     public Cursor<RECORD> cursor()
     {
-        return new TreeIndexCursor<RECORD>(this);
+        return new TreeIndexCursor<>(this);
     }
 
     @Override

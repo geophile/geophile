@@ -63,20 +63,20 @@ public class SelfJoinTest extends SpatialJoinTestBase
     @Test
     public void checkEqualSpatialObjects() throws IOException, InterruptedException
     {
-        Index index =
-            new SortedArray()
+        Index<TestRecord> index =
+            new SortedArray<TestRecord>()
             {
                 @Override
-                public Record newRecord()
+                public TestRecord newRecord()
                 {
                     return new TestRecord();
                 }
             };
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
+        SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         spatialIndex.add(new TestRecord(new Box(10, 20, 30, 40), 1));
         spatialIndex.add(new TestRecord(new Box(10, 20, 30, 40), 2));
         SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(KEEP_ALL, SpatialJoin.Duplicates.EXCLUDE);
-        Iterator<Pair> iterator = spatialJoin.iterator(spatialIndex, spatialIndex);
+        Iterator<Pair<TestRecord, TestRecord>> iterator = spatialJoin.iterator(spatialIndex, spatialIndex);
         // Should see all combinations of b1 and b2
         int count = 0;
         int mask = 0;
@@ -140,7 +140,7 @@ public class SelfJoinTest extends SpatialJoinTestBase
     private TestInput newTestInput(int n, BoxGenerator boxGenerator) throws IOException, InterruptedException
     {
         Index<TestRecord> index = newIndex();
-        SpatialIndex spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
+        SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         TestInput testInput = new TestInput(spatialIndex, boxGenerator.description());
         load(n, boxGenerator, testInput);
         return testInput;
