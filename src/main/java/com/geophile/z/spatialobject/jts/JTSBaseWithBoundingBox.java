@@ -31,9 +31,9 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
     @Override
     public boolean containedBy(Space space)
     {
-        assert space == this.space;
         Envelope envelope = geometry.getEnvelopeInternal();
         return
+            space == this.space &&
             space.lo(0) <= envelope.getMinX() && envelope.getMaxX() <= space.hi(0) &&
             space.lo(1) <= envelope.getMinY() && envelope.getMaxY() <= space.hi(1);
     }

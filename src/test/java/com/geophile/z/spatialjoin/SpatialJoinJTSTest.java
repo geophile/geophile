@@ -36,14 +36,13 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     @Test
     public void testManyPointOnePolygon() throws IOException, InterruptedException
     {
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         JTSPointGenerator dataGenerator = new JTSPointGenerator(SPACE, FACTORY, random);
         TestInput dataInput = newTestInput(COUNT, dataGenerator);
         for (int boxSize : BOX_SIZES) {
             for (int trial = 0; trial < TRIALS; trial++) {
                 JTSSquareGenerator queryGenerator = new JTSSquareGenerator(SPACE, FACTORY, random, boxSize);
                 TestInput queryInput = newTestInput(1, queryGenerator);
-                testJoin(spatialJoin, queryInput, dataInput);
+                testJoin(queryInput, dataInput, manyManyFilter, oneManyFilter, SpatialJoin.Duplicates.EXCLUDE);
             }
         }
     }
@@ -51,40 +50,37 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     @Test
     public void testManyLineStringsManyLineStrings() throws IOException, InterruptedException
     {
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         JTSLineStringGenerator generator =
             new JTSLineStringGenerator(SPACE, FACTORY, random, X_MAX_SEGMENT_DISTANCE, Y_MAX_SEGMENT_DISTANCE);
         TestInput leftInput = newTestInput(COUNT, generator);
         for (int trial = 0; trial < TRIALS; trial++) {
             TestInput rightInput = newTestInput(COUNT, generator);
-            testJoin(spatialJoin, rightInput, leftInput);
+            testJoin(rightInput, leftInput, manyManyFilter, oneManyFilter, SpatialJoin.Duplicates.EXCLUDE);
         }
     }
 
     @Test
     public void testManyPolygonsManyPolygons() throws IOException, InterruptedException
     {
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         JTSPolygonGenerator generator =
             new JTSPolygonGenerator(SPACE, FACTORY, random, X_MAX_SEGMENT_DISTANCE, Y_MAX_SEGMENT_DISTANCE);
         TestInput leftInput = newTestInput(COUNT, generator);
         for (int trial = 0; trial < TRIALS; trial++) {
             TestInput rightInput = newTestInput(COUNT, generator);
-            testJoin(spatialJoin, rightInput, leftInput);
+            testJoin(rightInput, leftInput, manyManyFilter, oneManyFilter, SpatialJoin.Duplicates.EXCLUDE);
         }
     }
 
     @Test
     public void testManyMultiPointOnePolygon() throws IOException, InterruptedException
     {
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         JTSMultiPointGenerator dataGenerator = new JTSMultiPointGenerator(SPACE, FACTORY, random, 1000, 1000);
         TestInput dataInput = newTestInput(COUNT, dataGenerator);
         for (int boxSize : BOX_SIZES) {
             for (int trial = 0; trial < TRIALS; trial++) {
                 JTSSquareGenerator queryGenerator = new JTSSquareGenerator(SPACE, FACTORY, random, boxSize);
                 TestInput queryInput = newTestInput(1, queryGenerator);
-                testJoin(spatialJoin, queryInput, dataInput);
+                testJoin(queryInput, dataInput, manyManyFilter, oneManyFilter, SpatialJoin.Duplicates.EXCLUDE);
             }
         }
     }
@@ -143,13 +139,28 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
                                                       new int[]{X_BITS, Y_BITS});
 
     private final Random random = new Random(123456);
-    private final SpatialJoinFilter filter = new SpatialJoinFilter()
+    private final SpatialJoinFilter<TestRecord, TestRecord> manyManyFilter =
+        new SpatialJoinFilter<TestRecord, TestRecord>()
     {
         @Override
-        public boolean overlap(SpatialObject r, SpatialObject s)
+        public boolean overlap(TestRecord left, TestRecord right)
         {
             testStats.filterCount++;
-            boolean overlap = OVERLAP_TESTER.overlap(r, s);
+            boolean overlap = OVERLAP_TESTER.overlap(left.spatialObject(), right.spatialObject());
+            if (overlap) {
+                testStats.overlapCount++;
+            }
+            return overlap;
+        }
+    };
+    private final SpatialJoinFilter<SpatialObject, TestRecord> oneManyFilter =
+        new SpatialJoinFilter<SpatialObject, TestRecord>()
+    {
+        @Override
+        public boolean overlap(SpatialObject left, TestRecord right)
+        {
+            testStats.filterCount++;
+            boolean overlap = OVERLAP_TESTER.overlap(left, right.spatialObject());
             if (overlap) {
                 testStats.overlapCount++;
             }

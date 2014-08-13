@@ -52,7 +52,6 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
 
     private void run() throws IOException, InterruptedException
     {
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(FILTER, SpatialJoin.Duplicates.INCLUDE);
         final int TRIALS = 100_000;
         final int N_POINTS = 1_000_000;
         final int QUERY_X_SIZE = NX / 100;
@@ -62,9 +61,11 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
         long totalOutputCount = 0;
         long totalMsec = 0;
         for (int trial = 0; trial < TRIALS; trial++) {
-            SpatialIndex<TestRecord> leftInput = loadOneBox(boxGenerator);
             long start = System.currentTimeMillis();
-            Iterator<Pair<TestRecord, TestRecord>> joinScan = spatialJoin.iterator(leftInput, rightInput);
+            Iterator<TestRecord> joinScan = SpatialJoin.iterator(boxGenerator.newSpatialObject(),
+                                                                 rightInput,
+                                                                 FILTER,
+                                                                 SpatialJoin.Duplicates.INCLUDE);
             while (joinScan.hasNext()) {
                 joinScan.next();
                 totalOutputCount++;
@@ -127,15 +128,9 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
         SpatialIndex<TestRecord> index =
             SpatialIndex.newSpatialIndex(SPACE, newIndex(), SpatialIndex.Options.SINGLE_CELL);
         for (int i = 0; i < n; i++) {
-            index.add(new TestRecord(testPoint(), i));
+            SpatialObject point = testPoint();
+            index.add(point, new TestRecord(point, i));
         }
-        return index;
-    }
-
-    protected SpatialIndex<TestRecord> loadOneBox(BoxGenerator boxGenerator) throws IOException, InterruptedException
-    {
-        SpatialIndex<TestRecord> index = SpatialIndex.newSpatialIndex(SPACE, newIndex(), SpatialIndex.Options.DEFAULT);
-        index.add(new TestRecord(boxGenerator.newSpatialObject()));
         return index;
     }
 
@@ -164,13 +159,12 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     private final Random random = new Random(12345);
     private final GeometryFactory factory = new GeometryFactory();
 
-    private static final class TestFilter implements SpatialJoinFilter
+    private static final class TestFilter implements SpatialJoinFilter<Box, TestRecord>
     {
         @Override
-        public boolean overlap(SpatialObject a, SpatialObject b)
+        public boolean overlap(Box box, TestRecord record)
         {
-            Box box = (Box) a;
-            Point point = (Point) b;
+            Point point = (Point) record.spatialObject();
             double px = point.x();
             double py = point.y();
             return
@@ -179,13 +173,12 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
         }
     }
 
-    private static final class TestFilterJTS implements SpatialJoinFilter
+    private static final class TestFilterJTS implements SpatialJoinFilter<Box, TestRecord>
     {
         @Override
-        public boolean overlap(SpatialObject a, SpatialObject b)
+        public boolean overlap(Box box, TestRecord record)
         {
-            Box box = (Box) a;
-            JTSPoint point = (JTSPoint) b;
+            JTSPoint point = (JTSPoint) record.spatialObject();
             Coordinate coordinate = point.point().getCoordinate();
             double px = coordinate.x;
             double py = coordinate.y;

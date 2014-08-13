@@ -29,19 +29,19 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     {
         // Dimensions mismatch
         {
-            SpatialIndex leftSpatialIndex =
+            SpatialIndex<TestRecord> leftSpatialIndex =
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0, 0},
                                                             new double[]{1000, 1000, 1000},
                                                             new int[]{10, 10, 10}),
                                              newIndex());
-            SpatialIndex rightSpatialIndex =
+            SpatialIndex<TestRecord> rightSpatialIndex =
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                             new double[]{1000, 1000},
                                                             new int[]{10, 10}),
                                              newIndex());
-            SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
             try {
-                spatialJoin.iterator(leftSpatialIndex, rightSpatialIndex);
+                SpatialJoin
+                    .iterator(leftSpatialIndex, rightSpatialIndex, MANY_MANY_FILTER, SpatialJoin.Duplicates.EXCLUDE);
                 fail();
             } catch (SpatialJoinException e) {
                 // Expected
@@ -49,19 +49,19 @@ public class SpatialJoinTest extends SpatialJoinTestBase
         }
         // Space bounds mismatch
         {
-            SpatialIndex leftSpatialIndex =
+            SpatialIndex<TestRecord> leftSpatialIndex =
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                             new double[]{1000, 1000},
                                                             new int[]{10, 10}),
                                              newIndex());
-            SpatialIndex rightSpatialIndex =
+            SpatialIndex<TestRecord> rightSpatialIndex =
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                             new double[]{2000, 1000},
                                                             new int[]{10, 10}),
                                              newIndex());
-            SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
             try {
-                spatialJoin.iterator(leftSpatialIndex, rightSpatialIndex);
+                SpatialJoin
+                    .iterator(leftSpatialIndex, rightSpatialIndex, MANY_MANY_FILTER, SpatialJoin.Duplicates.EXCLUDE);
                 fail();
             } catch (SpatialJoinException e) {
                 // Expected
@@ -72,25 +72,22 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     @Test
     public void testNonIdenticalSpaceMatch() throws IOException, InterruptedException
     {
-        SpatialIndex leftSpatialIndex =
+        SpatialIndex<TestRecord> leftSpatialIndex =
             SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                         new double[]{1000, 1000},
                                                         new int[]{10, 10}),
                                          newIndex());
-        SpatialIndex rightSpatialIndex =
+        SpatialIndex<TestRecord> rightSpatialIndex =
             SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                         new double[]{1000, 1000},
                                                         new int[]{10, 10}),
                                          newIndex());
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
-        spatialJoin.iterator(leftSpatialIndex, rightSpatialIndex);
+        SpatialJoin.iterator(leftSpatialIndex, rightSpatialIndex, MANY_MANY_FILTER, SpatialJoin.Duplicates.EXCLUDE);
     }
 
     @Test
     public void testSpatialJoin() throws IOException, InterruptedException
     {
-        SpatialJoin spatialJoinIncludeDuplicates = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.INCLUDE);
-        SpatialJoin spatialJoinExcludeDuplicates = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         TestInput leftInput = null;
         TestInput rightInput = null;
         int testCount = 0;
@@ -112,8 +109,16 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                                 if (trial == 0 || nRight <= nLeft) {
                                     rightInput = newTestInput(nRight, rightBoxGenerator);
                                 }
-                                testJoin(spatialJoinIncludeDuplicates, leftInput, rightInput);
-                                testJoin(spatialJoinExcludeDuplicates, leftInput, rightInput);
+                                testJoin(leftInput,
+                                         rightInput,
+                                         MANY_MANY_FILTER,
+                                         ONE_MANY_FILTER,
+                                         SpatialJoin.Duplicates.INCLUDE);
+                                testJoin(leftInput,
+                                         rightInput,
+                                         MANY_MANY_FILTER,
+                                         ONE_MANY_FILTER,
+                                         SpatialJoin.Duplicates.EXCLUDE);
                                 testCount++;
                             }
                         }
@@ -182,17 +187,32 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                                                       new int[]{X_BITS, Y_BITS});
 
     private final Random random = new Random(123456);
-    private final SpatialJoinFilter filter = new SpatialJoinFilter()
-    {
-        @Override
-        public boolean overlap(SpatialObject r, SpatialObject s)
+    private final SpatialJoinFilter<TestRecord, TestRecord> MANY_MANY_FILTER =
+        new SpatialJoinFilter<TestRecord, TestRecord>()
         {
-            testStats.filterCount++;
-            boolean overlap = OVERLAP_TESTER.overlap(r, s);
-            if (overlap) {
-                testStats.overlapCount++;
+            @Override
+            public boolean overlap(TestRecord left, TestRecord right)
+            {
+                testStats.filterCount++;
+                boolean overlap = OVERLAP_TESTER.overlap(left.spatialObject(), right.spatialObject());
+                if (overlap) {
+                    testStats.overlapCount++;
+                }
+                return overlap;
             }
-            return overlap;
-        }
-    };
+        };
+    private final SpatialJoinFilter<SpatialObject, TestRecord> ONE_MANY_FILTER =
+        new SpatialJoinFilter<SpatialObject, TestRecord>()
+        {
+            @Override
+            public boolean overlap(SpatialObject left, TestRecord right)
+            {
+                testStats.filterCount++;
+                boolean overlap = OVERLAP_TESTER.overlap(left, right.spatialObject());
+                if (overlap) {
+                    testStats.overlapCount++;
+                }
+                return overlap;
+            }
+        };
 }

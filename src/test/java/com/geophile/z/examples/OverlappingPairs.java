@@ -8,7 +8,6 @@ package com.geophile.z.examples;
 
 import com.geophile.z.*;
 import com.geophile.z.SpatialJoinFilter;
-import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 
 import java.io.IOException;
@@ -28,12 +27,14 @@ public class OverlappingPairs
         SpatialIndex<Record> left = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         SpatialIndex<Record> right = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         for (int i = 0; i < N_BOXES; i++) {
-            left.add(new Record(randomBox(), i));
-            right.add(new Record(randomBox(), i));
+            Box box = randomBox();
+            left.add(box, new Record(box, i));
+            box = randomBox();
+            right.add(box, new Record(box, i));
         }
         // Find overlapping pairs
         Iterator<Pair<Record, Record>> iterator =
-            SpatialJoin.newSpatialJoin(BOX_OVERLAP, SpatialJoinImpl.Duplicates.EXCLUDE).iterator(left, right);
+            SpatialJoin.iterator(left, right, BOX_OVERLAP, SpatialJoin.Duplicates.EXCLUDE);
         // Print points contained in box
         System.out.println("Overlapping pairs");
         while (iterator.hasNext()) {
@@ -61,14 +62,14 @@ public class OverlappingPairs
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{X, Y},
                                                       new int[]{X_BITS, Y_BITS});
-    private static final SpatialJoinFilter BOX_OVERLAP =
-        new SpatialJoinFilter()
+    private static final SpatialJoinFilter<Record, Record> BOX_OVERLAP =
+        new SpatialJoinFilter<Record, Record>()
         {
             @Override
-            public boolean overlap(SpatialObject r, SpatialObject s)
+            public boolean overlap(Record r, Record s)
             {
-                Box a = (Box) r;
-                Box b = (Box) s;
+                Box a = (Box) r.spatialObject();
+                Box b = (Box) s.spatialObject();
                 return
                     a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
                     a.yLo() <= b.yHi() && b.yLo() <= a.yHi();

@@ -1,9 +1,8 @@
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.Pair;
-import com.geophile.z.Record;
-import com.geophile.z.SpatialJoinFilter;
-import com.geophile.z.SpatialJoinRuntimeException;
+import com.geophile.z.*;
+import com.geophile.z.index.RecordWithSpatialObject;
+import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.space.SpatialIndexImpl;
 
 import java.io.IOException;
@@ -17,7 +16,7 @@ import java.util.logging.Logger;
 
 // T is either Pair or SpatialObject
 
-class SpatialJoinIterator<T> implements Iterator<T>
+public class SpatialJoinIterator<T> implements Iterator<T>
 {
     // Object interface
 
@@ -71,12 +70,12 @@ class SpatialJoinIterator<T> implements Iterator<T>
                                          filter);
     }
 
-    public static SpatialJoinIterator<Record> spatialObjectIterator(SpatialIndexImpl leftSpatialIndex,
+    public static SpatialJoinIterator<Record> spatialObjectIterator(SpatialObject leftSpatialObject,
                                                                     SpatialIndexImpl rightSpatialIndex,
                                                                     SpatialJoinFilter filter)
         throws IOException, InterruptedException
     {
-        return new SpatialJoinIterator<>(leftSpatialIndex,
+        return new SpatialJoinIterator<>(leftSpatialObject,
                                          rightSpatialIndex,
                                          RECORD_OUTPUT_GENERATOR,
                                          filter);
@@ -95,7 +94,7 @@ class SpatialJoinIterator<T> implements Iterator<T>
                 @Override
                 public void add(Record left, Record right)
                 {
-                    if (filter.overlap(left.spatialObject(), right.spatialObject())) {
+                    if (filter.overlap(left, right)) {
                         pending.add(outputGenerator.generateOutput(left, right));
                     }
                 }
@@ -107,12 +106,61 @@ class SpatialJoinIterator<T> implements Iterator<T>
                 @Override
                 public void add(Record right, Record left)
                 {
-                    if (filter.overlap(left.spatialObject(), right.spatialObject())) {
+                    if (filter.overlap(left, right)) {
                         pending.add(outputGenerator.generateOutput(left, right));
                     }
                 }
             };
         right = SpatialJoinInput.newSpatialJoinInput(rightSpatialIndex, pendingRightLeft);
+        left.otherInput(right);
+        right.otherInput(left);
+        if (LOG.isLoggable(Level.INFO)) {
+            LOG.log(Level.INFO,
+                    "SpatialJoinIterator {0}: {1} x {2}",
+                    new Object[]{this, left, right});
+        }
+        findPairs();
+    }
+
+    private SpatialJoinIterator(final SpatialObject querySpatialObject,
+                                SpatialIndexImpl dataSpatialIndex,
+                                final OutputGenerator<T> outputGenerator,
+                                final SpatialJoinFilter filter) throws IOException, InterruptedException
+    {
+        SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();
+        final SpatialIndex<RecordWithSpatialObject> querySpatialIndex =
+            SpatialIndex.newSpatialIndex(dataSpatialIndex.space(),
+                                         queryIndex,
+                                         querySpatialObject.maxZ() == 1
+                                         ? SpatialIndex.Options.SINGLE_CELL
+                                         : SpatialIndex.Options.DEFAULT);
+        RecordWithSpatialObject queryRecord = queryIndex.newRecord();
+        queryRecord.spatialObject(querySpatialObject);
+        querySpatialIndex.add(querySpatialObject, queryRecord);
+        SpatialJoinOutput pendingLeftRight =
+            new SpatialJoinOutput()
+            {
+                @Override
+                public void add(Record left, Record right)
+                {
+                    if (filter.overlap(querySpatialObject, right)) {
+                        pending.add(outputGenerator.generateOutput(left, right));
+                    }
+                }
+            };
+        left = SpatialJoinInput.newSpatialJoinInput((SpatialIndexImpl) querySpatialIndex, pendingLeftRight);
+        SpatialJoinOutput pendingRightLeft =
+            new SpatialJoinOutput()
+            {
+                @Override
+                public void add(Record right, Record left)
+                {
+                    if (filter.overlap(querySpatialObject, right)) {
+                        pending.add(outputGenerator.generateOutput(left, right));
+                    }
+                }
+            };
+        right = SpatialJoinInput.newSpatialJoinInput(dataSpatialIndex, pendingRightLeft);
         left.otherInput(right);
         right.otherInput(left);
         if (LOG.isLoggable(Level.INFO)) {

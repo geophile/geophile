@@ -8,7 +8,6 @@ package com.geophile.z.space;
 
 import com.geophile.z.*;
 import com.geophile.z.SpatialJoinFilter;
-import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import org.junit.BeforeClass;
@@ -39,9 +38,10 @@ public abstract class SpatialIndexTestBase
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 TestRecord record = index.newRecord();
-                record.spatialObject(new Point(x, y));
+                Point point = new Point(x, y);
+                record.spatialObject(point);
                 record.soid(id++);
-                spatialIndex.add(record);
+                spatialIndex.add(point, record);
             }
         }
         commitTransaction();
@@ -70,14 +70,15 @@ public abstract class SpatialIndexTestBase
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 TestRecord record = index.newRecord();
-                record.spatialObject(new Point(x, y));
+                Point point = new Point(x, y);
+                record.spatialObject(point);
                 record.soid(id++);
-                spatialIndex.add(record);
+                spatialIndex.add(point, record);
             }
         }
         commitTransaction();
         // Remove everything
-        RemovalFilter<TestRecord> removalFilter = new RemovalFilter<>();
+        RemovalFilter removalFilter = new RemovalFilter();
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 Point point = new Point(x, y);
@@ -111,14 +112,15 @@ public abstract class SpatialIndexTestBase
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
                 TestRecord record = index.newRecord();
-                record.spatialObject(new Point(x, y));
+                Point point = new Point(x, y);
+                record.spatialObject(point);
                 record.soid(id++);
-                spatialIndex.add(record);
+                spatialIndex.add(point, record);
             }
         }
         commitTransaction();
         // Remove (x, y), for odd x/10 and even y/10
-        RemovalFilter<TestRecord> removalFilter = new RemovalFilter<>();
+        RemovalFilter removalFilter = new RemovalFilter();
         for (long x = 0; x < X_MAX; x += 10) {
             if ((x / 10) % 2 == 1) {
                 for (long y = 0; y < Y_MAX; y += 10) {
@@ -172,7 +174,7 @@ public abstract class SpatialIndexTestBase
             TestRecord record = index.newRecord();
             record.spatialObject(box);
             record.soid(c);
-            spatialIndex.add(record);
+            spatialIndex.add(box, record);
             records[c] = record;
         }
         // Generate a permutation of records
@@ -221,9 +223,9 @@ public abstract class SpatialIndexTestBase
         SpatialIndex<TestRecord> query = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         TestRecord record = index.newRecord();
         record.spatialObject(box);
-        query.add(record);
+        query.add(box, record);
         Iterator<Pair<TestRecord, TestRecord>> iterator =
-            SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
+            SpatialJoin.iterator(query, spatialIndex, FILTER, SpatialJoin.Duplicates.INCLUDE);
         List<Point> actual = new ArrayList<>();
         while (iterator.hasNext()) {
             Point point = (Point) iterator.next().right().spatialObject();
@@ -274,18 +276,19 @@ public abstract class SpatialIndexTestBase
             }
         };
     private static final SpaceImpl SPACE = new SpaceImpl(new double[]{0, 0}, new double[]{1000, 1000}, new int[]{10, 10}, null);
-    private static final SpatialJoinFilter FILTER = new SpatialJoinFilter()
-    {
-        @Override
-        public boolean overlap(SpatialObject r, SpatialObject s)
+    private static final SpatialJoinFilter<TestRecord, TestRecord> FILTER =
+        new SpatialJoinFilter<TestRecord, TestRecord>()
         {
-            Box b = (Box) r;
-            Point p = (Point) s;
-            return
-                b.xLo() <= p.x() && p.x() <= b.xHi() &&
-                b.yLo() <= p.y() && p.y() <= b.yHi();
-        }
-    };
+            @Override
+            public boolean overlap(TestRecord r, TestRecord s)
+            {
+                Box b = (Box) r.spatialObject();
+                Point p = (Point) s.spatialObject();
+                return
+                    b.xLo() <= p.x() && p.x() <= b.xHi() &&
+                    b.yLo() <= p.y() && p.y() <= b.yHi();
+            }
+        };
     protected static final SpatialObjectSerializer SERIALIZER = SpatialObjectSerializer.newSerializer();
 
     private static interface Filter

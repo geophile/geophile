@@ -27,6 +27,5 @@ public interface Record
     // Record
     long z();
     void z(long z);
-    SpatialObject spatialObject();
     void copyTo(Record record);
 }

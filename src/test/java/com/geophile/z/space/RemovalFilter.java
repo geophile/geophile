@@ -8,12 +8,12 @@ package com.geophile.z.space;
 
 import com.geophile.z.RecordFilter;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.Record;
+import com.geophile.z.TestRecord;
 
-class RemovalFilter<RECORD extends Record> implements RecordFilter<RECORD>
+class RemovalFilter implements RecordFilter<TestRecord>
 {
     @Override
-    public boolean select(RECORD record)
+    public boolean select(TestRecord record)
     {
         return record.spatialObject().equals(target);
     }

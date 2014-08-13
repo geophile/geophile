@@ -39,9 +39,9 @@ public class JTSPoint extends JTSBase
     @Override
     public boolean containedBy(Space space)
     {
-        assert space == this.space;
         Coordinate coordinate = point().getCoordinate();
         return
+            space == this.space &&
             space.lo(0) <= coordinate.x && coordinate.x <= space.hi(0) &&
             space.lo(1) <= coordinate.y && coordinate.y <= space.hi(1);
     }

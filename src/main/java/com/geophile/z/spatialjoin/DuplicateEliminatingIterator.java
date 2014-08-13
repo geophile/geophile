@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-class DuplicateEliminatingIterator<T> implements Iterator<T>
+public class DuplicateEliminatingIterator<T> implements Iterator<T>
 {
     // Iterator interface
 

@@ -23,7 +23,7 @@ public class TestInput
         record.spatialObject(spatialObject);
         record.soid(soidCounter++);
         records.add(record);
-        spatialIndex.add(record);
+        spatialIndex.add(spatialObject, record);
     }
 
     public List<TestRecord> records()
@@ -36,7 +36,7 @@ public class TestInput
         return spatialIndex;
     }
 
-    public Record only()
+    public TestRecord only()
     {
         assert records.size() == 1;
         return records.get(0);

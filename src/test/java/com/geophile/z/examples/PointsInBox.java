@@ -8,7 +8,6 @@ package com.geophile.z.examples;
 
 import com.geophile.z.*;
 import com.geophile.z.SpatialJoinFilter;
-import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 
@@ -28,19 +27,19 @@ public class PointsInBox
         // Load spatial index with points
         SpatialIndex<Record> points = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         for (int i = 0; i < N_POINTS; i++) {
-            points.add(new Record(randomPoint(), i));
+            Point point = randomPoint();
+            points.add(point, new Record(point, i));
         }
         // Run queries
         for (int q = 0; q < N_QUERIES; q++) {
             // Create Iterator over spatial join output
             Box box = randomBox();
             Iterator<Record> iterator =
-                SpatialJoin.newSpatialJoin(BOX_CONTAINS_POINT, SpatialJoinImpl.Duplicates.EXCLUDE)
-                           .iterator(box, points);
+                SpatialJoin.iterator(box, points, BOX_CONTAINS_POINT, SpatialJoin.Duplicates.EXCLUDE);
             // Print points contained in box
             System.out.println(String.format("Points inside %s", box));
             while (iterator.hasNext()) {
-                com.geophile.z.Record record = iterator.next();
+                Record record = iterator.next();
                 System.out.println(String.format("    %s", record.spatialObject()));
             }
         }
@@ -73,14 +72,14 @@ public class PointsInBox
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{X, Y},
                                                       new int[]{X_BITS, Y_BITS});
-    private static final SpatialJoinFilter BOX_CONTAINS_POINT =
-        new SpatialJoinFilter()
+    private static final SpatialJoinFilter<SpatialObject, Record> BOX_CONTAINS_POINT =
+        new SpatialJoinFilter<SpatialObject, Record>()
         {
             @Override
-            public boolean overlap(SpatialObject r, SpatialObject s)
+            public boolean overlap(SpatialObject x, Record y)
             {
-                Box box = (Box) r;
-                Point point = (Point) s;
+                Box box = (Box) x;
+                Point point = (Point) y.spatialObject();
                 return
                     box.xLo() <= point.x() && point.x() <= box.xHi() &&
                     box.yLo() <= point.y() && point.y() <= box.yHi();

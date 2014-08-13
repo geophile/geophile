@@ -13,9 +13,7 @@
 package com.geophile.z.space;
 
 import com.geophile.z.*;
-import com.geophile.z.Record;
 import com.geophile.z.SpatialJoinFilter;
-import com.geophile.z.spatialjoin.SpatialJoinImpl;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.jts.JTSPoint;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -39,7 +37,8 @@ public class SpatialIndexJTSPointAndBoxTest
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(new TestRecord(point(x, y), id++));
+                JTSPoint point = point(x, y);
+                spatialIndex.add(point, new TestRecord(point, id++));
             }
         }
         Random random = new Random(SEED);
@@ -65,7 +64,8 @@ public class SpatialIndexJTSPointAndBoxTest
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(new TestRecord(point(x, y), id++));
+                JTSPoint point = point(x, y);
+                spatialIndex.add(point, new TestRecord(point, id++));
             }
         }
         // Remove everything
@@ -97,7 +97,8 @@ public class SpatialIndexJTSPointAndBoxTest
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                spatialIndex.add(new TestRecord(point(x, y), id++));
+                JTSPoint point = point(x, y);
+                spatialIndex.add(point, new TestRecord(point, id++));
             }
         }
         // Remove (x, y), for odd x/10 and even y/10
@@ -131,9 +132,9 @@ public class SpatialIndexJTSPointAndBoxTest
         Box box = new Box(xLo, xHi, yLo, yHi);
         TestIndex boxTestIndex = new TestIndex();
         SpatialIndex<TestRecord> query = new SpatialIndexImpl<>(SPACE, boxTestIndex, SpatialIndex.Options.DEFAULT);
-        query.add(new TestRecord(box));
+        query.add(box, new TestRecord(box));
         Iterator<Pair<TestRecord, TestRecord>> iterator =
-            SpatialJoin.newSpatialJoin(FILTER, SpatialJoinImpl.Duplicates.INCLUDE).iterator(query, spatialIndex);
+            SpatialJoin.iterator(query, spatialIndex, FILTER, SpatialJoin.Duplicates.INCLUDE);
         List<JTSPoint> actual = new ArrayList<>();
         JTSPoint point;
         while (iterator.hasNext()) {
@@ -172,7 +173,7 @@ public class SpatialIndexJTSPointAndBoxTest
             yHi = random.nextInt(Y_MAX - yLo);
         } while (yHi <= yLo);
     }
-    
+
     private static Index<TestRecord> newIndex()
     {
         return new TestIndex();
@@ -195,18 +196,19 @@ public class SpatialIndexJTSPointAndBoxTest
             }
         };
     private static final SpaceImpl SPACE = new SpaceImpl(new double[]{0, 0}, new double[]{1000, 1000}, new int[]{10, 10}, null);
-    private static final SpatialJoinFilter FILTER = new SpatialJoinFilter()
-    {
-        @Override
-        public boolean overlap(SpatialObject r, SpatialObject s)
+    private static final SpatialJoinFilter<TestRecord, TestRecord> FILTER =
+        new SpatialJoinFilter<TestRecord, TestRecord>()
         {
-            Box b = (Box) r;
-            JTSPoint p = (JTSPoint) s;
-            return
-                b.xLo() <= p.point().getX() && p.point().getX() <= b.xHi() &&
-                b.yLo() <= p.point().getY() && p.point().getY() <= b.yHi();
-        }
-    };
+            @Override
+            public boolean overlap(TestRecord r, TestRecord s)
+            {
+                Box b = (Box) r.spatialObject();
+                JTSPoint p = (JTSPoint) s.spatialObject();
+                return
+                    b.xLo() <= p.point().getX() && p.point().getX() <= b.xHi() &&
+                    b.yLo() <= p.point().getY() && p.point().getY() <= b.yHi();
+            }
+        };
     private static final RecordFilter<TestRecord> RECORD_FILTER = new RecordFilter<TestRecord>()
     {
         @Override

@@ -29,7 +29,6 @@ public class SpatialJoinManyPointsOneBox
     {
         BoxGenerator pointGenerator = new BoxGenerator(SPACE, random, 1, 1);
         final SpatialIndex<RecordWithSpatialObject> dataIndex = loadSpatialIndex(N_POINTS, pointGenerator);
-        final SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.INCLUDE);
         for (int size = MIN_QUERY_BOX_SIZE; size <= MAX_QUERY_BOX_SIZE; size *= 2) {
             BoxGenerator boxGenerator = new BoxGenerator(SPACE, random, size, size);
             final Box query = (Box) boxGenerator.newSpatialObject();
@@ -45,10 +44,12 @@ public class SpatialJoinManyPointsOneBox
                         {
                             SpatialIndex<RecordWithSpatialObject> queryIndex =
                                 SpatialIndex.newSpatialIndex(SPACE, new SortedArray.OfBaseRecord());
-                            queryIndex.add(new TestRecord(query));
+                            RecordWithSpatialObject queryRecord = new RecordWithSpatialObject();
+                            queryRecord.spatialObject(query);
+                            queryIndex.add(query, queryRecord);
                             for (int trial = 0; trial < TRIALS; trial++) {
                                 Iterator<Pair<RecordWithSpatialObject, RecordWithSpatialObject>> iterator =
-                                    spatialJoin.iterator(queryIndex, dataIndex);
+                                    SpatialJoin.iterator(queryIndex, dataIndex, manyManyFilter, SpatialJoin.Duplicates.INCLUDE);
                                 while (iterator.hasNext()) {
                                     iterator.next();
                                 }
@@ -67,7 +68,8 @@ public class SpatialJoinManyPointsOneBox
                         public Object action() throws IOException, InterruptedException
                         {
                             for (int trial = 0; trial < TRIALS; trial++) {
-                                Iterator<RecordWithSpatialObject> iterator = spatialJoin.iterator(query, dataIndex);
+                                Iterator<RecordWithSpatialObject> iterator =
+                                    SpatialJoin.iterator(query, dataIndex, oneManyFilter, SpatialJoin.Duplicates.INCLUDE);
                                 while (iterator.hasNext()) {
                                     iterator.next();
                                 }
@@ -86,7 +88,8 @@ public class SpatialJoinManyPointsOneBox
     {
         SpatialIndex<RecordWithSpatialObject> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray.OfBaseRecord());
         for (int i = 0; i < n; i++) {
-            spatialIndex.add(new TestRecord(generator.newSpatialObject(), i));
+            SpatialObject spatialObject = generator.newSpatialObject();
+            spatialIndex.add(spatialObject, new TestRecord(spatialObject, i));
         }
         return spatialIndex;
     }
@@ -104,13 +107,28 @@ public class SpatialJoinManyPointsOneBox
     private static final int MAX_QUERY_BOX_SIZE = 64000;
 
     private final BoxOverlapTester overlapTester = new BoxOverlapTester();
-    private final SpatialJoinFilter filter = new SpatialJoinFilter()
+    private final SpatialJoinFilter<RecordWithSpatialObject, RecordWithSpatialObject> manyManyFilter =
+        new SpatialJoinFilter<RecordWithSpatialObject, RecordWithSpatialObject>()
     {
         @Override
-        public boolean overlap(SpatialObject r, SpatialObject s)
+        public boolean overlap(RecordWithSpatialObject left, RecordWithSpatialObject right)
         {
             testStats.filterCount++;
-            boolean overlap = overlapTester.overlap(r, s);
+            boolean overlap = overlapTester.overlap(left.spatialObject(), right.spatialObject());
+            if (overlap) {
+                testStats.overlapCount++;
+            }
+            return overlap;
+        }
+    };
+    private final SpatialJoinFilter<SpatialObject, RecordWithSpatialObject> oneManyFilter =
+        new SpatialJoinFilter<SpatialObject, RecordWithSpatialObject>()
+    {
+        @Override
+        public boolean overlap(SpatialObject left, RecordWithSpatialObject right)
+        {
+            testStats.filterCount++;
+            boolean overlap = overlapTester.overlap(left, right.spatialObject());
             if (overlap) {
                 testStats.overlapCount++;
             }

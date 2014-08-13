@@ -3,6 +3,7 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.Cursor;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
+import com.geophile.z.SpatialJoin;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
 
@@ -502,7 +503,7 @@ class SpatialJoinInput
         copyToCurrent(this.cursor.next());
         this.spatialJoinOutput = spatialJoinOutput;
         this.singleCell = spatialIndex.singleCell();
-        this.singleCellOptimization = SpatialJoinImpl.singleCellOptimization();
+        this.singleCellOptimization = SpatialJoin.singleCellOptimization();
         log("initialize");
     }
 

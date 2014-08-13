@@ -35,26 +35,25 @@ public class SelfJoinTest extends SpatialJoinTestBase
     @Test
     public void selfJoin() throws IOException, InterruptedException
     {
-        SpatialJoinFilter filter =
-            new SpatialJoinFilter()
+        SpatialJoinFilter<TestRecord, TestRecord> filter =
+            new SpatialJoinFilter<TestRecord, TestRecord>()
             {
                 @Override
-                public boolean overlap(SpatialObject r, SpatialObject s)
+                public boolean overlap(TestRecord r, TestRecord s)
                 {
                     testStats.filterCount++;
-                    boolean overlap = OVERLAP_TESTER.overlap(r, s);
+                    boolean overlap = OVERLAP_TESTER.overlap(r.spatialObject(), s.spatialObject());
                     if (overlap) {
                         testStats.overlapCount++;
                     }
                     return overlap;
                 }
             };
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         for (int maxXSize : MAX_SIZES) {
             for (int maxYSize : MAX_SIZES) {
                 BoxGenerator boxGenerator = new BoxGenerator(SPACE, random, maxXSize, maxYSize);
                 TestInput input = newTestInput(COUNT, boxGenerator);
-                testJoin(spatialJoin, input, input);
+                testJoin(input, input, filter, null, SpatialJoin.Duplicates.EXCLUDE);
             }
         }
     }
@@ -73,14 +72,16 @@ public class SelfJoinTest extends SpatialJoinTestBase
                 }
             };
         SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
-        spatialIndex.add(new TestRecord(new Box(10, 20, 30, 40), 1));
-        spatialIndex.add(new TestRecord(new Box(10, 20, 30, 40), 2));
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(KEEP_ALL, SpatialJoin.Duplicates.EXCLUDE);
-        Iterator<Pair<TestRecord, TestRecord>> iterator = spatialJoin.iterator(spatialIndex, spatialIndex);
+        Box box = new Box(10, 20, 30, 40);
+        spatialIndex.add(box, new TestRecord(box, 1));
+        box = new Box(10, 20, 30, 40);
+        spatialIndex.add(box, new TestRecord(box, 2));
+        Iterator<Pair<TestRecord, TestRecord>> iterator =
+            SpatialJoin.iterator(spatialIndex, spatialIndex, KEEP_ALL, SpatialJoin.Duplicates.EXCLUDE);
         // Should see all combinations of b1 and b2
         int count = 0;
         int mask = 0;
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Pair pair = iterator.next();
             TestRecord left = (TestRecord) pair.left();
             TestRecord right = (TestRecord) pair.right();
@@ -160,7 +161,7 @@ public class SelfJoinTest extends SpatialJoinTestBase
         new SpatialJoinFilter()
         {
             @Override
-            public boolean overlap(SpatialObject r, SpatialObject s)
+            public boolean overlap(Object left, Object right)
             {
                 return true;
             }

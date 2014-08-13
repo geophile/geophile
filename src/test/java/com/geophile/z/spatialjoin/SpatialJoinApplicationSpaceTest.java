@@ -31,11 +31,10 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     @Test
     public void test() throws IOException, InterruptedException
     {
-        SpatialJoin spatialJoin = SpatialJoin.newSpatialJoin(filter, SpatialJoin.Duplicates.EXCLUDE);
         TestInput data = loadData(100);
         for (int trial = 0; trial < TRIALS; trial++) {
             TestInput query = loadQuery();
-            testJoin(spatialJoin, query, data);
+            testJoin(query, data, manyManyFilter, oneManyFilter, SpatialJoin.Duplicates.EXCLUDE);
         }
     }
 
@@ -84,7 +83,8 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
         // An n x n grid is superimposed on the space, and a random point is selected from each grid cell.
         int gridCellSize = APP_SPACE_WIDTH / n;
         Index<TestRecord> index = new TestIndex();
-        SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index, SpatialIndex.Options.SINGLE_CELL);
+        SpatialIndex<TestRecord> spatialIndex = SpatialIndex
+            .newSpatialIndex(SPACE, index, SpatialIndex.Options.SINGLE_CELL);
         TestInput input = new TestInput(spatialIndex, String.format("grid(%s x %s)", gridCellSize, gridCellSize));
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -124,18 +124,33 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
                                                       new int[]{X_BITS, Y_BITS});
     private static final BoxPointOverlapTester OVERLAP_TESTER = new BoxPointOverlapTester();
 
-    private final SpatialJoinFilter filter = new SpatialJoinFilter()
-    {
-        @Override
-        public boolean overlap(SpatialObject r, SpatialObject s)
+    private final SpatialJoinFilter<TestRecord, TestRecord> manyManyFilter =
+        new SpatialJoinFilter<TestRecord, TestRecord>()
         {
-            testStats.filterCount++;
-            boolean overlap = OVERLAP_TESTER.overlap(r, s);
-            if (overlap) {
-                testStats.overlapCount++;
+            @Override
+            public boolean overlap(TestRecord left, TestRecord right)
+            {
+                testStats.filterCount++;
+                boolean overlap = OVERLAP_TESTER.overlap(left.spatialObject(), right.spatialObject());
+                if (overlap) {
+                    testStats.overlapCount++;
+                }
+                return overlap;
             }
-            return overlap;
-        }
-    };
+        };
+    private final SpatialJoinFilter<SpatialObject, TestRecord> oneManyFilter =
+        new SpatialJoinFilter<SpatialObject, TestRecord>()
+        {
+            @Override
+            public boolean overlap(SpatialObject left, TestRecord right)
+            {
+                testStats.filterCount++;
+                boolean overlap = OVERLAP_TESTER.overlap(left, right.spatialObject());
+                if (overlap) {
+                    testStats.overlapCount++;
+                }
+                return overlap;
+            }
+        };
     private final Random random = new Random(123454321);
 }

@@ -85,6 +85,7 @@ public class Box implements SpatialObject
     public boolean containedBy(Space space)
     {
         return
+            space.dimensions() == 2 &&
             space.lo(0) <= xLo && xHi <= space.hi(0) &&
             space.lo(1) <= yLo && yHi <= space.hi(1);
     }

@@ -6,7 +6,7 @@
 
 package com.geophile.z;
 
-public interface SpatialJoinFilter
+public interface SpatialJoinFilter<LEFT, RIGHT>
 {
-    boolean overlap(SpatialObject r, SpatialObject s);
+    boolean overlap(LEFT left, RIGHT right);
 }

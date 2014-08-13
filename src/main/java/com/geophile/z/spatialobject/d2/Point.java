@@ -77,6 +77,7 @@ public class Point implements SpatialObject
     public boolean containedBy(Space space)
     {
         return
+            space.dimensions() == 2 &&
             space.lo(0) <= x && x <= space.hi(0) &&
             space.lo(1) <= y && y <= space.hi(1);
     }

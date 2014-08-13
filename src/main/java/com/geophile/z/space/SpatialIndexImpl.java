@@ -26,9 +26,8 @@ public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD
 
     // SpatialIndex interface
 
-    public void add(RECORD record) throws IOException, InterruptedException
+    public void add(SpatialObject spatialObject, RECORD record) throws IOException, InterruptedException
     {
-        SpatialObject spatialObject = record.spatialObject();
         long[] zs = decompose(spatialObject);
         for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
             record.z(zs[i]);
