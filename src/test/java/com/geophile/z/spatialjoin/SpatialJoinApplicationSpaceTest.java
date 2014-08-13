@@ -19,7 +19,6 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
-import com.geophile.z.index.tree.TreeIndex;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;
@@ -84,14 +83,7 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     {
         // An n x n grid is superimposed on the space, and a random point is selected from each grid cell.
         int gridCellSize = APP_SPACE_WIDTH / n;
-        Index<TestRecord> index = new TreeIndex<TestRecord>()
-        {
-            @Override
-            public TestRecord newRecord()
-            {
-                return new TestRecord();
-            }
-        };
+        Index<TestRecord> index = new TestIndex();
         SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index, SpatialIndex.Options.SINGLE_CELL);
         TestInput input = new TestInput(spatialIndex, String.format("grid(%s x %s)", gridCellSize, gridCellSize));
         for (int i = 0; i < n; i++) {

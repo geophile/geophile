@@ -7,7 +7,7 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.z.*;
-import com.geophile.z.index.BaseRecord;
+import com.geophile.z.index.RecordWithSpatialObject;
 import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.space.SpatialIndexImpl;
 
@@ -43,13 +43,13 @@ public class SpatialJoinImpl extends SpatialJoin
     Iterator<RECORD> iterator(SpatialObject query, SpatialIndex<RECORD> dataSpatialIndex)
         throws IOException, InterruptedException
     {
-        SortedArray<BaseRecord> queryIndex = new SortedArray.OfBaseRecord();
-        SpatialIndex<BaseRecord> querySpatialIndex = SpatialIndex.newSpatialIndex(dataSpatialIndex.space(),
-                                                                                  queryIndex,
-                                                                                  query.maxZ() == 1
-                                                                                  ? SpatialIndex.Options.SINGLE_CELL
-                                                                                  : SpatialIndex.Options.DEFAULT);
-        BaseRecord queryRecord = queryIndex.newRecord();
+        SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();
+        SpatialIndex<RecordWithSpatialObject> querySpatialIndex = SpatialIndex.newSpatialIndex(dataSpatialIndex.space(),
+                                                                                               queryIndex,
+                                                                                               query.maxZ() == 1
+                                                                                               ? SpatialIndex.Options.SINGLE_CELL
+                                                                                               : SpatialIndex.Options.DEFAULT);
+        RecordWithSpatialObject queryRecord = queryIndex.newRecord();
         queryRecord.spatialObject(query);
         querySpatialIndex.add(queryRecord);
         Iterator iterator =

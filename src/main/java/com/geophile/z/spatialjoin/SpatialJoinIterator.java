@@ -194,6 +194,8 @@ class SpatialJoinIterator<T> implements Iterator<T>
         @Override
         public Pair generateOutput(Record left, Record right)
         {
+            assert left != null;
+            assert right != null;
             return new Pair<>(left, right);
         }
     }
@@ -203,6 +205,7 @@ class SpatialJoinIterator<T> implements Iterator<T>
         @Override
         public Record generateOutput(Record left, Record right)
         {
+            assert right != null;
             return right;
         }
     }

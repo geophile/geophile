@@ -58,13 +58,6 @@ public class SerializedRecord extends TestRecord
     }
 
     @Override
-    public SpatialObject spatialObject()
-    {
-        ensureFieldsUsable();
-        return super.spatialObject();
-    }
-
-    @Override
     public void copyTo(Record record)
     {
         SerializedRecord target = (SerializedRecord) record;
@@ -82,21 +75,14 @@ public class SerializedRecord extends TestRecord
         }
     }
 
-    @Override
-    public int keyCompare(Record record)
-    {
-        ensureFieldsUsable();
-        return super.keyCompare(record);
-    }
+    // RecordWithSpatialObject interface
 
     @Override
-    public int keyHash()
+    public SpatialObject spatialObject()
     {
         ensureFieldsUsable();
-        return super.keyHash();
+        return super.spatialObject();
     }
-
-    // BaseRecord interface
 
     @Override
     public void spatialObject(SpatialObject spatialObject)

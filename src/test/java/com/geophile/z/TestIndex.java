@@ -15,4 +15,9 @@ public class TestIndex extends TreeIndex<TestRecord>
     {
         return new TestRecord();
     }
+
+    public TestIndex()
+    {
+        super(TestRecord.COMPARATOR);
+    }
 }

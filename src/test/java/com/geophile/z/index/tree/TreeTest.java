@@ -17,7 +17,7 @@ public class TreeTest extends IndexTestBase
     protected Index<TestRecord> newIndex()
     {
         return
-            new TreeIndex<TestRecord>()
+            new TreeIndex<TestRecord>(TestRecord.COMPARATOR)
             {
                 @Override
                 public TestRecord newRecord()

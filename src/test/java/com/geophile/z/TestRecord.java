@@ -6,9 +6,11 @@
 
 package com.geophile.z;
 
-import com.geophile.z.index.BaseRecord;
+import com.geophile.z.index.RecordWithSpatialObject;
 
-public class TestRecord extends BaseRecord
+import java.util.Comparator;
+
+public class TestRecord extends RecordWithSpatialObject
 {
     // Object interface
 
@@ -44,23 +46,6 @@ public class TestRecord extends BaseRecord
         ((TestRecord)record).soid = this.soid;
     }
 
-    @Override
-    public int keyCompare(Record record)
-    {
-        int c = super.keyCompare(record);
-        if (c == 0) {
-            TestRecord that = (TestRecord) record;
-            c = this.soid - that.soid;
-        }
-        return c;
-    }
-
-    @Override
-    public int keyHash()
-    {
-        return soid * 9987001;
-    }
-
     // TestRecord interface
 
     public int soid()
@@ -88,7 +73,30 @@ public class TestRecord extends BaseRecord
     public TestRecord()
     {}
 
+    // Class state
+
+    public static final Comparator<TestRecord> COMPARATOR =
+        new Comparator<TestRecord>()
+        {
+            @Override
+            public int compare(TestRecord r, TestRecord s)
+            {
+                return
+                    r.z() < s.z()
+                    ? -1
+                    : r.z() > s.z()
+                      ? 1
+                      : r.soid < s.soid
+                        ? -1
+                        : r.soid > s.soid
+                          ? 1
+                          : 0;
+            }
+        };
+
     private static final int UNDEFINED_SOID = -1;
+
+    // Object state
 
     private int soid = UNDEFINED_SOID;
 }

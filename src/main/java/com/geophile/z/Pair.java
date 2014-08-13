@@ -1,9 +1,19 @@
 package com.geophile.z;
 
 /**
- * A pair of overlapping {@link SpatialObject}s, obtained via spatial join.
+ * A pair of possibly overlapping spatial objects obtained by a many/many spatial join.
+ * @param <LEFT_RECORD> Record type of spatial join's left input.
+ * @param <RIGHT_RECORD> Record type of spatial join's right input.
  */
 
+// Pair serves two purposes.
+//
+// 1) For a many/many spatial join, a Pair is one element of the join's output.
+// 2) Maps hashCode/equals calls to Record's nonZHash/nonEquals methods.
+//
+// For a one/many join, only the right side of a Pair is used. But a Pair is still used to obtain the mapping
+// of hashCode and equals calls.
+ 
 public class Pair<LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
 {
     // Object interface
@@ -21,11 +31,10 @@ public class Pair<LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
         if (o != null && o instanceof Pair) {
             Pair that = (Pair) o;
             eq =
-                // Avoid Record.equals check if possible
-                this.left.keyHash() == that.left.keyHash() &&
-                this.right.keyHash() == that.right.keyHash() &&
-                // Hashes match, have to check Record.equals
-                this.left.equals(that.left) && this.right.equals(that.right);
+                this.left.hashCode() == that.left.hashCode() &&
+                this.right.hashCode() == that.right.hashCode() &&
+                this.left.equals(that.left) &&
+                this.right.equals(that.right);
         }
         return eq;
     }
@@ -33,7 +42,13 @@ public class Pair<LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
     @Override
     public int hashCode()
     {
-        return left.keyHash() ^ right.keyHash();
+        return left.hashCode() ^ right.hashCode();
+    }
+
+    public Pair(LEFT_RECORD left, RIGHT_RECORD right)
+    {
+        this.left = left;
+        this.right = right;
     }
 
     // Pair interface
@@ -54,12 +69,6 @@ public class Pair<LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
     public RIGHT_RECORD right()
     {
         return right;
-    }
-
-    public Pair(LEFT_RECORD left, RIGHT_RECORD right)
-    {
-        this.left = left;
-        this.right = right;
     }
 
     // Object state

@@ -51,14 +51,12 @@ class DuplicateEliminatingIterator<T> implements Iterator<T>
 
     private void tryToEnsureNext()
     {
-        T t = null;
-        while (t == null && input.hasNext()) {
-            t = input.next();
+        while (next == null && input.hasNext()) {
+            next = input.next();
             if (seen.contains(next)) {
-                t = null;
+                next = null;
             }
         }
-        next = t;
     }
 
     // Object state

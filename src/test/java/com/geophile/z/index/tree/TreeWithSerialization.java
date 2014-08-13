@@ -95,19 +95,10 @@ public class TreeWithSerialization extends Index<TestRecord>
     // Class state
 
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
-    private static final Comparator<TestRecord> RECORD_COMPARATOR =
-        new Comparator<TestRecord>()
-        {
-            @Override
-            public int compare(TestRecord r, TestRecord s)
-            {
-                return r.keyCompare(s);
-            }
-        };
 
     // Object state
 
     private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
     private final SpatialObjectSerializer serializer;
-    private final TreeSet<TestRecord> tree = new TreeSet<TestRecord>(RECORD_COMPARATOR);
+    private final TreeSet<TestRecord> tree = new TreeSet<>(TestRecord.COMPARATOR);
 }

@@ -10,7 +10,7 @@ import com.geophile.z.Cursor;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
 import com.geophile.z.RecordFilter;
-import com.geophile.z.index.BaseRecord;
+import com.geophile.z.index.RecordWithSpatialObject;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -176,12 +176,12 @@ public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
 
     // Inner classes
 
-    public static class OfBaseRecord extends SortedArray<BaseRecord>
+    public static class OfBaseRecord extends SortedArray<RecordWithSpatialObject>
     {
         @Override
-        public BaseRecord newRecord()
+        public RecordWithSpatialObject newRecord()
         {
-            return new BaseRecord();
+            return new RecordWithSpatialObject();
         }
     }
 }

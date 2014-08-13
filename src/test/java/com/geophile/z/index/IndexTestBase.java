@@ -172,7 +172,7 @@ public abstract class IndexTestBase
         throws IOException, InterruptedException
     {
         // Expected
-        NavigableMap<TestRecord, Object> allKeys = new TreeMap<>(TEST_RECORD_COMPARATOR);
+        NavigableMap<TestRecord, Object> allKeys = new TreeMap<>(TestRecord.COMPARATOR);
         for (int id = 0; id < nObjects; id++) {
             for (long c = 0; c < zCount; c++) {
                 TestRecord key = new TestRecord();
@@ -452,13 +452,4 @@ public abstract class IndexTestBase
 
     protected static final SpatialObjectSerializer SERIALIZER = SpatialObjectSerializer.newSerializer();
     private static final int GAP = 10;
-    private static final Comparator<TestRecord> TEST_RECORD_COMPARATOR =
-        new Comparator<TestRecord>()
-        {
-            @Override
-            public int compare(TestRecord r, TestRecord s)
-            {
-                return r.keyCompare(s);
-            }
-        };
 }

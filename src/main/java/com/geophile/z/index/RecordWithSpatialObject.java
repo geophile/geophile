@@ -9,13 +9,7 @@ package com.geophile.z.index;
 import com.geophile.z.Record;
 import com.geophile.z.SpatialObject;
 
-/*
- * Encapsulates a z-value and a SpatialObject. This is unlikely to be useful by itself, because there is nothing
- * to guarantee uniqueness. It will normally be necessary to provide a Record implementation that either extends
- * BaseRecord, or implements Record directly.
- */
-
-public class BaseRecord implements Record
+public class RecordWithSpatialObject implements Record
 {
     // Object interface
 
@@ -32,11 +26,11 @@ public class BaseRecord implements Record
     }
 
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(Object o)
     {
         boolean eq = false;
-        if (obj != null && obj instanceof BaseRecord) {
-            BaseRecord that = (BaseRecord) obj;
+        if (o != null && o instanceof RecordWithSpatialObject) {
+            RecordWithSpatialObject that = (RecordWithSpatialObject) o;
             eq =
                 this.spatialObjectHash == that.spatialObjectHash &&
                 this.spatialObject.equals(that.spatialObject);
@@ -56,43 +50,32 @@ public class BaseRecord implements Record
         z = newZ;
     }
 
-    public SpatialObject spatialObject()
-    {
-        return spatialObject;
-    }
-
     public void copyTo(Record record)
     {
         if (record == this) {
             throw new IllegalArgumentException();
         }
-        BaseRecord that = (BaseRecord) record;
+        RecordWithSpatialObject that = (RecordWithSpatialObject) record;
         that.z = this.z;
         that.spatialObject = this.spatialObject;
         that.spatialObjectHash = this.spatialObjectHash;
     }
 
-    public int keyCompare(Record record)
+    // RecordWithSpatialObject interface
+
+    public SpatialObject spatialObject()
     {
-        BaseRecord that = (BaseRecord) record;
-        return this.z < that.z ? -1 : this.z > that.z ? 1 : 0;
+        return spatialObject;
     }
-
-    @Override
-    public int keyHash()
-    {
-        return spatialObjectHash;
-    }
-
-    // BaseRecord interface
-
-    public BaseRecord()
-    {}
 
     public void spatialObject(SpatialObject spatialObject)
     {
         this.spatialObject = spatialObject;
         this.spatialObjectHash = spatialObject == null ? 0 : spatialObject.hashCode();
+    }
+
+    public RecordWithSpatialObject()
+    {
     }
 
     // Object state

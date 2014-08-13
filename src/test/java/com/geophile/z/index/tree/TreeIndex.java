@@ -72,8 +72,9 @@ public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
 
     // TreeIndex
 
-    public TreeIndex()
+    public TreeIndex(Comparator<RECORD> recordComparator)
     {
+        tree = new TreeSet<>(recordComparator);
     }
 
     // For use by this package
@@ -95,18 +96,9 @@ public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
     // Class state
 
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
-    private static final Comparator<Record> RECORD_COMPARATOR =
-        new Comparator<Record>()
-        {
-            @Override
-            public int compare(Record r, Record s)
-            {
-                return r.keyCompare(s);
-            }
-        };
 
     // Object state
 
     private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
-    private final TreeSet<RECORD> tree = new TreeSet<>(RECORD_COMPARATOR);
+    private final TreeSet<RECORD> tree;
 }

@@ -234,7 +234,7 @@ public abstract class SpatialJoinTestBase
         for (TestRecord r : leftInput.records()) {
             for (TestRecord s : rightInput.records()) {
                 if (overlap(r.spatialObject(), s.spatialObject())) {
-                    expected.add(new Pair<>(r, s));
+                    expected.add(new TestPair<>(r, s));
                 }
             }
         }
@@ -253,4 +253,15 @@ public abstract class SpatialJoinTestBase
     private TestInput rightInput;
     private SpatialObject query;
     protected TestStats testStats;
+
+    // Inner classes
+
+    private static class TestPair<LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
+        extends Pair<LEFT_RECORD, RIGHT_RECORD>
+    {
+        TestPair(LEFT_RECORD left, RIGHT_RECORD right)
+        {
+            super(left, right);
+        }
+    }
 }

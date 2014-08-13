@@ -13,9 +13,11 @@
 package com.geophile.z.examples;
 
 import com.geophile.z.SpatialObject;
-import com.geophile.z.index.BaseRecord;
+import com.geophile.z.index.RecordWithSpatialObject;
 
-public class Record extends BaseRecord
+import java.util.Comparator;
+
+public class Record extends RecordWithSpatialObject
 {
     @Override
     public boolean equals(Object obj)
@@ -52,6 +54,25 @@ public class Record extends BaseRecord
 
     public Record()
     {}
+
+    public static final Comparator<Record> COMPARATOR =
+        new Comparator<Record>()
+        {
+            @Override
+            public int compare(Record r, Record s)
+            {
+                return
+                    r.z() < s.z()
+                    ? -1
+                    : r.z() > s.z()
+                      ? 1
+                      : r.id < s.id
+                        ? -1
+                        : r.id > s.id
+                          ? 1
+                          : 0;
+            }
+        };
 
     private int id;
 }

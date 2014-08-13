@@ -20,15 +20,13 @@ package com.geophile.z;
 
 public interface Record
 {
-    // Object interface
+    // Object
     int hashCode();
-    boolean equals(Object object);
+    boolean equals(Object o);
 
-    // Record interface
+    // Record
     long z();
     void z(long z);
     SpatialObject spatialObject();
     void copyTo(Record record);
-    int keyCompare(Record record);
-    int keyHash();
 }
