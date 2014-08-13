@@ -8,10 +8,9 @@ and *y* overlap.
 This implementation is built on two abstractions:
 
 * **Index:** Any key/value data structure supporting both random and
-sequential access. Binary trees, skiplists, and btrees are examples of
-indexes that are compatible with Geophile. Hash tables are not,
-because they do not provide for sequential access in key
-order. 
+sequential access. Binary trees, skiplists, and b-trees are examples
+of indexes that are compatible with Geophile. Hash tables are not,
+because they do not provide for sequential access in key order.
 
 * **Spatial Object:** Any kind of spatial object, in any number of
 dimensions. The implementation must provide a method that determines the
@@ -19,12 +18,12 @@ relationship of the object to a box: the box is outside the spatial
 object; the box is contained by the spatial object; or the box
 overlaps the spatial object.
 
-These implementations can be mixed arbitrarily, (as long as all the
-spatial objects involved in a spatial join must have the same number
-of dimensions). For example, you could compute the spatial join of a
-b-tree containing millions of polygons with an in-memory sorted array
-containing a small number of points. The output would contain the
-(point, polygon) pairs for which the point is inside the polygon.
+These implementations can be mixed arbitrarily, as long as all the
+spatial objects involved are located in the same space.  For example,
+you could compute the spatial join of a b-tree containing millions of
+polygons with an in-memory sorted array containing a small number of
+points. The output would contain the (polygon, point) pairs for which
+the point is inside the polygon.
 
 ## Installation
 
@@ -88,7 +87,7 @@ Both examples rely on the following `Index` and `SpatialObject` classes,
 included with the distribution:
 
 * `com.geophile.z.index.treeindex.TreeIndex`: An adapter
-between `com.geophile.z.Index` and `java.util.TreeMap`.
+between `com.geophile.z.Index` and `java.util.TreeSet`.
 
 * `com.geophile.z.spatialobject.d2.Point`: A 2d point.
 
@@ -99,7 +98,7 @@ To run the examples, set the `CLASSPATH` to contain
 
 ### Find all overalpping pairs of boxes
 
-`OverlappingPairs` loads two spatial indexes, each with 1,000,000 tiny
+`OverlappingPairs` loads two spatial indexes, each with 100,000 tiny
 boxes, and then finds all the overlapping pairs.
 
 The space is created as follows:
@@ -108,6 +107,7 @@ The space is created as follows:
     private static final int Y = 1_000_000;
     private static final int X_BITS = 20;
     private static final int Y_BITS = 20;
+    private static final int N_BOXES = 100_000;
     ...
     private static final Space SPACE = Space.newSpace(new double[]{0, 0}, 
                                                       new double[]{X, Y}, 
@@ -115,25 +115,35 @@ The space is created as follows:
 
 The spatial indexes are created and loaded as follows:
 
-        SpatialIndex<Box> left = 
-            SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
-        SpatialIndex<Box> right = 
-            SpatialIndex.newSpatialIndex(space, new TreeIndex<Box>());
+        SpatialIndex<ExampleRecord> left = 
+            SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
+        SpatialIndex<ExampleRecord> right = 
+            SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
+        Box box;
         for (int i = 0; i < N_BOXES; i++) {
-            left.add(randomBox());
-            right.add(randomBox());
+            Box leftBox = randomBox();
+            Box rightBox = randomBox();
+            left.add(leftBox, new ExampleRecord(leftBox, i));
+            right.add(rightBox, new ExampleRecord(rightBox, i));
         }
         ...
         private static final int N_BOXES = 1_000_000;
 
+* `ExampleRecord` is a simple class encapsulating a `SpatialObject` and an integer identifier.
+
+* `ExampleIndex` is a wrapper around `TreeIndex` (a `TreeSet`-based
+index) which specifies that it contains records of type
+`ExampleRecord`, and a Comparator for these records.
+
 The spatial join output is created and scanned as follows:
 
-        Iterator<Pair<Box, Box>> iterator =
-            SpatialJoin.newSpatialJoin(BOX_OVERLAP, 
-                                       SpatialJoin.Duplicates.EXCLUDE)
-                       .iterator(left, right);
+        Iterator<Pair<ExampleRecord, ExampleRecord>> iterator =
+            SpatialJoin.iterator(left, 
+                                 right, 
+                                 BOX_OVERLAP, 
+                                 SpatialJoin.Duplicates.EXCLUDE);
         while (iterator.hasNext()) {
-            Pair<Box, Box> overlappingPair = iterator.next();
+            Pair<ExampleRecord, ExampleRecord> overlappingPair = iterator.next();
             ...
         }
 
@@ -141,34 +151,26 @@ To run the example (exact results will differ):
 
         $ src/test/examples/overlapping_pairs 
         Overlapping pairs
-            ((40847:40848, 247657:247658), (40846:40847, 247656:247657))
-            ((358925:358926, 256877:256878), (358925:358926, 256877:256878))
-            ((269488:269489, 517640:517641), (269488:269489, 517640:517641))
-            ((218240:218241, 690284:690285), (218241:218242, 690283:690284))
-            ((586603:586604, 78305:78306), (586604:586605, 78304:78305))
-            ((577376:577377, 304065:304066), (577376:577377, 304064:304065))
-            ((553172:553173, 482781:482782), (553172:553173, 482782:482783))
-            ((654695:654696, 413812:413813), (654694:654695, 413812:413813))
-            ((968053:968054, 24216:24217), (968054:968055, 24217:24218))
-            ((977679:977680, 337249:337250), (977678:977679, 337250:337251))
-            ((670178:670179, 643354:643355), (670178:670179, 643355:643356))
+            (808041.0:808050.0, 309510.0:309519.0)	(808038.0:808047.0, 309505.0:309514.0)
+            (912678.0:912687.0, 766340.0:766349.0)	(912673.0:912682.0, 766348.0:766357.0)
 
 ### Find all the points in a given box
 
-`PointsInBox` loads 1,000,000 points in a spatial index, and then does
+`PointsInBox` loads 100,000 points in a spatial index, and then does
 a spatial join to locate all the points within a query box. There is a
 simplified API for cases like this, in which one of the spatial join
 inputs is a single spatial object.
 
 The spatial index with 1,000,000 points is created and loaded as follows:
 
-        SpatialIndex<Point> points = 
-            SpatialIndex.newSpatialIndex(space, new TreeIndex<Point>());
+        SpatialIndex<ExampleRecord> points = 
+            SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
         for (int i = 0; i < N_POINTS; i++) {
-            points.add(randomPoint());
+            Point point = randomPoint();
+            points.add(point, new ExampleRecord(point, i));
         }
         ...
-        private static final int N_POINTS = 1_000_000;
+        private static final int N_POINTS = 100_000;
 
 The query box is created:
 
@@ -176,14 +178,16 @@ The query box is created:
 
 The spatial join is done as follows:
 
-            Iterator<SpatialObject> iterator =
-                SpatialJoin.newSpatialJoin(BOX_CONTAINS_POINT, SpatialJoinImpl.Duplicates.EXCLUDE)
-                           .iterator(box, points);
+            Iterator<ExampleRecord> iterator =
+                SpatialJoin.iterator(box, 
+                                     points, 
+                                     BOX_CONTAINS_POINT, 
+                                     SpatialJoin.Duplicates.EXCLUDE);
             // Print points contained in box
             System.out.println(String.format("Points inside %s", box));
             while (iterator.hasNext()) {
-                SpatialObject pointInBox = iterator.next();
-                System.out.println(String.format("    %s", pointInBox));
+                ExampleRecord record = iterator.next();
+                System.out.println(String.format("    %s", record.spatialObject()));
             }
 
 The iterator returns spatial objects from `points`, the second argument to the
@@ -194,30 +198,51 @@ The example runs 5 queries for the same data set. To run the example
 (exact results will differ):
 
         $ src/test/examples/points_in_box 
-        Points inside (82078:84077, 740534:742533)
-            (83230, 741182)
-            (82783, 741386)
-            (83198, 741478)
-            (83377, 742178)
-        Points inside (846457:848456, 156619:158618)
-            (846473, 157085)
-            (846665, 157147)
-            (847076, 157252)
-            (847979, 157426)
-            (848306, 157305)
-            (848156, 157784)
-            (848269, 157807)
-        Points inside (105162:107161, 922561:924560)
-            (105993, 922817)
-            (106286, 923679)
-            (106641, 923434)
-        Points inside (511381:513380, 932274:934273)
-            (511527, 933712)
-            (512707, 932378)
-            (513057, 932959)
-            (513160, 932908)
-        Points inside (738161:740160, 280379:282378)
-            (739058, 281866)
-            (739995, 281111)
-            (740117, 281418)
-
+        Points inside (913802.0:923801.0, 454256.0:464255.0)
+            (914856.0, 457038.0)
+            (914733.0, 460286.0)
+            (917114.0, 458769.0)
+            (917084.0, 460012.0)
+            (919723.0, 455706.0)
+            (920704.0, 462415.0)
+            (920952.0, 461800.0)
+            (922320.0, 455902.0)
+            (923100.0, 459578.0)
+            (922532.0, 461437.0)
+            (922380.0, 463585.0)
+        Points inside (113254.0:123253.0, 832710.0:842709.0)
+            (115443.0, 839890.0)
+            (119119.0, 840991.0)
+            (118426.0, 842531.0)
+            (121833.0, 841634.0)
+            (122308.0, 841260.0)
+        Points inside (322956.0:332955.0, 898825.0:908824.0)
+            (324159.0, 900132.0)
+            (326677.0, 901713.0)
+            (329265.0, 901457.0)
+            (330675.0, 904247.0)
+            (332428.0, 901001.0)
+            (332606.0, 900930.0)
+            (332891.0, 904158.0)
+            (328246.0, 906392.0)
+            (330033.0, 907402.0)
+            (330479.0, 908126.0)
+            (331725.0, 906492.0)
+            (331660.0, 908755.0)
+        Points inside (543685.0:553684.0, 619044.0:629043.0)
+            (545674.0, 624489.0)
+            (548309.0, 622728.0)
+            (543778.0, 626348.0)
+            (548836.0, 627232.0)
+            (549439.0, 628060.0)
+            (551537.0, 625792.0)
+            (551633.0, 626626.0)
+            (552856.0, 628017.0)
+        Points inside (449049.0:459048.0, 238101.0:248100.0)
+            (452099.0, 240735.0)
+            (451890.0, 244515.0)
+            (455139.0, 239030.0)
+            (455306.0, 241785.0)
+            (456368.0, 242123.0)
+            (457867.0, 240053.0)
+            (457873.0, 245254.0)

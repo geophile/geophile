@@ -12,54 +12,47 @@
 
 package com.geophile.z.examples;
 
+import com.geophile.z.Record;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.index.RecordWithSpatialObject;
 
 import java.util.Comparator;
 
-public class Record extends RecordWithSpatialObject
+public class ExampleRecord extends RecordWithSpatialObject
 {
     @Override
     public boolean equals(Object obj)
     {
         boolean eq = false;
-        if (obj != null && obj instanceof Record) {
-            Record that = (Record) obj;
-            eq = this.z() == that.z() && this.id == that.id;
+        if (obj != null && obj instanceof ExampleRecord) {
+            ExampleRecord that = (ExampleRecord) obj;
+            eq = super.equals(that) && this.id == that.id;
         }
         return eq;
     }
 
-    public int id()
+    @Override
+    public void copyTo(Record record)
     {
-        return id;
+        ExampleRecord exampleRecord = (ExampleRecord) record;
+        super.copyTo(exampleRecord);
+        exampleRecord.id = id;
     }
 
-    public void id(int newId)
-    {
-        id = newId;
-    }
-
-    public Record(SpatialObject spatialObject)
-    {
-        spatialObject(spatialObject);
-        id = 0;
-    }
-
-    public Record(SpatialObject spatialObject, int id)
+    public ExampleRecord(SpatialObject spatialObject, int id)
     {
         spatialObject(spatialObject);
         this.id = id;
     }
 
-    public Record()
+    public ExampleRecord()
     {}
 
-    public static final Comparator<Record> COMPARATOR =
-        new Comparator<Record>()
+    public static final Comparator<ExampleRecord> COMPARATOR =
+        new Comparator<ExampleRecord>()
         {
             @Override
-            public int compare(Record r, Record s)
+            public int compare(ExampleRecord r, ExampleRecord s)
             {
                 return
                     r.z() < s.z()

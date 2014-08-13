@@ -7,7 +7,6 @@
 package com.geophile.z.examples;
 
 import com.geophile.z.*;
-import com.geophile.z.SpatialJoinFilter;
 import com.geophile.z.spatialobject.d2.Box;
 
 import java.io.IOException;
@@ -24,22 +23,24 @@ public class OverlappingPairs
     private void run() throws IOException, InterruptedException
     {
         // Load spatial indexes with boxes
-        SpatialIndex<Record> left = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
-        SpatialIndex<Record> right = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
+        SpatialIndex<ExampleRecord> left = SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
+        SpatialIndex<ExampleRecord> right = SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
         for (int i = 0; i < N_BOXES; i++) {
-            Box box = randomBox();
-            left.add(box, new Record(box, i));
-            box = randomBox();
-            right.add(box, new Record(box, i));
+            Box leftBox = randomBox();
+            Box rightBox = randomBox();
+            left.add(leftBox, new ExampleRecord(leftBox, i));
+            right.add(rightBox, new ExampleRecord(rightBox, i));
         }
         // Find overlapping pairs
-        Iterator<Pair<Record, Record>> iterator =
+        Iterator<Pair<ExampleRecord, ExampleRecord>> iterator =
             SpatialJoin.iterator(left, right, BOX_OVERLAP, SpatialJoin.Duplicates.EXCLUDE);
         // Print points contained in box
         System.out.println("Overlapping pairs");
         while (iterator.hasNext()) {
-            Pair overlappingPair = iterator.next();
-            System.out.println(String.format("    %s", overlappingPair));
+            Pair<ExampleRecord, ExampleRecord> overlappingPair = iterator.next();
+            System.out.format("    %s\t%s\n",
+                              overlappingPair.left().spatialObject(),
+                              overlappingPair.right().spatialObject());
         }
     }
 
@@ -56,23 +57,23 @@ public class OverlappingPairs
     private static final int Y = 1_000_000;
     private static final int X_BITS = 20;
     private static final int Y_BITS = 20;
-    private static final int N_BOXES = 1_000_000;
-    private static final int BOX_WIDTH = 2;
-    private static final int BOX_HEIGHT = 2;
+    private static final int N_BOXES = 100_000;
+    private static final int BOX_WIDTH = 10;
+    private static final int BOX_HEIGHT = 10;
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{X, Y},
                                                       new int[]{X_BITS, Y_BITS});
-    private static final SpatialJoinFilter<Record, Record> BOX_OVERLAP =
-        new SpatialJoinFilter<Record, Record>()
+    private static final SpatialJoinFilter<ExampleRecord, ExampleRecord> BOX_OVERLAP =
+        new SpatialJoinFilter<ExampleRecord, ExampleRecord>()
         {
             @Override
-            public boolean overlap(Record r, Record s)
+            public boolean overlap(ExampleRecord r, ExampleRecord s)
             {
                 Box a = (Box) r.spatialObject();
                 Box b = (Box) s.spatialObject();
                 return
-                    a.xLo() <= b.xHi() && b.xLo() <= a.xHi() &&
-                    a.yLo() <= b.yHi() && b.yLo() <= a.yHi();
+                    a.xLo() < b.xHi() && b.xLo() < a.xHi() &&
+                    a.yLo() < b.yHi() && b.yLo() < a.yHi();
             }
         };
 

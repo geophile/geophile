@@ -25,21 +25,21 @@ public class PointsInBox
     private void run() throws IOException, InterruptedException
     {
         // Load spatial index with points
-        SpatialIndex<Record> points = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
+        SpatialIndex<ExampleRecord> points = SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
         for (int i = 0; i < N_POINTS; i++) {
             Point point = randomPoint();
-            points.add(point, new Record(point, i));
+            points.add(point, new ExampleRecord(point, i));
         }
         // Run queries
         for (int q = 0; q < N_QUERIES; q++) {
             // Create Iterator over spatial join output
             Box box = randomBox();
-            Iterator<Record> iterator =
+            Iterator<ExampleRecord> iterator =
                 SpatialJoin.iterator(box, points, BOX_CONTAINS_POINT, SpatialJoin.Duplicates.EXCLUDE);
             // Print points contained in box
             System.out.println(String.format("Points inside %s", box));
             while (iterator.hasNext()) {
-                Record record = iterator.next();
+                ExampleRecord record = iterator.next();
                 System.out.println(String.format("    %s", record.spatialObject()));
             }
         }
@@ -65,18 +65,18 @@ public class PointsInBox
     private static final int Y = 1_000_000;
     private static final int X_BITS = 20;
     private static final int Y_BITS = 20;
-    private static final int N_POINTS = 1_000_000;
-    private static final int BOX_WIDTH = 2_000;
-    private static final int BOX_HEIGHT = 2_000;
+    private static final int N_POINTS = 100_000;
+    private static final int BOX_WIDTH = 10_000;
+    private static final int BOX_HEIGHT = 10_000;
     private static final int N_QUERIES = 5;
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{X, Y},
                                                       new int[]{X_BITS, Y_BITS});
-    private static final SpatialJoinFilter<SpatialObject, Record> BOX_CONTAINS_POINT =
-        new SpatialJoinFilter<SpatialObject, Record>()
+    private static final SpatialJoinFilter<SpatialObject, ExampleRecord> BOX_CONTAINS_POINT =
+        new SpatialJoinFilter<SpatialObject, ExampleRecord>()
         {
             @Override
-            public boolean overlap(SpatialObject x, Record y)
+            public boolean overlap(SpatialObject x, ExampleRecord y)
             {
                 Box box = (Box) x;
                 Point point = (Point) y.spatialObject();
