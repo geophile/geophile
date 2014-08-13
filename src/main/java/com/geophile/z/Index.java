@@ -11,57 +11,60 @@ import com.geophile.z.index.KeyTemplateIndex;
 import java.io.IOException;
 
 /**
- * An index used to contain {@link com.geophile.z.SpatialObject}s must implement this interface.
- *
- * When a {@link com.geophile.z.SpatialObject} is added to a {@link com.geophile.z.SpatialIndex},
- * records of the form ((z, id), s) are added to an Index. s is the spatial object.
- * The key, (z, id), comprises a z-value z, and the spatial object's id.
- * (The {@link com.geophile.z.SpatialIndex} is responsible for generating z-values and calling
- * {@link Index#add(long, com.geophile.z.SpatialObject)}.)
- *
- * Removal of a {@link com.geophile.z.SpatialObject} from a {@link com.geophile.z.SpatialIndex} is
- * done by calling {@link #remove(long, long)} for each z-value of the {@link com.geophile.z.SpatialObject}.
- * In order to completely remove a {@link com.geophile.z.SpatialObject}, the same z-values must be provided
- * as when the object was added.
- *
- * An index that does "blind updates" cannot detect duplicate keys, and cannot indicate whether a removal succeeds.
- * An index with these behaviors is indicated by {@link #blindUpdates()}.
- *
+ * An index containing {@link com.geophile.z.Record}s must extend this class.
  * Access to Index contents is accomplished using a {@link Cursor}, obtained by
- * {@link Index#cursor(long)}.
- *
+ * {@link #cursor()}.
+ * @param <RECORD> The type of {@link com.geophile.z.Record} contained by this Index.
  */
 
 public abstract class Index<RECORD extends Record>
 {
     /**
-     * Adds a spatial object to this index, associated with the given z-value.
+     * Adds a {@link com.geophile.z.Record} to this index.
      * An Index implementation must not assume that it owns the record, and that the record is immutable.
+     * This means that the state of the record must be copied into the index before this method returns.
+     * Inserting the given record directly into the index is dangerous because the state of the record
+     * may be changed by the caller.
      * @param record The record being added to this Index.
-     * @throws DuplicateRecordException if (z, spatialObject.id()) is already present. This exception cannot
+     * @throws DuplicateRecordException if the record is already present. This exception cannot
      *         be thrown by an index that does blind updates.
      */
     public abstract void add(RECORD record)
         throws IOException, InterruptedException, DuplicateRecordException;
 
     /**
-     * Removes the association between the given z-value and the spatial object with the given id.
-     * Complete removal of a spatial object will require removal for each of the object's z-values.
-     * @param z z-value representing a region that overlaps the spatial object.
-     * @param soid Identifies the spatial object being removed from the index.
+     * Removal of an indexed spatial object requires removal of the {@link com.geophile.z.Record}s
+     * containing each of the spatial object's z-values. Z-values are not unique -- the same z-value
+     * may be part of the decomposition of any number of {@link com.geophile.z.SpatialObject}s.
+     * A {@link com.geophile.z.RecordFilter} is used to determine which {@link com.geophile.z.Record}s
+     * are to be removed. Geophile (via {@link com.geophile.z.SpatialIndex#remove(SpatialObject, RecordFilter)})
+     * orchestrates the calls to this method, and does not ensure that recordFilter.select returns true
+     * for at most one record. Instead, it proceeds until one such record is located and removes that record.
+     * @param z z-value representing a region that overlaps the spatial object being removed.
+     * @param recordFilter identifies which {@link com.geophile.z.Record} associated with the given
+     *                     z-value should be removed.
      * @return false if this index does blind updates. Otherwise, the return value is true
-     *               if the record with key (z, spatialObject.id()) was found and removed, false otherwise.
+     *               iff a {@link com.geophile.z.Record} is found such that it has given z-value, and causes
+     *               recordFilter.select to return true.
      */
     public abstract boolean remove(long z, RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException;
 
     /**
-     * Returns a {@link Cursor} positioned at the given z-value.
-     * @return A {@link Cursor} postioned at the given z-value.
+     * Returns a {@link com.geophile.z.Cursor} that can visit this Index's records.
+     * @return A {@link com.geophile.z.Cursor} that can visit this Index's records.
      */
     public abstract Cursor<RECORD> cursor() throws IOException, InterruptedException;
 
+    /**
+     * Returns a {@link com.geophile.z.Record} that can be added to this Index.
+     * @return A {@link com.geophile.z.Record} that can be added to this Index.
+     */
     public abstract RECORD newRecord();
 
+    /**
+     * Returns a {@link com.geophile.z.Record} that can be used as a key to search this Index.
+     * @return A {@link com.geophile.z.Record} that can be used as a key to search this Index.
+     */
     public RECORD newKeyRecord()
     {
         return newRecord();
@@ -76,6 +79,14 @@ public abstract class Index<RECORD extends Record>
         return false;
     }
 
+    /**
+     * keyTemplate is a {@link com.geophile.z.Record} containing a partially specified Index key.
+     * This method returns an Index in which retrievals (through a {@link com.geophile.z.Cursor})
+     * are limited to {@link com.geophile.z.Record}s matching that partially specified key.
+     * @param keyTemplate A partially specified key.
+     * @return An Index whose {@link com.geophile.z.Record} is restricted as specified by the keyTemplate.
+     * Note that this is a view, and that changes to the Index may be visible through the returned Index.
+     */
     public Index<RECORD> restrict(RECORD keyTemplate)
     {
         return new KeyTemplateIndex<>(this, keyTemplate);

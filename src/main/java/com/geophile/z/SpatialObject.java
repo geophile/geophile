@@ -13,8 +13,6 @@ import java.nio.ByteBuffer;
 
 /**
  * A SpatialObject represents a set of points in a {@link com.geophile.z.Space}.
- * Each SpatialObject has an {@link #id()}, assigned by the application, which must be unique within the containing
- * {@link com.geophile.z.SpatialIndex}.
  */
 
 public interface SpatialObject
@@ -52,7 +50,15 @@ public interface SpatialObject
      */
     RegionComparison compare(Region region);
 
+    /**
+     * Reconstitute this SpatialObject from its serialized form.
+     * @param buffer Contains the serialized bytes of a spatial object.
+     */
     void readFrom(ByteBuffer buffer);
 
+    /**
+     * Write the serialized form of this SpatialObject to the given buffer.
+     * @param buffer Receives the serialized bytes.
+     */
     void writeTo(ByteBuffer buffer);
 }

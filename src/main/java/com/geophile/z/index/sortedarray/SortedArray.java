@@ -46,7 +46,7 @@ public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
     @Override
     public boolean remove(long z, RecordFilter<RECORD> recordFilter)
     {
-        boolean removed = false;
+        boolean removeRecordFound = false;
         RECORD key = newKeyRecord();
         key.z(z);
         int binarySearchPosition = binarySearch(key);
@@ -54,7 +54,6 @@ public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
             // There might be multiple occurrences of the same z. Search backward and forward for matching zs, looking
             // for a record satisfying the record filter.
             boolean sameZ = true;
-            boolean removeRecordFound = false;
             int position = binarySearchPosition;
             while (position >= 0 && sameZ && !removeRecordFound) {
                 RECORD record = (RECORD) records[position];
@@ -88,10 +87,9 @@ public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
             if (removeRecordFound) {
                 System.arraycopy(records, position + 1, records, position, n - 1 - position);
                 n--;
-                removed = true;
             }
         }
-        return removed;
+        return removeRecordFound;
     }
 
     @Override

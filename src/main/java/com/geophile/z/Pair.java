@@ -6,14 +6,6 @@ package com.geophile.z;
  * @param <RIGHT_RECORD> Record type of spatial join's right input.
  */
 
-// Pair serves two purposes.
-//
-// 1) For a many/many spatial join, a Pair is one element of the join's output.
-// 2) Maps hashCode/equals calls to Record's nonZHash/nonEquals methods.
-//
-// For a one/many join, only the right side of a Pair is used. But a Pair is still used to obtain the mapping
-// of hashCode and equals calls.
- 
 public class Pair<LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
 {
     // Object interface

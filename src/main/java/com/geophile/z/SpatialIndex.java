@@ -12,7 +12,7 @@ import com.geophile.z.space.SpatialIndexImpl;
 import java.io.IOException;
 
 /**
- * A SpatialIndex organizes a set of {@link SpatialObject}s for the efficient execution of spatial searches.
+ * A SpatialIndex organizes a set of {@link SpatialObject}s for the efficient execution of spatial joins.
  */
 
 public abstract class SpatialIndex<RECORD extends Record>
@@ -27,16 +27,19 @@ public abstract class SpatialIndex<RECORD extends Record>
     }
 
     /**
-     * Adds the given spatial object to the index.
-     * @param spatialObject The spatialObject being indexed.
+     * Adds the given record to the index, keyed by the given {@link com.geophile.z.SpatialObject}. A search of
+     * this index given a {@link com.geophile.z.SpatialObject} overlapping the given key will locate the given record.
+     * @param key The {@link com.geophile.z.SpatialObject} being indexed.
      * @param record The record to be added.
      */
-    public abstract void add(SpatialObject spatialObject, RECORD record) throws IOException, InterruptedException;
+    public abstract void add(SpatialObject key, RECORD record) throws IOException, InterruptedException;
 
     /**
-     * Removes the given spatial object from the index.
-     * @param spatialObject The object to be removed.
-     * @param filterTODO
+     * Removes from this index the record associated with the given {@link com.geophile.z.SpatialObject}.
+     * A number of records may be located during the removal. The given {@link com.geophile.z.RecordFilter}
+     * will identify the records to be removed.
+     * @param spatialObject Key of the records to be removed.
+     * @param recordFilter Identifies the exact records to be removed, causing false positives to be ignored.
      * @return true if spatialObject was found and removed, false otherwise
      */
     public abstract boolean remove(SpatialObject spatialObject,

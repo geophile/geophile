@@ -20,7 +20,7 @@ import com.geophile.z.space.SpatialIndexImpl;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class SpatialJoinImpl
+public abstract class SpatialJoinImpl
 {
     public static <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
     Iterator<Pair<LEFT_RECORD, RIGHT_RECORD>> iterator(SpatialIndex<LEFT_RECORD> leftSpatialIndex,
@@ -87,6 +87,11 @@ public class SpatialJoinImpl
         return iterator;
     }
 
+    public static boolean singleCellOptimization()
+    {
+        return Boolean.valueOf(System.getProperty(SINGLE_CELL_OPTIMIZATION_PROPERTY, "true"));
+    }
+
     private static SpatialJoinFilter DEFAULT_FILTER =
         new SpatialJoinFilter()
         {
@@ -96,4 +101,6 @@ public class SpatialJoinImpl
                 return true;
             }
         };
+
+    private static final String SINGLE_CELL_OPTIMIZATION_PROPERTY = "singlecellopt";
 }

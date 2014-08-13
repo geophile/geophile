@@ -10,11 +10,61 @@ import java.io.IOException;
 
 public abstract class Cursor<RECORD extends Record>
 {
+    // Cursor interface
+
+    /**
+     * <b>If the Cursor has just been created:</b>
+     *     The result of calling this method is undefined.
+
+     * <b>If the Cursor has just been positioned using {@link #goTo(Record)}:</b>
+     *     This method moves the Cursor to the
+     *     {@link com.geophile.z.Record} with the key passed to goTo, or to the smallest
+     *     {@link com.geophile.z.Record} whose key is greater than that key. If the key
+     *     is greater than that largest key in the index, then the Cursor is closed and null is returned.
+
+     * <b>If the Cursor has just been accessed using {@link #next()} or {@link #previous()}:</b>
+     *     This method moves the Cursor to the {@link com.geophile.z.Record}
+     *     with the next larger key, or to null if the Cursor was already positioned at the last
+     *     {@link com.geophile.z.Record} of the index.
+     *
+     * @return The {@link com.geophile.z.Record} at the new Cursor position, or null if the Cursor
+     * was moved past the last record.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public abstract RECORD next() throws IOException, InterruptedException;
 
+    /**
+     * <b>If the Cursor has just been created:</b>
+     *     The result of calling this method is undefined.
+
+     * <b>If the Cursor has just been positioned using {@link #goTo(Record)}:</b>
+     *     This method moves the Cursor to the
+     *     {@link com.geophile.z.Record} with the key passed to goTo, or to the largest
+     *     {@link com.geophile.z.Record} whose key is less than that key. If the key
+     *     is less than that smallest key in the index, then the Cursor is closed and null is returned.
+
+     * <b>If the Cursor has just been accessed using {@link #next()} or {@link #previous()}:</b>
+     *     This method moves the Cursor to the {@link com.geophile.z.Record}
+     *     with the next smaller key, or to null if the Cursor was already positioned at the first
+     *     {@link com.geophile.z.Record} of the index.
+     *
+     * @return The {@link com.geophile.z.Record} at the new Cursor position, or null if the Cursor
+     * was moved past the last record.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public abstract RECORD previous() throws IOException, InterruptedException;
 
-    public abstract void goTo(RECORD record) throws IOException, InterruptedException;
+    /**
+     * Position the Cursor at the {@link com.geophile.z.Record} with the given key. If there is
+     * no such record, then the Cursor position is "between" records, and a call to {@link #next()}
+     * or {@link #previous()} will position the Cursor at one of the bounding records.
+     * @param key The key to search for.
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public abstract void goTo(RECORD key) throws IOException, InterruptedException;
 
     /**
      * Delete the record returned by the immediately preceding call to next or previous.
@@ -30,12 +80,18 @@ public abstract class Cursor<RECORD extends Record>
      */
     public abstract boolean deleteCurrent() throws IOException, InterruptedException;
 
+    /**
+     * Mark the Cursor as no longer usable. Subsequent calls to {@link #goTo(Record)}, {@link #next()}
+     * {@link #previous()}, or {@link #deleteCurrent()} will have undefined results.
+     */
     public void close()
     {
         state = State.DONE;
     }
 
-    public final RECORD current() throws IOException, InterruptedException
+    // For use by subclasses
+
+    protected final RECORD current() throws IOException, InterruptedException
     {
         return state == State.DONE ? null : current;
     }
