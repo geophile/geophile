@@ -14,16 +14,16 @@ import java.util.Iterator;
 /**
  * Provides the API for specifying a spatial join. There are four methods, representing the following options:
  *
- * <ol>
- *     <li>One/many or many/many join:</li> In general, a spatial join is computed between two sets of
+ * <ul>
+ *     <li><b>One/many or many/many join:</b> In general, a spatial join is computed between two sets of
  *     {@link com.geophile.z.SpatialObject}s, each contained in a {@link com.geophile.z.SpatialIndex}. But it is
  *     often the case that one of the sets is a singleton.
  *
- *     <li>Filtering of results:</li> Geophile's spatial join algorithm returns false positives -- pairs of objects
+ *     <li><b>Filtering of results:</b> Geophile's spatial join algorithm returns false positives -- pairs of objects
  *     that don't actually overlap. It may be possible
  *     to filter out the false positives for some record types, e.g., if the records contain the spatial objects
  *     themselves. To support such cases, a {@link com.geophile.z.SpatialJoinFilter} may be supplied.
- * </ol>
+ * </ul>
  *
  * In all cases, spatial join results are accessed through an {@link java.util.Iterator}. For a many/many join,
  * the Iterator yields {@link com.geophile.z.Pair} objects, in which {@link com.geophile.z.Pair#left()}  and
