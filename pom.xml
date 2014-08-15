@@ -16,7 +16,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.1</version>
+      <version>[4.10,]</version>
       <scope>test</scope>
     </dependency>
     <!-- jts -->
@@ -25,6 +25,14 @@
       <artifactId>jts</artifactId>
       <version>1.8</version>
     </dependency>
+    <!-- jcunit -->
+    <dependency>
+      <groupId>com.github.dakusui</groupId>
+      <artifactId>jcunit</artifactId>
+      <version>0.4.7</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
   <build>
     <plugins>
