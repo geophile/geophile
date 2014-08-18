@@ -8,10 +8,10 @@ package com.geophile.util;
 
 public abstract class MicroBenchmark
 {
-    public void beforeAction()
+    public void beforeAction() throws Exception
     {}
 
-    public void afterAction()
+    public void afterAction() throws Exception
     {}
 
     public abstract Object action() throws Exception;
@@ -21,7 +21,8 @@ public abstract class MicroBenchmark
         return getClass().getSimpleName();
     }
 
-    public final double run()
+    // Returns runtime in nsec.
+    public final double run() throws Exception
     {
         while (!converged()) {
             beforeAction();
@@ -39,7 +40,7 @@ public abstract class MicroBenchmark
         return historyAverage;
     }
 
-    public final void profile()
+    public final void profile() throws Exception
     {
         while (true) {
             beforeAction();

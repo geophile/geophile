@@ -20,12 +20,12 @@ import java.util.Random;
 
 public class SpatialJoinManyPointsOneBox
 {
-    public static void main(String[] args) throws IOException, InterruptedException
+    public static void main(String[] args) throws Exception
     {
         new SpatialJoinManyPointsOneBox().run();
     }
 
-    private void run() throws IOException, InterruptedException
+    private void run() throws Exception
     {
         BoxGenerator pointGenerator = new BoxGenerator(SPACE, random, 1, 1);
         final SpatialIndex<RecordWithSpatialObject> dataIndex = loadSpatialIndex(N_POINTS, pointGenerator);
