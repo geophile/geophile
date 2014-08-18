@@ -54,7 +54,7 @@ public class SpaceImpl extends Space
                 eq =
                     this.xBits[d] == that.xBits[d] &&
                     this.appLo[d] == that.appLo[d] &&
-                    this.appWidth[d] == that.appWidth[d];
+                    this.appToZScale[d] == that.appToZScale[d];
             }
             eq = eq && this.interleave.length == that.interleave.length;
             for (int i = 0; eq && i < interleave.length; i++) {
@@ -330,7 +330,8 @@ public class SpaceImpl extends Space
     // Returns a coordinate in the Z space, right-justified, not a z-value.
     public long appToZ(int d, double appCoord)
     {
-        return (long) (((appCoord - appLo[d]) / appWidth[d]) * zRange[d]);
+        // return (long) (((appCoord - appLo[d]) / appWidth[d]) * zRange[d]);
+        return (long) (appToZScale[d] * (appCoord - appLo[d]));
     }
 
     public SpaceImpl(double[] lo, double[] hi, int[] xBits, int[] interleave)
@@ -367,12 +368,10 @@ public class SpaceImpl extends Space
         }
         // z/app translation
         appLo = new double[dimensions];
-        appWidth = new double[dimensions];
-        zRange = new long[dimensions];
+        appToZScale = new double[dimensions];
         for (int d = 0; d < dimensions; d++) {
             this.appLo[d] = applicationSpace.lo(d);
-            this.appWidth[d] = applicationSpace.hi(d) - applicationSpace.lo(d);
-            this.zRange[d] = 1 << xBits[d];
+            this.appToZScale[d] = ((long) (1 << xBits[d])) / (applicationSpace.hi(d) - applicationSpace.lo(d));
         }
         // shuffle
         long[][][] shuffle = computeShuffleMasks();
@@ -484,8 +483,7 @@ public class SpaceImpl extends Space
     final int zBits;
     // Translation to/from application space
     final double[] appLo;
-    final double[] appWidth;
-    final long[] zRange;
+    final double[] appToZScale;
     // For shuffling
     private final long[][] shuffle0;
     private final long[][] shuffle1;
