@@ -182,7 +182,7 @@ public class Box implements SpatialObject
      */
     public Box(double xLo, double xHi, double yLo, double yHi)
     {
-        if (xLo >= xHi || yLo >= yHi) {
+        if (xLo > xHi || yLo > yHi) {
             throw new IllegalArgumentException();
         }
         this.xLo = xLo;

@@ -45,6 +45,24 @@ public abstract class Space
     public abstract void decompose(SpatialObject spatialObject, long[] zs);
 
     /**
+     * Returns the lower bound of the given z-value;
+     * @return The lower bound of the given z-value;
+     */
+    public static long zLo(long z)
+    {
+        return SpaceImpl.zLo(z);
+    }
+
+    /**
+     * Returns the upper bound of the given z-value;
+     * @return The upper bound of the given z-value;
+     */
+    public static long zHi(long z)
+    {
+        return SpaceImpl.zHi(z);
+    }
+
+    /**
      * Creates a Space.
      * The space has xBits.length dimensions. A coordinate of dimension d
      * must lie between 0 inclusive and 2**xBits[d] exclusive. The sum of the xBits must not exceed 57.

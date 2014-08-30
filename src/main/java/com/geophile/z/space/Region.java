@@ -70,6 +70,15 @@ public class Region
     }
 
     /**
+     * Returns the level of this Region.
+     * @return the level of this Region.
+     */
+    public int level()
+    {
+        return level;
+    }
+
+    /**
      * Returns true iff the region represents a single cell in the space.
      * @return True iff the region represents a single cell in the space.
      */

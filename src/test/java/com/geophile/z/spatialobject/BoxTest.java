@@ -18,9 +18,8 @@ public class BoxTest
     {
         try {
             new Box(5, 5, 0, 10);
-            fail();
         } catch (IllegalArgumentException e) {
-            // Expected
+            fail();
         }
     }
 
@@ -40,9 +39,8 @@ public class BoxTest
     {
         try {
             new Box(5, 6, 10, 10);
-            fail();
         } catch (IllegalArgumentException e) {
-            // Expected
+            fail();
         }
     }
 
