@@ -12,11 +12,21 @@ import com.geophile.z.space.RegionComparison;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
+// Region comparisons use bounding box. Override to get more precise.
+
 public abstract class JTSBaseWithBoundingBox extends JTSBase
 {
     // SpatialObject interface
 
-    // Region comparisons use bounding box. Override to get more precise.
+    @Override
+    public boolean containedBy(Space space)
+    {
+        assert space == this.space;
+        Envelope envelope = geometry.getEnvelopeInternal();
+        return
+            space.lo(0) <= envelope.getMinX() && envelope.getMaxX() <= space.hi(0) &&
+            space.lo(1) <= envelope.getMinY() && envelope.getMaxY() <= space.hi(1);
+    }
 
     @Override
     public boolean containedBy(Region region)
@@ -24,18 +34,8 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
         assert region.space() == space;
         ensureBoundingBox();
         return
-            region.lo(0) <= xLo && xHi <= region.hi(0) &&
-            region.lo(1) <= yLo && yHi <= region.hi(1);
-    }
-
-    @Override
-    public boolean containedBy(Space space)
-    {
-        Envelope envelope = geometry.getEnvelopeInternal();
-        return
-            space == this.space &&
-            space.lo(0) <= envelope.getMinX() && envelope.getMaxX() <= space.hi(0) &&
-            space.lo(1) <= envelope.getMinY() && envelope.getMaxY() <= space.hi(1);
+            region.loLE(0, xLo) && region.hiGE(0, xHi) &&
+            region.loLE(1, yLo) && region.hiGE(1, yHi);
     }
 
     @Override
@@ -43,16 +43,15 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
     {
         assert region.space() == space;
         ensureBoundingBox();
-        long rxLo = region.lo(0);
-        long rxHi = region.hi(0);
-        long ryLo = region.lo(1);
-        long ryHi = region.hi(1);
-        return
-            xLo <= rxLo && rxHi <= xHi && yLo <= ryLo && ryHi <= yHi
-            ? RegionComparison.REGION_INSIDE_OBJECT
-            : rxHi < xLo || rxLo > xHi || ryHi < yLo || ryLo > yHi
-              ? RegionComparison.REGION_OUTSIDE_OBJECT
-              : RegionComparison.REGION_OVERLAPS_OBJECT;
+        if (region.loGE(0, xLo) && region.hiLT(0, xHi) &&
+            region.loGE(1, yLo) && region.hiLT(1, yHi)) {
+            return RegionComparison.REGION_INSIDE_OBJECT;
+        } else if (region.hiLT(0, xLo) || region.loGT(0, xHi) ||
+                   region.hiLT(1, yLo) || region.loGT(1, yHi)) {
+            return RegionComparison.REGION_OUTSIDE_OBJECT;
+        } else {
+            return RegionComparison.REGION_OVERLAPS_OBJECT;
+        }
     }
 
     // For use by subclasses
@@ -65,32 +64,28 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
     protected JTSBaseWithBoundingBox()
     {}
 
-    // For use by this class
-
-    private boolean boundingBoxAvailable()
-    {
-        return xLo <= xHi;
-    }
-
     protected void ensureBoundingBox()
     {
         if (!boundingBoxAvailable()) {
             assert geometry != null;
             assert space != null;
             Envelope envelope = geometry.getEnvelopeInternal();
-            xLo = space.appToZ(0, envelope.getMinX());
-            xHi = space.appToZ(0, envelope.getMaxX());
-            yLo = space.appToZ(1, envelope.getMinY());
-            yHi = space.appToZ(1, envelope.getMaxY());
+            xLo = envelope.getMinX();
+            xHi = envelope.getMaxX();
+            yLo = envelope.getMinY();
+            yHi = envelope.getMaxY();
             assert boundingBoxAvailable();
         }
+    }
+    private boolean boundingBoxAvailable()
+    {
+        return xLo <= xHi;
     }
 
     // Object state
 
-    // Bounding box is in geophile space, not app space
-    protected long xLo = 0L;
-    protected long xHi = -1L;
-    protected long yLo;
-    protected long yHi;
+    protected double xLo = 0L;
+    protected double xHi = -1L;
+    protected double yLo;
+    protected double yHi;
 }

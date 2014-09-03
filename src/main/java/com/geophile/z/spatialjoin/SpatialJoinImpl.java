@@ -64,9 +64,6 @@ public abstract class SpatialJoinImpl
                                                                     SpatialJoin.Duplicates duplicates)
         throws IOException, InterruptedException
     {
-        if (!query.containedBy(data.space())) {
-            throw new SpatialJoinException("Query object not contained by data's space");
-        }
         SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();
         SpatialIndex<RecordWithSpatialObject> querySpatialIndex =
             SpatialIndex.newSpatialIndex(data.space(),

@@ -10,6 +10,7 @@ import com.geophile.z.*;
 import com.geophile.z.SpatialJoinFilter;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
+import com.geophile.z.util.IndexDumper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -45,6 +46,16 @@ public abstract class SpatialIndexTestBase
             }
         }
         commitTransaction();
+/*
+        new IndexDumper<TestRecord>(index)
+        {
+            @Override
+            public String describe(TestRecord record)
+            {
+                return String.format("(0x%016x, %s, %s)", record.z(), record.soid(), record.spatialObject());
+            }
+        }.dump(System.out);
+*/
         Random random = new Random(SEED);
         for (int i = 0; i < 1000; i++) {
             generateRandomBox(random);

@@ -10,7 +10,6 @@ import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.geophile.z.space.SpaceImpl;
 
 import java.nio.ByteBuffer;
 
@@ -63,17 +62,6 @@ public class Point implements SpatialObject
     }
 
     @Override
-    public boolean containedBy(Region region)
-    {
-        SpaceImpl space = (SpaceImpl) region.space();
-        long zx = space.appToZ(0, x);
-        long zy = space.appToZ(1, y);
-        return
-            region.lo(0) <= zx && zx <= region.hi(0) &&
-            region.lo(1) <= zy && zy <= region.hi(1);
-    }
-
-    @Override
     public boolean containedBy(Space space)
     {
         return
@@ -83,22 +71,20 @@ public class Point implements SpatialObject
     }
 
     @Override
+    public boolean containedBy(Region region)
+    {
+        return
+            region.loLE(0, x) && region.hiGE(0, x) &&
+            region.loLE(1, y) && region.hiGE(1, y);
+    }
+
+    @Override
     public RegionComparison compare(Region region)
     {
-        long rXLo = region.lo(0);
-        long rYLo = region.lo(1);
-        long rXHi = region.hi(0);
-        long rYHi = region.hi(1);
-        SpaceImpl space = (SpaceImpl) region.space();
-        long zx = space.appToZ(0, x);
-        long zy = space.appToZ(1, y);
-        if (region.isPoint() && rXLo == zx && rYLo == zy) {
-            return RegionComparison.REGION_INSIDE_OBJECT;
-        } else if (rXHi < zx || rXLo > zx || rYHi < zy || rYLo > zy) {
-            return RegionComparison.REGION_OUTSIDE_OBJECT;
-        } else {
-            return RegionComparison.REGION_OVERLAPS_OBJECT;
-        }
+        return
+            containedBy(region)
+            ? RegionComparison.REGION_OVERLAPS_OBJECT
+            : RegionComparison.REGION_OUTSIDE_OBJECT;
     }
 
     @Override

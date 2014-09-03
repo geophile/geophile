@@ -10,21 +10,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.spatialjoin;
+package com.geophile.z;
 
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.spatialobject.jts.JTSLineString;
+import com.geophile.z.spatialjoin.SpatialObjectGenerator;
+import com.geophile.z.spatialobject.jts.JTSPolygon;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
 
 import java.util.Random;
 
-public class JTSLineStringGenerator extends SpatialObjectGenerator
+public class JTSPolygonGenerator extends SpatialObjectGenerator
 {
     @Override
     public SpatialObject newSpatialObject()
     {
+        Coordinate[] coords = new Coordinate[4];
         int c = 0;
         long x = random.nextInt(nx);
         long y = random.nextInt(ny);
@@ -40,16 +43,18 @@ public class JTSLineStringGenerator extends SpatialObjectGenerator
             x = xNew;
             y = yNew;
         }
-        return new JTSLineString(space, factory.createLineString(coords));
+        coords[c] = coords[0]; // Close the ring
+        LinearRing ring = factory.createLinearRing(coords);
+        return new JTSPolygon(space, factory.createPolygon(ring, null));
     }
 
     @Override
     public String description()
     {
-        return String.format("JTSLineString(%s, %s)", maxX, maxY);
+        return String.format("JTSPolygon(%s, %s)", maxX, maxY);
     }
 
-    public JTSLineStringGenerator(Space space, GeometryFactory factory, Random random, int maxX, int maxY)
+    public JTSPolygonGenerator(Space space, GeometryFactory factory, Random random, int maxX, int maxY)
     {
         super(space, random);
         this.factory = factory;

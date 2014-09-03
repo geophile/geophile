@@ -14,6 +14,39 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Queue;
 
+/*
+ * About the coordinate systems used by Geophile:
+ *
+ * The application is concerned with spatial objects that exist in the <i>application space</i>. The bounds of this
+ * space are defined by the <tt>lo</tt> and <tt>hi</tt> arguments to Space.newSpace.
+ *
+ * Internally, Geophile operates on a <i>grid</i>, defined by the <tt>gBits</tt> argument to Space.newSpace.
+ * For example, if gBits = {10, 12}, then the grid is of size 2^10 x 2^12. The sum of the gBits values must not
+ * exceed 57, a limit defined by the z-value format (discussed below). A lower-resolution grid should speed
+ * things up marginally. A higher-resolution grid allows for efficient querying across a wider range of query
+ * sizes.
+ *
+ * The grid is an abstraction, encoded as z-values. A spatial object covers some grid cells, obtained by a recursive
+ * partitioning of the space. The partitioning stops when a partition is completely contained within the object, or
+ * a limit on the number of partitions has been reached, (as implemented by the SpaceImpl.decompose method.)
+ * During the recursive partitioning process, a partition is represented by a Region object.
+ *
+ * A z-value represents an encoding of a Region as a 64-bit non-negative integer. Bit-twiddling operations
+ * on z-values can be used to determine spatial relationships of Regions (e.g. ordering, adjacency, containment).
+ *
+ * Notation:
+ * - The 'x' prefix refers to coordinates in the application space, e.g. the first argument to SpaceImpl.shuffle.
+ * - The 'g' prefix refers to coordinates in the grid, e.g. the gBits field.
+ * - The 'z' prefix refers to z-values.
+ *
+ * z-value format:
+ * - Leading bit is zero.
+ * - Last 6 bits is the bit count.
+ * - Everything in between is a left-justified bitstring. Bits between the bitstring and length are zero.
+ * A bit count of 0 means a 0-length bitstring, covering the entire space. The maximum bit count is 57,
+ * (the number of bits between the leading 0 and the bit count).
+ */
+
 public class SpaceImpl extends Space
 {
     // Object interface
@@ -32,13 +65,13 @@ public class SpaceImpl extends Space
             buffer.append(':');
             buffer.append(applicationSpace.hi(d));
         }
-        buffer.append(")  xBits: ");
-        // xBits
+        buffer.append(")  gBits: ");
+        // gBits
         for (int d = 0; d < dimensions; d++) {
             if (d != 0) {
                 buffer.append(", ");
             }
-            buffer.append(xBits[d]);
+            buffer.append(gBits[d]);
         }
         return buffer.toString();
     }
@@ -52,9 +85,9 @@ public class SpaceImpl extends Space
             eq = this.dimensions == that.dimensions;
             for (int d = 0; eq && d < dimensions; d++) {
                 eq =
-                    this.xBits[d] == that.xBits[d] &&
+                    this.gBits[d] == that.gBits[d] &&
                     this.appLo[d] == that.appLo[d] &&
-                    this.appToZScale[d] == that.appToZScale[d];
+                    this.appToGridScale[d] == that.appToGridScale[d];
             }
             eq = eq && this.interleave.length == that.interleave.length;
             for (int i = 0; eq && i < interleave.length; i++) {
@@ -87,124 +120,123 @@ public class SpaceImpl extends Space
     public void decompose(SpatialObject spatialObject, long[] zs)
     {
         if (!spatialObject.containedBy(this)) {
-            throw new SpatialObjectException(String.format("%s not contained by %s", spatialObject, this));
+            throw SpatialObjectException.notContainedBySpace(spatialObject, this);
         }
         int maxRegions = zs.length;
         int zCount = 0;
-        double[] appPoint = spatialObject.arbitraryPoint();
-        long[] zPoint = new long[dimensions];
-        for (int d = 0; d < dimensions; d++) {
-            zPoint[d] = appToZ(d, appPoint[d]);
-        }
-        Region region = new Region(this, zPoint, zPoint, zBits);
+        Region region = new Region(this, spatialObject.arbitraryPoint(), zBits);
         while (!spatialObject.containedBy(region)) {
             region.up();
         }
-        Queue<Region> queue = new ArrayDeque<>(maxRegions);
-        queue.add(region);
-        while (!queue.isEmpty()) {
-            region = queue.poll();
-            if (region.isPoint()) {
-                zs[zCount++] = region.z();
-            } else {
-                region.downLeft();
-                RegionComparison leftComparison = spatialObject.compare(region);
-                region.up();
-                region.downRight();
-                RegionComparison rightComparison = spatialObject.compare(region);
-                switch (leftComparison) {
-                    case REGION_OUTSIDE_OBJECT:
-                        switch (rightComparison) {
-                            case REGION_OUTSIDE_OBJECT:
-                                assert false;
-                                break;
-                            case REGION_INSIDE_OBJECT:
-                                zs[zCount++] = region.z();
-                                break;
-                            case REGION_OVERLAPS_OBJECT:
-                                queue.add(region.copy());
-                                break;
-                        }
-                        break;
-                    case REGION_INSIDE_OBJECT:
-                        switch (rightComparison) {
-                            case REGION_OUTSIDE_OBJECT:
-                                region.up();
-                                region.downLeft();
-                                zs[zCount++] = region.z();
-                                break;
-                            case REGION_INSIDE_OBJECT:
-                                region.up();
-                                zs[zCount++] = region.z();
-                                break;
-                            case REGION_OVERLAPS_OBJECT:
-                                if (queue.size() + 1 + zCount < maxRegions) {
+        if (zs.length == 1) {
+            zs[0] = z(region);
+        } else {
+            Queue<Region> queue = new ArrayDeque<>(maxRegions);
+            queue.add(region);
+            while (!queue.isEmpty()) {
+                region = queue.poll();
+                if (region.isPoint()) {
+                    zs[zCount++] = z(region);
+                } else {
+                    region.downLeft();
+                    RegionComparison leftComparison = spatialObject.compare(region);
+                    region.up();
+                    region.downRight();
+                    RegionComparison rightComparison = spatialObject.compare(region);
+                    switch (leftComparison) {
+                        case REGION_OUTSIDE_OBJECT:
+                            switch (rightComparison) {
+                                case REGION_OUTSIDE_OBJECT:
+                                    assert false;
+                                    break;
+                                case REGION_INSIDE_OBJECT:
+                                    zs[zCount++] = z(region);
+                                    break;
+                                case REGION_OVERLAPS_OBJECT:
                                     queue.add(region.copy());
+                                    break;
+                            }
+                            break;
+                        case REGION_INSIDE_OBJECT:
+                            switch (rightComparison) {
+                                case REGION_OUTSIDE_OBJECT:
                                     region.up();
                                     region.downLeft();
-                                    zs[zCount++] = region.z();
-                                } else {
+                                    zs[zCount++] = z(region);
+                                    break;
+                                case REGION_INSIDE_OBJECT:
                                     region.up();
-                                    zs[zCount++] = region.z();
-                                }
-                                break;
-                        }
-                        break;
-                    case REGION_OVERLAPS_OBJECT:
-                        switch (rightComparison) {
-                            case REGION_OUTSIDE_OBJECT:
-                                region.up();
-                                region.downLeft();
-                                queue.add(region.copy());
-                                break;
-                            case REGION_INSIDE_OBJECT:
-                                if (queue.size() + 1 + zCount < maxRegions) {
-                                    zs[zCount++] = region.z();
+                                    zs[zCount++] = z(region);
+                                    break;
+                                case REGION_OVERLAPS_OBJECT:
+                                    if (queue.size() + 1 + zCount < maxRegions) {
+                                        queue.add(region.copy());
+                                        region.up();
+                                        region.downLeft();
+                                        zs[zCount++] = z(region);
+                                    } else {
+                                        region.up();
+                                        zs[zCount++] = z(region);
+                                    }
+                                    break;
+                            }
+                            break;
+                        case REGION_OVERLAPS_OBJECT:
+                            switch (rightComparison) {
+                                case REGION_OUTSIDE_OBJECT:
                                     region.up();
                                     region.downLeft();
                                     queue.add(region.copy());
-                                } else {
-                                    region.up();
-                                    zs[zCount++] = region.z();
-                                }
-                                break;
-                            case REGION_OVERLAPS_OBJECT:
-                                if (queue.size() + 1 + zCount < maxRegions) {
-                                    queue.add(region.copy());
-                                    region.up();
-                                    region.downLeft();
-                                    queue.add(region.copy());
-                                } else {
-                                    region.up();
-                                    zs[zCount++] = region.z();
-                                }
-                                break;
-                        }
-                        break;
+                                    break;
+                                case REGION_INSIDE_OBJECT:
+                                    if (queue.size() + 1 + zCount < maxRegions) {
+                                        zs[zCount++] = z(region);
+                                        region.up();
+                                        region.downLeft();
+                                        queue.add(region.copy());
+                                    } else {
+                                        region.up();
+                                        zs[zCount++] = z(region);
+                                    }
+                                    break;
+                                case REGION_OVERLAPS_OBJECT:
+                                    if (queue.size() + 1 + zCount < maxRegions) {
+                                        queue.add(region.copy());
+                                        region.up();
+                                        region.downLeft();
+                                        queue.add(region.copy());
+                                    } else {
+                                        region.up();
+                                        zs[zCount++] = z(region);
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
                 }
             }
-        }
-        while (!queue.isEmpty()) {
-            region = queue.poll();
-            zs[zCount++] = region.z();
-        }
-        for (int i = zCount; i < maxRegions; i++) {
-            zs[i] = Z_NULL;
-        }
-        Arrays.sort(zs, 0, zCount);
-        boolean merge;
-        do {
-            merge = false;
-            for (int i = 1; i < zCount; i++) {
-                long a = zs[i - 1];
-                long b = zs[i];
-                if ((merge = siblings(a, b))) {
-                    zs[i - 1] = parent(a);
-                    System.arraycopy(zs, i + 1, zs, i, zCount - i - 1);
-                    zs[--zCount] = Z_NULL;
-                }
+            while (!queue.isEmpty()) {
+                region = queue.poll();
+                zs[zCount++] = z(region);
             }
-        } while (merge);
+            for (int i = zCount; i < maxRegions; i++) {
+                zs[i] = Z_NULL;
+            }
+            Arrays.sort(zs, 0, zCount);
+            boolean merge;
+            do {
+                merge = false;
+                for (int i = 1; i < zCount; i++) {
+                    long a = zs[i - 1];
+                    long b = zs[i];
+                    if ((merge = siblings(a, b))) {
+                        zs[i - 1] = parent(a);
+                        System.arraycopy(zs, i + 1, zs, i, zCount - i - 1);
+                        zs[--zCount] = Z_NULL;
+                    }
+                }
+            } while (merge);
+        }
     }
 
     // SpaceImpl interface
@@ -219,7 +251,7 @@ public class SpaceImpl extends Space
         long z = 0;
         for (int d = 0; d < dimensions; d++) {
             long xd = x[d];
-            switch (xBytes[d]) {
+            switch (gBytes[d]) {
                 case 8: z |= shuffle7[d][(int) (xd >>> 56) & 0xff];
                 case 7: z |= shuffle6[d][(int) (xd >>> 48) & 0xff];
                 case 6: z |= shuffle5[d][(int) (xd >>> 40) & 0xff];
@@ -327,28 +359,28 @@ public class SpaceImpl extends Space
         return formatted;
     }
 
-    // Returns a coordinate in the Z space, right-justified, not a z-value.
-    public long appToZ(int d, double appCoord)
+    public long cellCoord(int d, double appCoord)
     {
-        // return (long) (((appCoord - appLo[d]) / appWidth[d]) * zRange[d]);
-        return (long) (appToZScale[d] * (appCoord - appLo[d]));
+        long c = (long) (appToGridScale[d] * (appCoord - appLo[d]));
+        return c >= gHi[d] ? gHi[d] : c;
     }
 
-    public SpaceImpl(double[] lo, double[] hi, int[] xBits, int[] interleave)
+    public SpaceImpl(double[] lo, double[] hi, int[] gBits, int[] interleave)
     {
         super(lo, hi);
-        this.dimensions = xBits.length;
+        this.dimensions = gBits.length;
         check(this.applicationSpace.dimensions() == this.dimensions,
               "Space dimensions: %s != ApplicationSpace dimensions: %s",
               this.dimensions, this.applicationSpace.dimensions());
         check(dimensions >= 1 && dimensions <= MAX_DIMENSIONS,
               "dimensions (%s) must be between 1 and %s", dimensions, MAX_DIMENSIONS);
-        this.xBits = Arrays.copyOf(xBits, dimensions);
-        this.xBytes = new int[dimensions];
+        this.gBits = Arrays.copyOf(gBits, dimensions);
+        this.gHi = new long[dimensions];
+        this.gBytes = new int[dimensions];
         int zBits = 0;
         for (int d = 0; d < dimensions; d++) {
-            zBits += xBits[d];
-            xBytes[d] = (xBits[d] + 7) / 8;
+            zBits += gBits[d];
+            gBytes[d] = (gBits[d] + 7) / 8;
         }
         this.zBits = zBits;
         interleave =
@@ -364,14 +396,15 @@ public class SpaceImpl extends Space
             for (int zBitPosition = 0; zBitPosition < zBits; zBitPosition++) {
                 count[this.interleave[zBitPosition]]++;
             }
-            check(Arrays.equals(xBits, count), "interleave inconsistent with xBits");
+            check(Arrays.equals(gBits, count), "interleave inconsistent with gBits");
         }
-        // z/app translation
+        // app/grid mapping
         appLo = new double[dimensions];
-        appToZScale = new double[dimensions];
+        appToGridScale = new double[dimensions];
         for (int d = 0; d < dimensions; d++) {
             this.appLo[d] = applicationSpace.lo(d);
-            this.appToZScale[d] = ((long) (1 << xBits[d])) / (applicationSpace.hi(d) - applicationSpace.lo(d));
+            this.appToGridScale[d] = ((long) (1 << gBits[d])) / (applicationSpace.hi(d) - applicationSpace.lo(d));
+            this.gHi[d] = (1L << gBits[d]) - 1;
         }
         // shuffle
         long[][][] shuffle = computeShuffleMasks();
@@ -396,7 +429,7 @@ public class SpaceImpl extends Space
         while (zPosition < zBits) {
             do {
                 d = (d + 1) % dimensions;
-            } while (count[d] == xBits[d]);
+            } while (count[d] == gBits[d]);
             interleave[zPosition++] = d;
             count[d]++;
         }
@@ -405,13 +438,6 @@ public class SpaceImpl extends Space
 
     private long[][][] computeShuffleMasks()
     {
-        // z-value format:
-        // - Leading bit is zero.
-        // - Last 6 bits is the bit count.
-        // - Everything in between is a left-justified bitstring. Bits between the bitstring and length are zero.
-        // A bit count of 0 means a 0-length bitstring, covering the entire space. The maximum bit count is 57,
-        // (the number of bits between the leading 0 and the bit count).
-        //
         // Shuffling one bit at a time would be slow. The implementation used in {@link #spatialIndexKey(double[])}
         // should be a lot faster, relying on array subscripting to locate masks which are combined using bitwise OR.
         // The masks are computed here.
@@ -425,7 +451,7 @@ public class SpaceImpl extends Space
         int[][] xz;
         xz = new int[dimensions][];
         for (int d = 0; d < dimensions; d++) {
-            xz[d] = new int[xBits[d]];
+            xz[d] = new int[gBits[d]];
         }
         int[] xBitCount = new int[dimensions];
         for (int zBitPosition = 0; zBitPosition < zBits; zBitPosition++) {
@@ -441,10 +467,10 @@ public class SpaceImpl extends Space
             }
         }
         for (int d = 0; d < dimensions; d++) {
-            for (int xBitPosition = 0; xBitPosition < xBits[d]; xBitPosition++) {
-                long xMask = 1L << xBits[d] - xBitPosition - 1;
+            for (int xBitPosition = 0; xBitPosition < gBits[d]; xBitPosition++) {
+                long xMask = 1L << gBits[d] - xBitPosition - 1;
                 long zMask = 1L << (62 - xz[d][xBitPosition]);
-                int xByteLeftShift = (xBits[d] - xBitPosition - 1) / 8;
+                int xByteLeftShift = (gBits[d] - xBitPosition - 1) / 8;
                 for (int xByte = 0; xByte <= 0xff; xByte++) {
                     // xPartial explores all 256 values of one byte of a coordinate. Outside this one byte,
                     // everything in xPartial is zero, which is fine for generating shuffle masks.
@@ -456,6 +482,11 @@ public class SpaceImpl extends Space
             }
         }
         return shuffle;
+    }
+
+    private long z(Region region)
+    {
+        return region.z();
     }
 
     private static void check(boolean constraint, String template, Object... args)
@@ -475,15 +506,15 @@ public class SpaceImpl extends Space
 
     // Object state
 
-    // The 'x' prefix refers to coordinates. The 'z' prefix refers to z values.
     final int dimensions;
     final int[] interleave;
-    final int[] xBits;
-    final int[] xBytes;
+    final int[] gBits;
+    final int[] gBytes;
+    final long[] gHi;
     final int zBits;
     // Translation to/from application space
     final double[] appLo;
-    final double[] appToZScale;
+    final double[] appToGridScale;
     // For shuffling
     private final long[][] shuffle0;
     private final long[][] shuffle1;

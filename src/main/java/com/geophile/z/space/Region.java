@@ -11,8 +11,25 @@ import com.geophile.z.Space;
 import java.util.Arrays;
 
 /**
- * A {@link Region} represents a box-shaped subspace whose edges are parallel to the dimensions of the space.
- * Regions are only relevant to users of geophile who define {@link com.geophile.z.SpatialObject} subtypes.
+ * A {@link Region} represents a box-shaped subspace obtained by recursive partitioning of the space.
+ * Regions are only of interest to users of geophile who define {@link com.geophile.z.SpatialObject} subtypes.
+ *
+ * Region coordinates are defined in terms of Geophile's grid, (see {@link com.geophile.z.space.SpaceImpl} for
+ * a discussion of the grid.) Region boundaries must be handled very carefully, (by definers of
+ * {@link com.geophile.z.SpatialObject} subtypes to ensure that spatial object decompositions are correct.
+ *
+ * Suppose we have a grid of size 64 x 64, (which is far too coarse in practice), and a Region occuping the
+ * lower-left quadrant, 0-32 x 0-32. The Region contains all points (x, y) such that 0 <= x < 16 and 0 <= y < 16.
+ * I.e., the top and and right boundaries do <i>not</i> belong to the region. However, these excluded boundaries
+ * <i>do</i> belong to Regions at the top and right edges of the space. So, for example, the upper right quadrant,
+ * 32-64 x 32-64 contains the points 32 <= x <= 64 and 32 <= y <= 64. The reason for this exception, along the top
+ * and right edges of the space, is that we must deal with spatial objects that touch these edges, and these
+ * objects must be completely covered by Regions.
+ *
+ * To ensure that this logic is implemented correctly, the Region API does not expose the Region's boundaries directly.
+ * Instead, there are methods for comparing the boundaries to given coordinates. For example, hiGT(int d, double coord)
+ * indicates whether the high bound of the Region, in dimension d, is greater than coord. The implementation depends
+ * on whether the region is at the upper edge of the space in dimension d.
  */
 
 public class Region
@@ -50,25 +67,109 @@ public class Region
     }
 
     /**
-     * Returns the region's lower bound in the dth dimension.
-     * @param d A dimension of the space.
-     * @return The region's lower bound in the dth dimension.
+     * Indicates whether the low bound of the region in dimension d is less than the given coord.
+     * @param d The dimension of interest.
+     * @param coord The coordinate being compared.
+     * @return true iff the low bound of the region in dimension d is less than the given coord.
      */
-    public long lo(int d)
+    public boolean loLT(int d, double coord)
     {
-        return lo[d];
+        return lo(d) < coord;
     }
 
     /**
-     * Returns the region's upper bound in the dth dimension.
-     * @param d A dimension of the space.
-     * @return The region's upper bound in the dth dimension.
+     * Indicates whether the low bound of the region in dimension d is less than or equal to the given coord.
+     * @param d The dimension of interest.
+     * @param coord The coordinate being compared.
+     * @return true iff the low bound of the region in dimension d is less than or equal to the given coord.
      */
-    public long hi(int d)
+    public boolean loLE(int d, double coord)
     {
-        return hi[d];
+        return lo(d) <= coord;
     }
 
+    /**
+     * Indicates whether the low bound of the region in dimension d is greater than the given coord.
+     * @param d The dimension of interest.
+     * @param coord The coordinate being compared.
+     * @return true iff the low bound of the region in dimension d is greater than the given coord.
+     */
+    public boolean loGT(int d, double coord)
+    {
+        return lo(d) > coord;
+    }
+
+    /**
+     * Indicates whether the low bound of the region in dimension d is greater than or equal to the given coord.
+     * @param d The dimension of interest.
+     * @param coord The coordinate being compared.
+     * @return true iff the low bound of the region in dimension d is greater than or equal to the given coord.
+     */
+    public boolean loGE(int d, double coord)
+    {
+        return lo(d) >= coord;
+    }
+
+    /**
+     * Indicates whether the high bound of the region in dimension d is less than the given coord.
+     * @param d The dimension of interest.
+     * @param coord The coordinate being compared.
+     * @return true iff the high bound of the region in dimension d is less than the given coord.
+     */
+    public boolean hiLT(int d, double coord)
+    {
+        // If the numeric value of hi(d) = coord, then hi(d) is considered to be less than the coord.
+        // Except if the region is bounded by the high boundary of the space in dimension d, (indicated
+        // by hiCell[d] == space.gHi[d]). In this case, hi(d) cannot be less than any coordinate,
+        // because hi(d) = space.hi(d).
+        return
+            hiCell[d] == space.gHi[d]
+            ? false
+            : hi(d) <= coord;
+    }
+
+    /**
+     * Indicates whether the high bound of the region in dimension d is less than or equal to the given coord.
+     * @param d The dimension of interest.
+     * @param coord The coordinate being compared.
+     * @return true iff the high bound of the region in dimension d is less than or equal to the given coord.
+     */
+    public boolean hiLE(int d, double coord)
+    {
+        // This is deceptively simple. If the region is bounded by the high boundary of the space in dimension d,
+        // (indicated by hiCell[d] == space.gHi[d]), then hi(d) <= coord is correct, but hi(d) < coord cannot
+        // actually occur, becuase hi(d) = space.hi(d), and it must be true that coord <= space.hi(d). Otherwise
+        // <= is the correct comparison. Equality would imply that hi(d) is considered to be less than coord.
+        return hi(d) <= coord;
+    }
+
+    /**
+     * Indicates whether the high bound of the region in dimension d is greater than the given coord.
+     * @param d The dimension of interest.
+     * @param coord The coordinate being compared.
+     * @return true iff the high bound of the region in dimension d is greater than the given coord.
+     */
+    public boolean hiGT(int d, double coord)
+    {
+        // Just the inverse of hiLE.
+        return hi(d) > coord;
+    }
+
+    /**
+     * Indicates whether the high bound of the region in dimension d is greater than or equal to the given coord.
+     * @param d The dimension of interest.
+     * @param coord The coordinate being compared.
+     * @return true iff the high bound of the region in dimension d is greater than or equal to the given coord.
+     */
+    public boolean hiGE(int d, double coord)
+    {
+        // Just the inverse of hiLT
+        return
+            hiCell[d] == space.gHi[d]
+            ? true
+            : hi(d) > coord;
+    }
+    
     /**
      * Returns the level of this Region.
      * @return the level of this Region.
@@ -91,30 +192,28 @@ public class Region
 
     void downLeft()
     {
-        int d = interleave[level];
-        hi[d] &= ~(1L << --xBitPosition[d]);
-        level++;
+        int d = interleave[level++];
+        hiCell[d] &= ~(1L << --xBitPosition[d]);
     }
 
     void downRight()
     {
-        int d = interleave[level];
-        lo[d] |= 1L << --xBitPosition[d];
-        level++;
+        int d = interleave[level++];
+        loCell[d] |= 1L << --xBitPosition[d];
     }
 
     void up()
     {
-        level--;
-        int d = interleave[level];
-        lo[d] &= ~(1L << xBitPosition[d]);
-        hi[d] |= 1L << xBitPosition[d];
+        int d = interleave[--level];
+        long mask = 1L << xBitPosition[d];
+        loCell[d] &= ~mask;
+        hiCell[d] |= mask;
         xBitPosition[d]++;
     }
 
     long z()
     {
-        return space.shuffle(lo, level);
+        return space.shuffle(loCell, level);
     }
 
     Region copy()
@@ -122,14 +221,17 @@ public class Region
         return new Region(this);
     }
 
-    Region(SpaceImpl space, long[] lo, long[] hi, int level)
+    Region(SpaceImpl space, double[] point, int level)
     {
-        assert lo.length == space.dimensions;
-        assert hi.length == space.dimensions;
+        assert point.length == space.dimensions;
         this.space = space;
         this.interleave = space.interleave;
-        this.lo = Arrays.copyOf(lo, lo.length);
-        this.hi = Arrays.copyOf(hi, hi.length);
+        this.loCell = new long[space.dimensions];
+        this.hiCell = new long[space.dimensions];
+        for (int d = 0; d < space.dimensions; d++) {
+            this.loCell[d] = space.cellCoord(d, point[d]);
+            this.hiCell[d] = this.loCell[d];
+        }
         this.level = level;
         this.xBitPosition = new int[space.dimensions];
         for (int zBitPosition = space.zBits - 1; zBitPosition >= level; zBitPosition--) {
@@ -140,12 +242,22 @@ public class Region
 
     // For use by this class
 
+    private double lo(int d)
+    {
+        return loCell[d] / space.appToGridScale[d] + space.appLo[d];
+    }
+
+    private double hi(int d)
+    {
+        return (hiCell[d] + 1) / space.appToGridScale[d] + space.appLo[d];
+    }
+
     private Region(Region region)
     {
         this.space = region.space;
         this.interleave = region.interleave;
-        this.lo = Arrays.copyOf(region.lo, region.lo.length);
-        this.hi = Arrays.copyOf(region.hi, region.hi.length);
+        this.loCell = Arrays.copyOf(region.loCell, region.loCell.length);
+        this.hiCell = Arrays.copyOf(region.hiCell, region.hiCell.length);
         this.level = region.level;
         this.xBitPosition = Arrays.copyOf(region.xBitPosition, region.xBitPosition.length);
     }
@@ -154,8 +266,12 @@ public class Region
 
     private final SpaceImpl space;
     private final int[] interleave;
-    private final long[] lo;
-    private final long[] hi;
+    // loCell and hiCell are cell numbers. E.g. if the grid is 16 x 16, then cell numbers go from 0 to 15, inclusive.
+    // Note that coordinates, as returned by lo() and hi() are different. Those are coordinates, and they
+    // would go from 0 to 16 inclusive. In other words, loCell and hiCell number the cells of the grid,
+    // while lo() and hi() are positions of grid lines.
+    private final long[] loCell;
+    private final long[] hiCell;
     private int level;
     private int[] xBitPosition;
 }

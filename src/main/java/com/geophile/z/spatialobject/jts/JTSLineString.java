@@ -33,7 +33,9 @@ public class JTSLineString extends JTSBaseWithBoundingBox
     }
 
     public JTSLineString()
-    {}
+    {
+        super();
+    }
 
     // For use by this class
 

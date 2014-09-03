@@ -1,7 +1,8 @@
-package com.geophile.z.spatialjoin;
+package com.geophile.z;
 
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
+import com.geophile.z.spatialjoin.SpatialObjectGenerator;
 import com.geophile.z.spatialobject.jts.JTSPoint;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;

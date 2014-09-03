@@ -43,14 +43,14 @@ public class TestSpatialObject implements SpatialObject
     }
 
     @Override
-    public boolean containedBy(Region region)
+    public boolean containedBy(Space space)
     {
         fail();
         return false;
     }
 
     @Override
-    public boolean containedBy(Space space)
+    public boolean containedBy(Region region)
     {
         fail();
         return false;

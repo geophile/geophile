@@ -58,10 +58,10 @@ public abstract class JTSBase implements SpatialObject
     }
 
     @Override
-    public abstract boolean containedBy(Region region);
+    public abstract boolean containedBy(Space space);
 
     @Override
-    public abstract boolean containedBy(Space space);
+    public abstract boolean containedBy(Region region);
 
     @Override
     public abstract RegionComparison compare(Region region);
@@ -160,7 +160,6 @@ public abstract class JTSBase implements SpatialObject
 
     // Object state
 
-    private long id;
     protected final SpaceImpl space;
     // Caching of hashCode
     private boolean hashCodeKnown = false;

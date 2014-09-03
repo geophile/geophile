@@ -10,7 +10,6 @@ import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.geophile.z.space.SpaceImpl;
 
 import java.nio.ByteBuffer;
 
@@ -69,19 +68,6 @@ public class Box implements SpatialObject
     }
 
     @Override
-    public boolean containedBy(Region region)
-    {
-        SpaceImpl space = (SpaceImpl) region.space();
-        long zxLo = space.appToZ(0, xLo);
-        long zxHi = space.appToZ(0, xHi);
-        long zyLo = space.appToZ(1, yLo);
-        long zyHi = space.appToZ(1, yHi);
-        return
-            region.lo(0) <= zxLo && zxHi <= region.hi(0) &&
-            region.lo(1) <= zyLo && zyHi <= region.hi(1);
-    }
-
-    @Override
     public boolean containedBy(Space space)
     {
         return
@@ -91,20 +77,21 @@ public class Box implements SpatialObject
     }
 
     @Override
+    public boolean containedBy(Region region)
+    {
+        return
+            region.loLE(0, xLo) && region.hiGE(0, xHi) &&
+            region.loLE(1, yLo) && region.hiGE(1, yHi);
+    }
+
+    @Override
     public RegionComparison compare(Region region)
     {
-        long rXLo = region.lo(0);
-        long rXHi = region.hi(0);
-        long rYLo = region.lo(1);
-        long rYHi = region.hi(1);
-        SpaceImpl space = (SpaceImpl) region.space();
-        long zxLo = space.appToZ(0, xLo);
-        long zxHi = space.appToZ(0, xHi);
-        long zyLo = space.appToZ(1, yLo);
-        long zyHi = space.appToZ(1, yHi);
-        if (zxLo <= rXLo && rXHi <= zxHi && zyLo <= rYLo && rYHi <= zyHi) {
+        if (region.loGE(0, xLo) && region.hiLT(0, xHi) &&
+            region.loGE(1, yLo) && region.hiLT(1, yHi)) {
             return RegionComparison.REGION_INSIDE_OBJECT;
-        } else if (rXHi < zxLo || rXLo > zxHi || rYHi < zyLo || rYLo > zyHi) {
+        } else if (region.hiLT(0, xLo) || region.loGT(0, xHi) ||
+                   region.hiLT(1, yLo) || region.loGT(1, yHi)) {
             return RegionComparison.REGION_OUTSIDE_OBJECT;
         } else {
             return RegionComparison.REGION_OVERLAPS_OBJECT;

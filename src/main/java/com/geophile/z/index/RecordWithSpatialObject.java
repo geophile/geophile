@@ -16,7 +16,7 @@ public class RecordWithSpatialObject implements Record
     @Override
     public String toString()
     {
-        return String.format("0x%016x: %s)", z, spatialObject);
+        return String.format("(0x%016x: %s)", z, spatialObject);
     }
 
     @Override

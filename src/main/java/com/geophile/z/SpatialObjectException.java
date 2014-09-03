@@ -14,6 +14,11 @@ package com.geophile.z;
 
 public class SpatialObjectException extends RuntimeException
 {
+    public static SpatialObjectException notContainedBySpace(SpatialObject spatialObject, Space space)
+    {
+        throw new SpatialObjectException(String.format("%s not contained by %s", spatialObject, space));
+    }
+
     public SpatialObjectException(String message)
     {
         super(message);

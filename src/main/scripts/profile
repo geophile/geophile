@@ -9,5 +9,5 @@ CLASSPATH="$JDK_HOME/jre/lib/rt.jar:$GEOPHILE_DIR/target/test-classes:$GEOPHILE_
 
 MAIN=com.geophile.z.spatialjoin.SpatialJoinManyPointsOneBoxProfile
 
-$JDK_HOME/bin/java $JVM_OPTIONS -classpath $CLASSPATH $MAIN
-# collect -j on -J "$JVM_OPTIONS -cp $CLASSPATH " $JDK_HOME/bin/java $MAIN
+# $JDK_HOME/bin/java $JVM_OPTIONS -classpath $CLASSPATH $MAIN
+collect -j on -J "$JVM_OPTIONS -cp $CLASSPATH " $JDK_HOME/bin/java $MAIN

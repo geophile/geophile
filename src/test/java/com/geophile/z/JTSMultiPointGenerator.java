@@ -16,10 +16,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.geophile.z.spatialjoin;
+package com.geophile.z;
 
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
+import com.geophile.z.spatialjoin.SpatialObjectGenerator;
 import com.geophile.z.spatialobject.jts.JTSCollection;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;

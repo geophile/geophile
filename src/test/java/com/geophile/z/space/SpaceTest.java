@@ -7,6 +7,7 @@
 package com.geophile.z.space;
 
 import com.geophile.z.Space;
+import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -194,6 +195,47 @@ public class SpaceTest
             assertEquals(SpaceImpl.z(expectedLo, bits), SpaceImpl.zLo(SpaceImpl.z(prefix(Z_TEST, bits), bits)));
             assertEquals(SpaceImpl.z(expectedHi, bits), SpaceImpl.zHi(SpaceImpl.z(prefix(Z_TEST, bits), bits)));
         }
+    }
+
+    // Issue 3
+    @Test
+    public void testLatLonDecomposition()
+    {
+        int LAT_BITS = 28;
+        int LON_BITS = 29;
+        int[] lonLatInterleave = new int[LAT_BITS + LON_BITS];
+        int dimension = 1;
+        for (int d = 0; d < lonLatInterleave.length; d++) {
+            lonLatInterleave[d] = dimension;
+            dimension = 1 - dimension;
+        }
+        Space space = Space.newSpace(new double[]{-90, -180},
+                                     new double[]{90, 180},
+                                     new int[]{LAT_BITS, LON_BITS},
+                                     lonLatInterleave);
+        Box box = new Box(70, 90, 40, 90);
+        long[] zs = new long[box.maxZ()];
+        space.decompose(box, zs);
+    }
+
+    @Test
+    public void testLatLonDecompositionSimplified()
+    {
+        int LAT_BITS = 2;
+        int LON_BITS = 2;
+        int[] lonLatInterleave = new int[LAT_BITS + LON_BITS];
+        int dimension = 0;
+        for (int d = 0; d < lonLatInterleave.length; d++) {
+            lonLatInterleave[d] = dimension;
+            dimension = 1 - dimension;
+        }
+        Space space = Space.newSpace(new double[]{0, 0},
+                                     new double[]{100, 100},
+                                     new int[]{LAT_BITS, LON_BITS},
+                                     lonLatInterleave);
+        Box box = new Box(70, 100, 40, 100);
+        long[] zs = new long[box.maxZ()];
+        space.decompose(box, zs);
     }
 
     private static int[] ints(int ... ints)

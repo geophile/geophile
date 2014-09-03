@@ -52,7 +52,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
 
     private void run() throws IOException, InterruptedException
     {
-        final int TRIALS = 100_000;
+        final int TRIALS = 100_000_000;
         final int N_POINTS = 1_000_000;
         final int QUERY_X_SIZE = NX / 100;
         final int QUERY_Y_SIZE = NY / 100;
