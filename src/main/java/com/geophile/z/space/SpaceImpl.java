@@ -124,7 +124,7 @@ public class SpaceImpl extends Space
         }
         int maxRegions = zs.length;
         int zCount = 0;
-        Region region = new Region(this, spatialObject.arbitraryPoint(), zBits);
+        Region region = new Region(this, spatialObject.arbitraryPoint());
         while (!spatialObject.containedBy(region)) {
             region.up();
         }

@@ -221,7 +221,7 @@ public class Region
         return new Region(this);
     }
 
-    Region(SpaceImpl space, double[] point, int level)
+    Region(SpaceImpl space, double[] point)
     {
         assert point.length == space.dimensions;
         this.space = space;
@@ -232,7 +232,7 @@ public class Region
             this.loCell[d] = space.cellCoord(d, point[d]);
             this.hiCell[d] = this.loCell[d];
         }
-        this.level = level;
+        this.level = space.zBits;
         this.xBitPosition = new int[space.dimensions];
         for (int zBitPosition = space.zBits - 1; zBitPosition >= level; zBitPosition--) {
             int d = interleave[zBitPosition];
