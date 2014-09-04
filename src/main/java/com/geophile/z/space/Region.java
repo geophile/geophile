@@ -205,10 +205,9 @@ public class Region
     void up()
     {
         int d = interleave[--level];
-        long mask = 1L << xBitPosition[d];
+        long mask = 1L << xBitPosition[d]++;
         loCell[d] &= ~mask;
         hiCell[d] |= mask;
-        xBitPosition[d]++;
     }
 
     long z()
@@ -226,6 +225,8 @@ public class Region
         assert point.length == space.dimensions;
         this.space = space;
         this.interleave = space.interleave;
+        this.appToGridScale = space.appToGridScale;
+        this.appLo = space.appLo;
         this.loCell = new long[space.dimensions];
         this.hiCell = new long[space.dimensions];
         for (int d = 0; d < space.dimensions; d++) {
@@ -244,18 +245,20 @@ public class Region
 
     private double lo(int d)
     {
-        return loCell[d] / space.appToGridScale[d] + space.appLo[d];
+        return loCell[d] / appToGridScale[d] + appLo[d];
     }
 
     private double hi(int d)
     {
-        return (hiCell[d] + 1) / space.appToGridScale[d] + space.appLo[d];
+        return (hiCell[d] + 1) / appToGridScale[d] + appLo[d];
     }
 
     private Region(Region region)
     {
         this.space = region.space;
         this.interleave = region.interleave;
+        this.appToGridScale = region.appToGridScale;
+        this.appLo = region.appLo;
         this.loCell = Arrays.copyOf(region.loCell, region.loCell.length);
         this.hiCell = Arrays.copyOf(region.hiCell, region.hiCell.length);
         this.level = region.level;
@@ -274,4 +277,6 @@ public class Region
     private final long[] hiCell;
     private int level;
     private int[] xBitPosition;
+    private double[] appToGridScale;
+    private double[] appLo;
 }
