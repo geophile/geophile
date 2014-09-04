@@ -22,7 +22,7 @@ public abstract class Cursor<RECORD extends Record>
      *     {@link com.geophile.z.Record} whose key is greater than that key. If the key
      *     is greater than that largest key in the index, then the Cursor is closed and null is returned.
 
-     * <b>If the Cursor has just been accessed using {@link #next()} or {@link #previous()}:</b>
+     * <b>If the Cursor has just been accessed using next() or {@link #previous()}:</b>
      *     This method moves the Cursor to the {@link com.geophile.z.Record}
      *     with the next larger key, or to null if the Cursor was already positioned at the last
      *     {@link com.geophile.z.Record} of the index.
@@ -44,7 +44,7 @@ public abstract class Cursor<RECORD extends Record>
      *     {@link com.geophile.z.Record} whose key is less than that key. If the key
      *     is less than that smallest key in the index, then the Cursor is closed and null is returned.
 
-     * <b>If the Cursor has just been accessed using {@link #next()} or {@link #previous()}:</b>
+     * <b>If the Cursor has just been accessed using {@link #next()} or previous():</b>
      *     This method moves the Cursor to the {@link com.geophile.z.Record}
      *     with the next smaller key, or to null if the Cursor was already positioned at the first
      *     {@link com.geophile.z.Record} of the index.

@@ -15,36 +15,35 @@ import java.util.Arrays;
 import java.util.Queue;
 
 /*
- * About the coordinate systems used by Geophile:
+ * Geophile's grid is an abstraction, implemented as follows:
  *
- * The application is concerned with spatial objects that exist in the <i>application space</i>. The bounds of this
- * space are defined by the <tt>lo</tt> and <tt>hi</tt> arguments to Space.newSpace.
+ * - Each spatial object occupies some grid cells.
  *
- * Internally, Geophile operates on a <i>grid</i>, defined by the <tt>gBits</tt> argument to Space.newSpace.
- * For example, if gBits = {10, 12}, then the grid is of size 2^10 x 2^12. The sum of the gBits values must not
- * exceed 57, a limit defined by the z-value format (discussed below). A lower-resolution grid should speed
- * things up marginally. A higher-resolution grid allows for efficient querying across a wider range of query
- * sizes.
+ * - A recursive partitioning of the space identifies partitions that are contained by the spatial object, or
+ *   overlap it. The union of these partitions represents the object.
  *
- * The grid is an abstraction, encoded as z-values. A spatial object covers some grid cells, obtained by a recursive
- * partitioning of the space. The partitioning stops when a partition is completely contained within the object, or
- * a limit on the number of partitions has been reached, (as implemented by the SpaceImpl.decompose method.)
- * During the recursive partitioning process, a partition is represented by a Region object.
+ * - Each such partition, represented by the Region class, is encoded as a z-value.
  *
- * A z-value represents an encoding of a Region as a 64-bit non-negative integer. Bit-twiddling operations
- * on z-values can be used to determine spatial relationships of Regions (e.g. ordering, adjacency, containment).
+ * - A SpatialIndex on a set of spatial objects is a set of index records, each containing a z-value.
+ *
+ *  - A z-value represents an encoding of a Region as a 64-bit non-negative integer. Bit-twiddling operations
+ *    on z-values can be used to determine spatial relationships of Regions (e.g. ordering, adjacency, containment).
+ *
+ * This class represents the application coordinate system, the grid, mappings between them, and operations on
+ * z-values.
+ *
+ * A z-value can be thought of as a variable length bitstring, encoded into 64 bits as follows:
+ * - Leading bit is zero.
+ * - Last 6 bits is the length of the bitstring.
+ * - Everything in between is a left-justified bitstring. Bits following the bitstring and preceding the
+ *   length are zero. A bit count of 0 means a 0-length bitstring, covering the entire space. The maximum bit
+ *   count is 57, (the number of bits between the leading 0 and the bit count).
  *
  * Notation:
  * - The 'x' prefix refers to coordinates in the application space, e.g. the first argument to SpaceImpl.shuffle.
  * - The 'g' prefix refers to coordinates in the grid, e.g. the gBits field.
  * - The 'z' prefix refers to z-values.
  *
- * z-value format:
- * - Leading bit is zero.
- * - Last 6 bits is the bit count.
- * - Everything in between is a left-justified bitstring. Bits between the bitstring and length are zero.
- * A bit count of 0 means a 0-length bitstring, covering the entire space. The maximum bit count is 57,
- * (the number of bits between the leading 0 and the bit count).
  */
 
 public class SpaceImpl extends Space
@@ -365,22 +364,22 @@ public class SpaceImpl extends Space
         return c >= gHi[d] ? gHi[d] : c;
     }
 
-    public SpaceImpl(double[] lo, double[] hi, int[] gBits, int[] interleave)
+    public SpaceImpl(double[] lo, double[] hi, int[] gridBits, int[] interleave)
     {
         super(lo, hi);
-        this.dimensions = gBits.length;
+        this.dimensions = gridBits.length;
         check(this.applicationSpace.dimensions() == this.dimensions,
               "Space dimensions: %s != ApplicationSpace dimensions: %s",
               this.dimensions, this.applicationSpace.dimensions());
         check(dimensions >= 1 && dimensions <= MAX_DIMENSIONS,
               "dimensions (%s) must be between 1 and %s", dimensions, MAX_DIMENSIONS);
-        this.gBits = Arrays.copyOf(gBits, dimensions);
+        this.gBits = Arrays.copyOf(gridBits, dimensions);
         this.gHi = new long[dimensions];
         this.gBytes = new int[dimensions];
         int zBits = 0;
         for (int d = 0; d < dimensions; d++) {
-            zBits += gBits[d];
-            gBytes[d] = (gBits[d] + 7) / 8;
+            zBits += gridBits[d];
+            gBytes[d] = (gridBits[d] + 7) / 8;
         }
         this.zBits = zBits;
         interleave =
@@ -396,15 +395,15 @@ public class SpaceImpl extends Space
             for (int zBitPosition = 0; zBitPosition < zBits; zBitPosition++) {
                 count[this.interleave[zBitPosition]]++;
             }
-            check(Arrays.equals(gBits, count), "interleave inconsistent with gBits");
+            check(Arrays.equals(gridBits, count), "interleave inconsistent with gBits");
         }
         // app/grid mapping
         appLo = new double[dimensions];
         appToGridScale = new double[dimensions];
         for (int d = 0; d < dimensions; d++) {
             this.appLo[d] = applicationSpace.lo(d);
-            this.appToGridScale[d] = ((long) (1 << gBits[d])) / (applicationSpace.hi(d) - applicationSpace.lo(d));
-            this.gHi[d] = (1L << gBits[d]) - 1;
+            this.appToGridScale[d] = ((long) (1 << gridBits[d])) / (applicationSpace.hi(d) - applicationSpace.lo(d));
+            this.gHi[d] = (1L << gridBits[d]) - 1;
         }
         // shuffle
         long[][][] shuffle = computeShuffleMasks();
