@@ -137,9 +137,8 @@ public class Region
     public boolean hiLE(int d, double coord)
     {
         // This is deceptively simple. If the region is bounded by the high boundary of the space in dimension d,
-        // (indicated by hiCell[d] == space.gHi[d]), then hi(d) <= coord is correct, but hi(d) < coord cannot
-        // actually occur, becuase hi(d) = space.hi(d), and it must be true that coord <= space.hi(d). Otherwise
-        // <= is the correct comparison. Equality would imply that hi(d) is considered to be less than coord.
+        // then hi(d) <= coord is correct. But hi(d) < coord cannot actually occur, because hi(d) = space.hi(d),
+        // and it must be true that coord <= space.hi(d). Otherwise <= is the correct comparison.
         return hi(d) <= coord;
     }
 
