@@ -13,20 +13,21 @@ public abstract class Cursor<RECORD extends Record>
     // Cursor interface
 
     /**
-     * <b>If the Cursor has just been created:</b>
+     * <ul>
+     * <li><b>If the Cursor has just been created:</b>
      *     The result of calling this method is undefined.
-
-     * <b>If the Cursor has just been positioned using {@link #goTo(Record)}:</b>
+     *
+     * <li><b>If the Cursor has just been positioned using {@link #goTo(Record)}:</b>
      *     This method moves the Cursor to the
      *     {@link com.geophile.z.Record} with the key passed to goTo, or to the smallest
      *     {@link com.geophile.z.Record} whose key is greater than that key. If the key
      *     is greater than that largest key in the index, then the Cursor is closed and null is returned.
-
-     * <b>If the Cursor has just been accessed using next() or {@link #previous()}:</b>
+     *
+     * <li><b>If the Cursor has just been accessed using next() or {@link #previous()}:</b>
      *     This method moves the Cursor to the {@link com.geophile.z.Record}
      *     with the next larger key, or to null if the Cursor was already positioned at the last
      *     {@link com.geophile.z.Record} of the index.
-     *
+     * </ul>
      * @return The {@link com.geophile.z.Record} at the new Cursor position, or null if the Cursor
      * was moved past the last record.
      * @throws IOException
@@ -35,20 +36,21 @@ public abstract class Cursor<RECORD extends Record>
     public abstract RECORD next() throws IOException, InterruptedException;
 
     /**
-     * <b>If the Cursor has just been created:</b>
+     * <ul>
+     * <li><b>If the Cursor has just been created:</b>
      *     The result of calling this method is undefined.
-
-     * <b>If the Cursor has just been positioned using {@link #goTo(Record)}:</b>
+     *
+     * <li><b>If the Cursor has just been positioned using {@link #goTo(Record)}:</b>
      *     This method moves the Cursor to the
      *     {@link com.geophile.z.Record} with the key passed to goTo, or to the largest
      *     {@link com.geophile.z.Record} whose key is less than that key. If the key
      *     is less than that smallest key in the index, then the Cursor is closed and null is returned.
-
-     * <b>If the Cursor has just been accessed using {@link #next()} or previous():</b>
+     *
+     * <li><b>If the Cursor has just been accessed using {@link #next()} or previous():</b>
      *     This method moves the Cursor to the {@link com.geophile.z.Record}
      *     with the next smaller key, or to null if the Cursor was already positioned at the first
      *     {@link com.geophile.z.Record} of the index.
-     *
+     * </ul>
      * @return The {@link com.geophile.z.Record} at the new Cursor position, or null if the Cursor
      * was moved past the last record.
      * @throws IOException
