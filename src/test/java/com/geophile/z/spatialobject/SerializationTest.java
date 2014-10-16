@@ -11,10 +11,9 @@ import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
-import com.geophile.z.spatialobject.jts.JTSCollection;
-import com.geophile.z.spatialobject.jts.JTSLineString;
+import com.geophile.z.spatialobject.jts.JTS;
 import com.geophile.z.spatialobject.jts.JTSPoint;
-import com.geophile.z.spatialobject.jts.JTSPolygon;
+import com.geophile.z.spatialobject.jts.JTSSpatialObjectWithBoundingBox;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.junit.BeforeClass;
@@ -34,9 +33,7 @@ public class SerializationTest
         SERIALIZER.register(1, Point.class);
         SERIALIZER.register(2, Box.class);
         SERIALIZER.register(3, JTSPoint.class);
-        SERIALIZER.register(4, JTSLineString.class);
-        SERIALIZER.register(5, JTSPolygon.class);
-        SERIALIZER.register(6, JTSCollection.class);
+        SERIALIZER.register(4, JTSSpatialObjectWithBoundingBox.class);
     }
 
     @Test
@@ -73,7 +70,7 @@ public class SerializationTest
     @Test
     public void testJTSPoint()
     {
-        test(new JTSPoint(SPACE, FACTORY.createPoint(new Coordinate(123.4, 567.8))));
+        test(JTS.spatialObject(SPACE, FACTORY.createPoint(new Coordinate(123.4, 567.8))));
     }
 
     @Test
@@ -83,7 +80,7 @@ public class SerializationTest
         coords[0] = new Coordinate(123, 456);
         coords[1] = new Coordinate(789, 12);
         coords[2] = new Coordinate(345, 678);
-        test(new JTSLineString(SPACE, FACTORY.createLineString(coords)));
+        test(JTS.spatialObject(SPACE, FACTORY.createLineString(coords)));
     }
 
     @Test
@@ -94,7 +91,7 @@ public class SerializationTest
         coords[1] = new Coordinate(789, 12);
         coords[2] = new Coordinate(345, 678);
         coords[3] = coords[0];
-        test(new JTSPolygon(SPACE, FACTORY.createPolygon(FACTORY.createLinearRing(coords), null)));
+        test(JTS.spatialObject(SPACE, FACTORY.createPolygon(FACTORY.createLinearRing(coords), null)));
     }
 
     @Test
@@ -104,7 +101,7 @@ public class SerializationTest
         coords[0] = new Coordinate(123, 456);
         coords[1] = new Coordinate(789, 12);
         coords[2] = new Coordinate(345, 678);
-        test(new JTSCollection(SPACE, FACTORY.createMultiPoint(coords)));
+        test(JTS.spatialObject(SPACE, FACTORY.createMultiPoint(coords)));
     }
 
     private void test(SpatialObject original)

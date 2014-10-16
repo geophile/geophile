@@ -10,8 +10,9 @@ import com.geophile.z.Space;
 import com.geophile.z.SpatialObjectException;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
+import com.geophile.z.spatialobject.jts.JTS;
 import com.geophile.z.spatialobject.jts.JTSPoint;
-import com.geophile.z.spatialobject.jts.JTSPolygon;
+import com.geophile.z.spatialobject.jts.JTSSpatialObject;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
@@ -225,7 +226,7 @@ public class DecompositionTest
                                      new int[]{4, 4});
         for (int x = 0; x <= X_MAX; x++) {
             for (int y = 0; y <= Y_MAX; y++) {
-                JTSPoint point = new JTSPoint(space, GEOMETRY_FACTORY.createPoint(new Coordinate(x, y)));
+                JTSSpatialObject point = JTS.spatialObject(space, GEOMETRY_FACTORY.createPoint(new Coordinate(x, y)));
                 long[] zs = new long[point.maxZ()];
                 space.decompose(point, zs);
             }
@@ -250,7 +251,7 @@ public class DecompositionTest
                     coords[2] = new Coordinate(x + width, y);
                     coords[3] = coords[0];
                     LinearRing ring = GEOMETRY_FACTORY.createLinearRing(coords);
-                    JTSPolygon polygon = new JTSPolygon(space, GEOMETRY_FACTORY.createPolygon(ring, null));
+                    JTSSpatialObject polygon = JTS.spatialObject(space, GEOMETRY_FACTORY.createPolygon(ring, null));
                     long[] zs = new long[polygon.maxZ()];
                     space.decompose(polygon, zs);
                 }
@@ -292,7 +293,7 @@ public class DecompositionTest
 
     private void testJTSPoint(int x, int y, long z)
     {
-        JTSPoint point = new JTSPoint(SPACE, GEOMETRY_FACTORY.createPoint(new Coordinate(x, y)));
+        JTSSpatialObject point = JTS.spatialObject(SPACE, GEOMETRY_FACTORY.createPoint(new Coordinate(x, y)));
         long[] zs = new long[4];
         SPACE.decompose(point, zs);
         assertEquals(SpaceImpl.z(z, 20), zs[0]);

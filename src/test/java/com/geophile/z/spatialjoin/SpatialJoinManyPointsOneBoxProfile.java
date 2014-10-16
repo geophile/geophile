@@ -33,6 +33,7 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.*;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
+import com.geophile.z.spatialobject.jts.JTS;
 import com.geophile.z.spatialobject.jts.JTSPoint;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -140,7 +141,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
         int y = random.nextInt(NY);
         return
             USE_JTS
-            ? new JTSPoint(SPACE, factory.createPoint(new Coordinate(x, y)))
+            ? JTS.spatialObject(SPACE, factory.createPoint(new Coordinate(x, y)))
             : new Point(x, y);
     }
 

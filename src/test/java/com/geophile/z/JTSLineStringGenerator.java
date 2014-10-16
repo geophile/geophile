@@ -12,10 +12,8 @@
 
 package com.geophile.z;
 
-import com.geophile.z.Space;
-import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialjoin.SpatialObjectGenerator;
-import com.geophile.z.spatialobject.jts.JTSLineString;
+import com.geophile.z.spatialobject.jts.JTS;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -41,7 +39,7 @@ public class JTSLineStringGenerator extends SpatialObjectGenerator
             x = xNew;
             y = yNew;
         }
-        return new JTSLineString(space, factory.createLineString(coords));
+        return JTS.spatialObject(space, factory.createLineString(coords));
     }
 
     @Override

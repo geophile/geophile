@@ -6,10 +6,8 @@
 
 package com.geophile.z;
 
-import com.geophile.z.Space;
-import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialjoin.SpatialObjectGenerator;
-import com.geophile.z.spatialobject.jts.JTSPolygon;
+import com.geophile.z.spatialobject.jts.JTS;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -29,7 +27,7 @@ public class JTSSquareGenerator extends SpatialObjectGenerator
         corners[2] = new Coordinate(xHi, yHi);
         corners[3] = new Coordinate(xLo, yHi);
         corners[4] = corners[0];
-        return new JTSPolygon(space, factory.createPolygon(factory.createLinearRing(corners), null));
+        return JTS.spatialObject(space, factory.createPolygon(factory.createLinearRing(corners), null));
     }
 
     @Override

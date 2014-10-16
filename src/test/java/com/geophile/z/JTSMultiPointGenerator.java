@@ -18,10 +18,8 @@
 
 package com.geophile.z;
 
-import com.geophile.z.Space;
-import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialjoin.SpatialObjectGenerator;
-import com.geophile.z.spatialobject.jts.JTSCollection;
+import com.geophile.z.spatialobject.jts.JTS;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -45,7 +43,7 @@ public class JTSMultiPointGenerator extends SpatialObjectGenerator
             } while (!(xNew >= 0 && xNew < nx && yNew >= 0 && yNew < ny));
             coords[c++] = new Coordinate(xNew, yNew);
         }
-        return new JTSCollection(space, factory.createMultiPoint(coords));
+        return JTS.spatialObject(space, factory.createMultiPoint(coords));
     }
 
     @Override

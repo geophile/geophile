@@ -12,10 +12,8 @@
 
 package com.geophile.z;
 
-import com.geophile.z.Space;
-import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialjoin.SpatialObjectGenerator;
-import com.geophile.z.spatialobject.jts.JTSPolygon;
+import com.geophile.z.spatialobject.jts.JTS;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
@@ -45,7 +43,7 @@ public class JTSPolygonGenerator extends SpatialObjectGenerator
         }
         coords[c] = coords[0]; // Close the ring
         LinearRing ring = factory.createLinearRing(coords);
-        return new JTSPolygon(space, factory.createPolygon(ring, null));
+        return JTS.spatialObject(space, factory.createPolygon(ring, null));
     }
 
     @Override
@@ -69,5 +67,4 @@ public class JTSPolygonGenerator extends SpatialObjectGenerator
     private final int ny;
     private final int maxX;
     private final int maxY;
-    Coordinate[] coords = new Coordinate[3];
 }

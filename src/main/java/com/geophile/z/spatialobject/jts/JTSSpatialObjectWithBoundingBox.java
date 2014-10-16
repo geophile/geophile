@@ -14,7 +14,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 // Region comparisons use bounding box. Override to get more precise.
 
-public abstract class JTSBaseWithBoundingBox extends JTSBase
+public class JTSSpatialObjectWithBoundingBox extends JTSSpatialObject
 {
     // SpatialObject interface
 
@@ -54,17 +54,21 @@ public abstract class JTSBaseWithBoundingBox extends JTSBase
         }
     }
 
-    // For use by subclasses
+    // JTSSpatialObjectWithBoundingBox interface
 
-    protected JTSBaseWithBoundingBox(Space space, Geometry geometry)
+    public JTSSpatialObjectWithBoundingBox()
+    {}
+
+    // For use by this package
+
+    JTSSpatialObjectWithBoundingBox(Space space, Geometry geometry)
     {
         super(space, geometry);
     }
 
-    protected JTSBaseWithBoundingBox()
-    {}
+    // For use by this class
 
-    protected void ensureBoundingBox()
+    private void ensureBoundingBox()
     {
         if (!boundingBoxAvailable()) {
             assert geometry != null;

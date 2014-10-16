@@ -6,6 +6,7 @@ import com.geophile.z.SpatialObjectException;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
 import com.geophile.z.space.SpaceImpl;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
@@ -13,7 +14,7 @@ import com.vividsolutions.jts.io.WKBWriter;
 
 import java.nio.ByteBuffer;
 
-public abstract class JTSBase implements SpatialObject
+public abstract class JTSSpatialObject implements SpatialObject
 {
     // Object interface
 
@@ -37,8 +38,8 @@ public abstract class JTSBase implements SpatialObject
     public final boolean equals(Object obj)
     {
         boolean eq = this == obj;
-        if (!eq && obj != null && obj instanceof JTSBase) {
-            JTSBase that = (JTSBase) obj;
+        if (!eq && obj != null && obj instanceof JTSSpatialObject) {
+            JTSSpatialObject that = (JTSSpatialObject) obj;
             this.ensureGeometry();
             that.ensureGeometry();
             eq = this.geometry.equals(that.geometry);
@@ -49,7 +50,15 @@ public abstract class JTSBase implements SpatialObject
     // SpatialObject interface
 
     @Override
-    public abstract double[] arbitraryPoint();
+    public final double[] arbitraryPoint()
+    {
+        double[] point = new double[2];
+        Coordinate coordinate = geometry.getCoordinate();
+        point[0] = coordinate.x;
+        point[1] = coordinate.y;
+        return point;
+    }
+
 
     @Override
     public int maxZ()
@@ -99,14 +108,14 @@ public abstract class JTSBase implements SpatialObject
         }
     }
 
-    protected JTSBase(Space space, Geometry geometry)
+    protected JTSSpatialObject(Space space, Geometry geometry)
     {
         this.space = (SpaceImpl) space;
         this.geometry = geometry;
     }
 
     // Used during deserialization
-    protected JTSBase()
+    protected JTSSpatialObject()
     {
         this.space = null;
     }

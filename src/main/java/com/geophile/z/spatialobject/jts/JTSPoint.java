@@ -6,19 +6,9 @@ import com.geophile.z.space.RegionComparison;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 
-public class JTSPoint extends JTSBase
+public class JTSPoint extends JTSSpatialObject
 {
     // SpatialObject interface (not implemented by JTSBase)
-
-    @Override
-    public double[] arbitraryPoint()
-    {
-        double[] point = new double[2];
-        Coordinate coordinate = point().getCoordinate();
-        point[0] = coordinate.x;
-        point[1] = coordinate.y;
-        return point;
-    }
 
     @Override
     public int maxZ()
@@ -29,9 +19,9 @@ public class JTSPoint extends JTSBase
     @Override
     public boolean containedBy(Space space)
     {
-        assert space == this.space;
-        Coordinate coordinate = point().getCoordinate();
+        Coordinate coordinate = geometry.getCoordinate();
         return
+            space == this.space &&
             space.lo(0) <= coordinate.x && coordinate.x <= space.hi(0) &&
             space.lo(1) <= coordinate.y && coordinate.y <= space.hi(1);
     }
@@ -62,11 +52,13 @@ public class JTSPoint extends JTSBase
         return (Point) geometry;
     }
 
-    public JTSPoint(Space space, Point point)
+    public JTSPoint()
+    {}
+
+    // For use by this package
+
+    JTSPoint(Space space, Point point)
     {
         super(space, point);
     }
-
-    public JTSPoint()
-    {}
 }

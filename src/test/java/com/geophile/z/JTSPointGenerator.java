@@ -1,9 +1,7 @@
 package com.geophile.z;
 
-import com.geophile.z.Space;
-import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialjoin.SpatialObjectGenerator;
-import com.geophile.z.spatialobject.jts.JTSPoint;
+import com.geophile.z.spatialobject.jts.JTS;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -16,7 +14,7 @@ public class JTSPointGenerator extends SpatialObjectGenerator
     {
         long x = random.nextInt(nx);
         long y = random.nextInt(ny);
-        return new JTSPoint(space, factory.createPoint(new Coordinate(x, y)));
+        return JTS.spatialObject(space, factory.createPoint(new Coordinate(x, y)));
     }
 
     @Override

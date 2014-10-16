@@ -15,7 +15,9 @@ package com.geophile.z.space;
 import com.geophile.z.*;
 import com.geophile.z.SpatialJoinFilter;
 import com.geophile.z.spatialobject.d2.Box;
+import com.geophile.z.spatialobject.jts.JTS;
 import com.geophile.z.spatialobject.jts.JTSPoint;
+import com.geophile.z.spatialobject.jts.JTSSpatialObject;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.junit.Test;
@@ -37,7 +39,7 @@ public class SpatialIndexJTSPointAndBoxTest
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                JTSPoint point = point(x, y);
+                JTSSpatialObject point = point(x, y);
                 spatialIndex.add(point, new TestRecord(point, id++));
             }
         }
@@ -64,7 +66,7 @@ public class SpatialIndexJTSPointAndBoxTest
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                JTSPoint point = point(x, y);
+                JTSSpatialObject point = point(x, y);
                 spatialIndex.add(point, new TestRecord(point, id++));
             }
         }
@@ -97,7 +99,7 @@ public class SpatialIndexJTSPointAndBoxTest
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                JTSPoint point = point(x, y);
+                JTSSpatialObject point = point(x, y);
                 spatialIndex.add(point, new TestRecord(point, id++));
             }
         }
@@ -135,15 +137,15 @@ public class SpatialIndexJTSPointAndBoxTest
         query.add(box, new TestRecord(box));
         Iterator<Pair<TestRecord, TestRecord>> iterator =
             SpatialJoin.iterator(query, spatialIndex, FILTER, SpatialJoin.Duplicates.INCLUDE);
-        List<JTSPoint> actual = new ArrayList<>();
-        JTSPoint point;
+        List<JTSSpatialObject> actual = new ArrayList<>();
+        JTSSpatialObject point;
         while (iterator.hasNext()) {
             point = (JTSPoint) iterator.next().right().spatialObject();
             if (!actual.contains(point)) {
                 actual.add(point);
             }
         }
-        List<JTSPoint> expected = new ArrayList<>();
+        List<JTSSpatialObject> expected = new ArrayList<>();
         for (long x = 10 * ((xLo + 9) / 10); x <= 10 * (xHi / 10); x += 10) {
             for (long y = 10 * ((yLo + 9) / 10); y <= 10 * (yHi / 10); y += 10) {
                 point = point(x, y);
@@ -157,9 +159,9 @@ public class SpatialIndexJTSPointAndBoxTest
         assertEquals(expected, actual);
     }
 
-    private JTSPoint point(double x, double y)
+    private JTSSpatialObject point(double x, double y)
     {
-        return new JTSPoint(SPACE, factory.createPoint(new Coordinate(x, y)));
+        return JTS.spatialObject(SPACE, factory.createPoint(new Coordinate(x, y)));
     }
 
     private void generateRandomBox(Random random)
@@ -182,12 +184,14 @@ public class SpatialIndexJTSPointAndBoxTest
     private static final int SEED = 123456;
     private static final int X_MAX = 1000;
     private static final int Y_MAX = 1000;
-    private static final Comparator<JTSPoint> POINT_RANKING =
-        new Comparator<JTSPoint>()
+    private static final Comparator<JTSSpatialObject> POINT_RANKING =
+        new Comparator<JTSSpatialObject>()
         {
             @Override
-            public int compare(JTSPoint p, JTSPoint q)
+            public int compare(JTSSpatialObject x, JTSSpatialObject y)
             {
+                JTSPoint p = (JTSPoint) x;
+                JTSPoint q = (JTSPoint) y;
                 int c = p.point().getX() < q.point().getX() ? -1 : p.point().getX() > q.point().getX() ? 1 : 0;
                 if (c == 0) {
                     c = p.point().getY() < q.point().getY() ? -1 : p.point().getY() > q.point().getY() ? 1 : 0;
