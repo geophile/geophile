@@ -30,7 +30,6 @@ public class JTSSpatialObjectWithBoundingBox extends JTSSpatialObject
     @Override
     public boolean containedBy(Region region)
     {
-        assert region.space() == space;
         ensureBoundingBox();
         return
             region.loLE(0, xLo) && region.hiGE(0, xHi) &&
@@ -40,7 +39,6 @@ public class JTSSpatialObjectWithBoundingBox extends JTSSpatialObject
     @Override
     public RegionComparison compare(Region region)
     {
-        assert region.space() == space;
         ensureBoundingBox();
         if (region.loGE(0, xLo) && region.hiLT(0, xHi) &&
             region.loGE(1, yLo) && region.hiLT(1, yHi)) {
