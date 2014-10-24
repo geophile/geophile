@@ -21,7 +21,6 @@ public class JTSSpatialObjectWithBoundingBox extends JTSSpatialObject
     @Override
     public boolean containedBy(Space space)
     {
-        assert space == this.space;
         Envelope envelope = geometry.getEnvelopeInternal();
         return
             space.lo(0) <= envelope.getMinX() && envelope.getMaxX() <= space.hi(0) &&
