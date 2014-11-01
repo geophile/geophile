@@ -33,7 +33,7 @@ public class OverlappingPairs
         }
         // Find overlapping pairs
         Iterator<Pair<ExampleRecord, ExampleRecord>> iterator =
-            SpatialJoin.iterator(left, right, BOX_OVERLAP, SpatialJoin.Duplicates.EXCLUDE);
+            SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, BOX_OVERLAP).iterator(left, right);
         // Print points contained in box
         System.out.println("Overlapping pairs");
         while (iterator.hasNext()) {
@@ -63,8 +63,8 @@ public class OverlappingPairs
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{X, Y},
                                                       new int[]{X_BITS, Y_BITS});
-    private static final SpatialJoinFilter<ExampleRecord, ExampleRecord> BOX_OVERLAP =
-        new SpatialJoinFilter<ExampleRecord, ExampleRecord>()
+    private static final SpatialJoin.Filter<ExampleRecord, ExampleRecord> BOX_OVERLAP =
+        new SpatialJoin.Filter<ExampleRecord, ExampleRecord>()
         {
             @Override
             public boolean overlap(ExampleRecord r, ExampleRecord s)

@@ -7,7 +7,7 @@
 package com.geophile.z.examples;
 
 import com.geophile.z.*;
-import com.geophile.z.SpatialJoinFilter;
+import com.geophile.z.SpatialJoin.Filter;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 
@@ -35,7 +35,7 @@ public class PointsInBox
             // Create Iterator over spatial join output
             Box box = randomBox();
             Iterator<ExampleRecord> iterator =
-                SpatialJoin.iterator(box, points, BOX_CONTAINS_POINT, SpatialJoin.Duplicates.EXCLUDE);
+                SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, BOX_CONTAINS_POINT).iterator(box, points);
             // Print points contained in box
             System.out.println(String.format("Points inside %s", box));
             while (iterator.hasNext()) {
@@ -72,8 +72,8 @@ public class PointsInBox
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{X, Y},
                                                       new int[]{X_BITS, Y_BITS});
-    private static final SpatialJoinFilter<SpatialObject, ExampleRecord> BOX_CONTAINS_POINT =
-        new SpatialJoinFilter<SpatialObject, ExampleRecord>()
+    private static final SpatialJoin.Filter<SpatialObject, ExampleRecord> BOX_CONTAINS_POINT =
+        new SpatialJoin.Filter<SpatialObject, ExampleRecord>()
         {
             @Override
             public boolean overlap(SpatialObject x, ExampleRecord y)

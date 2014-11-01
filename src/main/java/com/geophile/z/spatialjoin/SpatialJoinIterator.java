@@ -1,6 +1,11 @@
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.*;
+import com.geophile.z.Pair;
+import com.geophile.z.Record;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialJoinRuntimeException;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.index.RecordWithSpatialObject;
 import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.space.SpatialIndexImpl;
@@ -56,29 +61,37 @@ public class SpatialJoinIterator<T> implements Iterator<T>
         throw new UnsupportedOperationException();
     }
 
-
     // SpatialJoinIterator interface
 
     public static SpatialJoinIterator<Pair> pairIterator(SpatialIndexImpl leftSpatialIndex,
                                                          SpatialIndexImpl rightSpatialIndex,
-                                                         SpatialJoinFilter filter)
+                                                         SpatialJoin.Filter filter,
+                                                         SpatialJoin.InputObserver leftInputObserver,
+                                                         SpatialJoin.InputObserver rightInputObserver)
         throws IOException, InterruptedException
     {
         return new SpatialJoinIterator<>(leftSpatialIndex,
                                          rightSpatialIndex,
                                          PAIR_OUTPUT_GENERATOR,
-                                         filter);
+                                         filter,
+                                         leftInputObserver,
+                                         rightInputObserver);
     }
 
     public static SpatialJoinIterator<Record> spatialObjectIterator(SpatialObject leftSpatialObject,
                                                                     SpatialIndexImpl rightSpatialIndex,
-                                                                    SpatialJoinFilter filter)
+                                                                    SpatialJoin.Filter filter,
+                                                                    SpatialJoin.InputObserver leftInputObserver,
+                                                                    SpatialJoin.InputObserver rightInputObserver)
         throws IOException, InterruptedException
     {
+
         return new SpatialJoinIterator<>(leftSpatialObject,
                                          rightSpatialIndex,
                                          RECORD_OUTPUT_GENERATOR,
-                                         filter);
+                                         filter,
+                                         leftInputObserver,
+                                         rightInputObserver);
     }
 
     // For use by this class
@@ -86,7 +99,9 @@ public class SpatialJoinIterator<T> implements Iterator<T>
     private SpatialJoinIterator(SpatialIndexImpl leftSpatialIndex,
                                 SpatialIndexImpl rightSpatialIndex,
                                 final OutputGenerator<T> outputGenerator,
-                                final SpatialJoinFilter filter) throws IOException, InterruptedException
+                                final SpatialJoin.Filter filter,
+                                SpatialJoin.InputObserver leftInputObserver,
+                                SpatialJoin.InputObserver rightInputObserver) throws IOException, InterruptedException
     {
         SpatialJoinOutput pendingLeftRight =
             new SpatialJoinOutput()
@@ -99,7 +114,7 @@ public class SpatialJoinIterator<T> implements Iterator<T>
                     }
                 }
             };
-        left = SpatialJoinInput.newSpatialJoinInput(leftSpatialIndex, pendingLeftRight);
+        left = SpatialJoinInput.newSpatialJoinInput(leftSpatialIndex, pendingLeftRight, leftInputObserver);
         SpatialJoinOutput pendingRightLeft =
             new SpatialJoinOutput()
             {
@@ -111,7 +126,7 @@ public class SpatialJoinIterator<T> implements Iterator<T>
                     }
                 }
             };
-        right = SpatialJoinInput.newSpatialJoinInput(rightSpatialIndex, pendingRightLeft);
+        right = SpatialJoinInput.newSpatialJoinInput(rightSpatialIndex, pendingRightLeft, rightInputObserver);
         left.otherInput(right);
         right.otherInput(left);
         if (LOG.isLoggable(Level.INFO)) {
@@ -125,7 +140,9 @@ public class SpatialJoinIterator<T> implements Iterator<T>
     private SpatialJoinIterator(final SpatialObject querySpatialObject,
                                 SpatialIndexImpl dataSpatialIndex,
                                 final OutputGenerator<T> outputGenerator,
-                                final SpatialJoinFilter filter) throws IOException, InterruptedException
+                                final SpatialJoin.Filter filter,
+                                SpatialJoin.InputObserver leftInputObserver,
+                                SpatialJoin.InputObserver rightInputObserver) throws IOException, InterruptedException
     {
         SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();
         final SpatialIndex<RecordWithSpatialObject> querySpatialIndex =
@@ -148,7 +165,9 @@ public class SpatialJoinIterator<T> implements Iterator<T>
                     }
                 }
             };
-        left = SpatialJoinInput.newSpatialJoinInput((SpatialIndexImpl) querySpatialIndex, pendingLeftRight);
+        left = SpatialJoinInput.newSpatialJoinInput((SpatialIndexImpl) querySpatialIndex,
+                                                    pendingLeftRight,
+                                                    leftInputObserver);
         SpatialJoinOutput pendingRightLeft =
             new SpatialJoinOutput()
             {
@@ -160,7 +179,9 @@ public class SpatialJoinIterator<T> implements Iterator<T>
                     }
                 }
             };
-        right = SpatialJoinInput.newSpatialJoinInput(dataSpatialIndex, pendingRightLeft);
+        right = SpatialJoinInput.newSpatialJoinInput(dataSpatialIndex,
+                                                     pendingRightLeft,
+                                                     rightInputObserver);
         left.otherInput(right);
         right.otherInput(left);
         if (LOG.isLoggable(Level.INFO)) {

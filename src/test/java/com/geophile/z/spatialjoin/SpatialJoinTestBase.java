@@ -17,8 +17,8 @@ public abstract class SpatialJoinTestBase
 {
     protected final void testJoin(TestInput leftInput,
                                   TestInput rightInput,
-                                  SpatialJoinFilter<TestRecord, TestRecord> manyManyFilter,
-                                  SpatialJoinFilter<SpatialObject, TestRecord> oneManyFilter,
+                                  SpatialJoin.Filter<TestRecord, TestRecord> manyManyFilter,
+                                  SpatialJoin.Filter<SpatialObject, TestRecord> oneManyFilter,
                                   SpatialJoin.Duplicates duplicates)
         throws IOException, InterruptedException
     {
@@ -32,7 +32,7 @@ public abstract class SpatialJoinTestBase
 
     protected final void testOneManyJoin(SpatialObject query,
                                          TestInput data,
-                                         SpatialJoinFilter<SpatialObject, TestRecord> filter,
+                                         SpatialJoin.Filter<SpatialObject, TestRecord> filter,
                                          SpatialJoin.Duplicates duplicates)
         throws IOException, InterruptedException
     {
@@ -83,7 +83,7 @@ public abstract class SpatialJoinTestBase
 
     protected final void testManyManyJoin(TestInput leftInput,
                                           TestInput rightInput,
-                                          SpatialJoinFilter<TestRecord, TestRecord> filter,
+                                          SpatialJoin.Filter<TestRecord, TestRecord> filter,
                                           SpatialJoin.Duplicates duplicates)
 
         throws IOException,InterruptedException
@@ -189,7 +189,9 @@ public abstract class SpatialJoinTestBase
         Map<Record, Integer> actual = new HashMap<>(); // Record -> occurrence count
         long start = System.nanoTime();
         Iterator<TestRecord> joinScan =
-            SpatialJoin.iterator(query, rightInput.spatialIndex(), oneManyFilter, duplicates);
+            SpatialJoin
+                .newSpatialJoin(duplicates, oneManyFilter)
+                .iterator(query, rightInput.spatialIndex());
         while (joinScan.hasNext()) {
             TestRecord record = joinScan.next();
             if (verify()) {
@@ -212,7 +214,9 @@ public abstract class SpatialJoinTestBase
         Map<Pair<TestRecord, TestRecord>, Integer> actual = new HashMap<>(); // Pair -> occurrence count
         long start = System.nanoTime();
         Iterator<Pair<TestRecord, TestRecord>> joinScan =
-            SpatialJoin.iterator(leftInput.spatialIndex(), rightInput.spatialIndex(), manyManyFilter, duplicates);
+            SpatialJoin
+                .newSpatialJoin(duplicates, manyManyFilter)
+                .iterator(leftInput.spatialIndex(), rightInput.spatialIndex());
         while (joinScan.hasNext()) {
             Pair<TestRecord, TestRecord> pair = joinScan.next();
             if (verify()) {
@@ -264,11 +268,10 @@ public abstract class SpatialJoinTestBase
         return String.format("duplicates = %s\tLEFT: %s\tRIGHT: %s\t", duplicates, leftInput, rightInput);
     }
 
-    private SpatialJoin spatialJoin;
     private TestInput leftInput;
     private TestInput rightInput;
-    private SpatialJoinFilter<TestRecord, TestRecord> manyManyFilter;
-    private SpatialJoinFilter<SpatialObject, TestRecord> oneManyFilter;
+    private SpatialJoin.Filter<TestRecord, TestRecord> manyManyFilter;
+    private SpatialJoin.Filter<SpatialObject, TestRecord> oneManyFilter;
     private SpatialJoin.Duplicates duplicates;
     private SpatialObject query;
     protected TestStats testStats;

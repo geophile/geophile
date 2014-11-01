@@ -13,7 +13,6 @@
 package com.geophile.z.space;
 
 import com.geophile.z.*;
-import com.geophile.z.SpatialJoinFilter;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.jts.JTS;
 import com.geophile.z.spatialobject.jts.JTSPoint;
@@ -136,7 +135,7 @@ public class SpatialIndexJTSPointAndBoxTest
         SpatialIndex<TestRecord> query = new SpatialIndexImpl<>(SPACE, boxTestIndex, SpatialIndex.Options.DEFAULT);
         query.add(box, new TestRecord(box));
         Iterator<Pair<TestRecord, TestRecord>> iterator =
-            SpatialJoin.iterator(query, spatialIndex, FILTER, SpatialJoin.Duplicates.INCLUDE);
+            SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, FILTER).iterator(query, spatialIndex);
         List<JTSSpatialObject> actual = new ArrayList<>();
         JTSSpatialObject point;
         while (iterator.hasNext()) {
@@ -200,8 +199,8 @@ public class SpatialIndexJTSPointAndBoxTest
             }
         };
     private static final SpaceImpl SPACE = new SpaceImpl(new double[]{0, 0}, new double[]{1000, 1000}, new int[]{10, 10}, null);
-    private static final SpatialJoinFilter<TestRecord, TestRecord> FILTER =
-        new SpatialJoinFilter<TestRecord, TestRecord>()
+    private static final SpatialJoin.Filter<TestRecord, TestRecord> FILTER =
+        new SpatialJoin.Filter<TestRecord, TestRecord>()
         {
             @Override
             public boolean overlap(TestRecord r, TestRecord s)

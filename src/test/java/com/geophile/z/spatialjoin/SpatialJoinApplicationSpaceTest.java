@@ -124,8 +124,8 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
                                                       new int[]{X_BITS, Y_BITS});
     private static final BoxPointOverlapTester OVERLAP_TESTER = new BoxPointOverlapTester();
 
-    private final SpatialJoinFilter<TestRecord, TestRecord> manyManyFilter =
-        new SpatialJoinFilter<TestRecord, TestRecord>()
+    private final SpatialJoin.Filter<TestRecord, TestRecord> manyManyFilter =
+        new SpatialJoin.Filter<TestRecord, TestRecord>()
         {
             @Override
             public boolean overlap(TestRecord left, TestRecord right)
@@ -138,8 +138,8 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
                 return overlap;
             }
         };
-    private final SpatialJoinFilter<SpatialObject, TestRecord> oneManyFilter =
-        new SpatialJoinFilter<SpatialObject, TestRecord>()
+    private final SpatialJoin.Filter<SpatialObject, TestRecord> oneManyFilter =
+        new SpatialJoin.Filter<SpatialObject, TestRecord>()
         {
             @Override
             public boolean overlap(SpatialObject left, TestRecord right)

@@ -12,7 +12,12 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.*;
+import com.geophile.z.Pair;
+import com.geophile.z.Record;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialJoinException;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.index.RecordWithSpatialObject;
 import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.space.SpatialIndexImpl;
@@ -20,22 +25,26 @@ import com.geophile.z.space.SpatialIndexImpl;
 import java.io.IOException;
 import java.util.Iterator;
 
-public abstract class SpatialJoinImpl
+public class SpatialJoinImpl extends SpatialJoin
 {
-    public static <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
-    Iterator<Pair<LEFT_RECORD, RIGHT_RECORD>> iterator(SpatialIndex<LEFT_RECORD> leftSpatialIndex,
-                                                       SpatialIndex<RIGHT_RECORD> rightSpatialIndex,
-                                                       SpatialJoin.Duplicates duplicates)
-        throws IOException, InterruptedException
+    public SpatialJoinImpl(Duplicates duplicates,
+                           Filter filter,
+                           InputObserver leftObserver,
+                           InputObserver rightObserver)
     {
-        return iterator(leftSpatialIndex, rightSpatialIndex, DEFAULT_FILTER, duplicates);
+        if (duplicates == null) {
+            throw new IllegalArgumentException();
+        }
+        this.duplicates = duplicates;
+        this.filter = filter == null ? DEFAULT_FILTER : filter;
+        this.leftObserver = leftObserver;
+        this.rightObserver = rightObserver;
     }
 
-    public static <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
+    @Override
+    public <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
     Iterator<Pair<LEFT_RECORD, RIGHT_RECORD>> iterator(SpatialIndex<LEFT_RECORD> leftSpatialIndex,
-                                                       SpatialIndex<RIGHT_RECORD> rightSpatialIndex,
-                                                       SpatialJoinFilter<LEFT_RECORD, RIGHT_RECORD> filter,
-                                                       SpatialJoin.Duplicates duplicates)
+                                                                  SpatialIndex<RIGHT_RECORD> rightSpatialIndex)
         throws IOException, InterruptedException
     {
         if (!leftSpatialIndex.space().equals(rightSpatialIndex.space())) {
@@ -43,25 +52,20 @@ public abstract class SpatialJoinImpl
         }
         Iterator iterator =
             SpatialJoinIterator.pairIterator((SpatialIndexImpl) leftSpatialIndex,
-                                             (SpatialIndexImpl) rightSpatialIndex, filter);
+                                             (SpatialIndexImpl) rightSpatialIndex,
+                                             filter,
+                                             leftObserver,
+                                             rightObserver);
         if (duplicates == SpatialJoin.Duplicates.EXCLUDE) {
             iterator = new DuplicateEliminatingIterator<Pair<LEFT_RECORD, RIGHT_RECORD>>(iterator);
         }
         return iterator;
     }
 
-    public static <RECORD extends Record> Iterator<RECORD> iterator(SpatialObject query,
-                                                                    SpatialIndex<RECORD> data,
-                                                                    SpatialJoin.Duplicates duplicates)
-        throws IOException, InterruptedException
-    {
-        return iterator(query, data, DEFAULT_FILTER, duplicates);
-    }
-
-    public static <RECORD extends Record> Iterator<RECORD> iterator(SpatialObject query,
-                                                                    SpatialIndex<RECORD> data,
-                                                                    SpatialJoinFilter<SpatialObject, RECORD> filter,
-                                                                    SpatialJoin.Duplicates duplicates)
+    @Override
+    public <RECORD extends Record>
+    Iterator<RECORD> iterator(SpatialObject query,
+                                         SpatialIndex<RECORD> data)
         throws IOException, InterruptedException
     {
         SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();
@@ -77,7 +81,9 @@ public abstract class SpatialJoinImpl
         Iterator iterator =
             SpatialJoinIterator.spatialObjectIterator(query,
                                                       (SpatialIndexImpl) data,
-                                                      filter);
+                                                      filter,
+                                                      leftObserver,
+                                                      rightObserver);
         if (duplicates == SpatialJoin.Duplicates.EXCLUDE) {
             iterator = new DuplicateEliminatingIterator<RECORD>(iterator);
         }
@@ -89,8 +95,8 @@ public abstract class SpatialJoinImpl
         return Boolean.valueOf(System.getProperty(SINGLE_CELL_OPTIMIZATION_PROPERTY, "true"));
     }
 
-    private static SpatialJoinFilter DEFAULT_FILTER =
-        new SpatialJoinFilter()
+    private static SpatialJoin.Filter DEFAULT_FILTER =
+        new SpatialJoin.Filter()
         {
             @Override
             public boolean overlap(Object r, Object s)
@@ -100,4 +106,9 @@ public abstract class SpatialJoinImpl
         };
 
     private static final String SINGLE_CELL_OPTIMIZATION_PROPERTY = "singlecellopt";
+
+    private final Duplicates duplicates;
+    private final Filter filter;
+    private final InputObserver leftObserver;
+    private final InputObserver rightObserver;
 }

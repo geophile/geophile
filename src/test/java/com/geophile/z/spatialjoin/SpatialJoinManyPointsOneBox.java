@@ -49,7 +49,8 @@ public class SpatialJoinManyPointsOneBox
                             queryIndex.add(query, queryRecord);
                             for (int trial = 0; trial < TRIALS; trial++) {
                                 Iterator<Pair<RecordWithSpatialObject, RecordWithSpatialObject>> iterator =
-                                    SpatialJoin.iterator(queryIndex, dataIndex, manyManyFilter, SpatialJoin.Duplicates.INCLUDE);
+                                    SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, manyManyFilter)
+                                               .iterator(queryIndex, dataIndex);
                                 while (iterator.hasNext()) {
                                     iterator.next();
                                 }
@@ -69,7 +70,8 @@ public class SpatialJoinManyPointsOneBox
                         {
                             for (int trial = 0; trial < TRIALS; trial++) {
                                 Iterator<RecordWithSpatialObject> iterator =
-                                    SpatialJoin.iterator(query, dataIndex, oneManyFilter, SpatialJoin.Duplicates.INCLUDE);
+                                    SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, oneManyFilter)
+                                               .iterator(query, dataIndex);
                                 while (iterator.hasNext()) {
                                     iterator.next();
                                 }
@@ -107,8 +109,8 @@ public class SpatialJoinManyPointsOneBox
     private static final int MAX_QUERY_BOX_SIZE = 64000;
 
     private final BoxOverlapTester overlapTester = new BoxOverlapTester();
-    private final SpatialJoinFilter<RecordWithSpatialObject, RecordWithSpatialObject> manyManyFilter =
-        new SpatialJoinFilter<RecordWithSpatialObject, RecordWithSpatialObject>()
+    private final SpatialJoin.Filter<RecordWithSpatialObject, RecordWithSpatialObject> manyManyFilter =
+        new SpatialJoin.Filter<RecordWithSpatialObject, RecordWithSpatialObject>()
     {
         @Override
         public boolean overlap(RecordWithSpatialObject left, RecordWithSpatialObject right)
@@ -121,8 +123,8 @@ public class SpatialJoinManyPointsOneBox
             return overlap;
         }
     };
-    private final SpatialJoinFilter<SpatialObject, RecordWithSpatialObject> oneManyFilter =
-        new SpatialJoinFilter<SpatialObject, RecordWithSpatialObject>()
+    private final SpatialJoin.Filter<SpatialObject, RecordWithSpatialObject> oneManyFilter =
+        new SpatialJoin.Filter<SpatialObject, RecordWithSpatialObject>()
     {
         @Override
         public boolean overlap(SpatialObject left, RecordWithSpatialObject right)

@@ -139,8 +139,8 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
                                                       new int[]{X_BITS, Y_BITS});
 
     private final Random random = new Random(123456);
-    private final SpatialJoinFilter<TestRecord, TestRecord> manyManyFilter =
-        new SpatialJoinFilter<TestRecord, TestRecord>()
+    private final SpatialJoin.Filter<TestRecord, TestRecord> manyManyFilter =
+        new SpatialJoin.Filter<TestRecord, TestRecord>()
     {
         @Override
         public boolean overlap(TestRecord left, TestRecord right)
@@ -153,8 +153,8 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
             return overlap;
         }
     };
-    private final SpatialJoinFilter<SpatialObject, TestRecord> oneManyFilter =
-        new SpatialJoinFilter<SpatialObject, TestRecord>()
+    private final SpatialJoin.Filter<SpatialObject, TestRecord> oneManyFilter =
+        new SpatialJoin.Filter<SpatialObject, TestRecord>()
     {
         @Override
         public boolean overlap(SpatialObject left, TestRecord right)

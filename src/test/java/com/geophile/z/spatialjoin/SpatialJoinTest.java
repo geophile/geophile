@@ -6,7 +6,14 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.*;
+import com.geophile.z.Index;
+import com.geophile.z.Space;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialJoinException;
+import com.geophile.z.SpatialObject;
+import com.geophile.z.TestIndex;
+import com.geophile.z.TestRecord;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -41,7 +48,8 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                                              newIndex());
             try {
                 SpatialJoin
-                    .iterator(leftSpatialIndex, rightSpatialIndex, MANY_MANY_FILTER, SpatialJoin.Duplicates.EXCLUDE);
+                    .newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, MANY_MANY_FILTER)
+                    .iterator(leftSpatialIndex, rightSpatialIndex);
                 fail();
             } catch (SpatialJoinException e) {
                 // Expected
@@ -61,7 +69,8 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                                              newIndex());
             try {
                 SpatialJoin
-                    .iterator(leftSpatialIndex, rightSpatialIndex, MANY_MANY_FILTER, SpatialJoin.Duplicates.EXCLUDE);
+                    .newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, MANY_MANY_FILTER)
+                    .iterator(leftSpatialIndex, rightSpatialIndex);
                 fail();
             } catch (SpatialJoinException e) {
                 // Expected
@@ -82,7 +91,9 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                                                         new double[]{1000, 1000},
                                                         new int[]{10, 10}),
                                          newIndex());
-        SpatialJoin.iterator(leftSpatialIndex, rightSpatialIndex, MANY_MANY_FILTER, SpatialJoin.Duplicates.EXCLUDE);
+        SpatialJoin
+            .newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, MANY_MANY_FILTER)
+            .iterator(leftSpatialIndex, rightSpatialIndex);
     }
 
     @Test
@@ -187,8 +198,8 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                                                       new int[]{X_BITS, Y_BITS});
 
     private final Random random = new Random(123456);
-    private final SpatialJoinFilter<TestRecord, TestRecord> MANY_MANY_FILTER =
-        new SpatialJoinFilter<TestRecord, TestRecord>()
+    private final SpatialJoin.Filter<TestRecord, TestRecord> MANY_MANY_FILTER =
+        new SpatialJoin.Filter<TestRecord, TestRecord>()
         {
             @Override
             public boolean overlap(TestRecord left, TestRecord right)
@@ -201,8 +212,8 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                 return overlap;
             }
         };
-    private final SpatialJoinFilter<SpatialObject, TestRecord> ONE_MANY_FILTER =
-        new SpatialJoinFilter<SpatialObject, TestRecord>()
+    private final SpatialJoin.Filter<SpatialObject, TestRecord> ONE_MANY_FILTER =
+        new SpatialJoin.Filter<SpatialObject, TestRecord>()
         {
             @Override
             public boolean overlap(SpatialObject left, TestRecord right)

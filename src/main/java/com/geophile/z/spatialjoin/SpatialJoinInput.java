@@ -3,6 +3,7 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.Cursor;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
+import com.geophile.z.SpatialJoin;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.space.SpatialIndexImpl;
 
@@ -199,7 +200,7 @@ On entry to step 8 above, the state of the merge is as follows:
 The next event is to enter gh, but that is obviously going to produce
 no output. This leads to an optimization.
 
-We know that gh isn't going to product output because it doesn't
+We know that gh isn't going to produce output because it doesn't
 overlap any z-value in Y.nest, and because it doesn't overlap
 with Y.cursor.current (mn). (And there can't be any z-values in Y
 between Y.nest.top and Y.cursor.current due to the way that these data
@@ -378,10 +379,11 @@ class SpatialJoinInput
     }
 
     public static SpatialJoinInput newSpatialJoinInput(SpatialIndexImpl spatialIndex,
-                                                       SpatialJoinOutput spatialJoinOutput)
-            throws IOException, InterruptedException
+                                                       SpatialJoinOutput spatialJoinOutput,
+                                                       SpatialJoin.InputObserver observer)
+        throws IOException, InterruptedException
     {
-        return new SpatialJoinInput(spatialIndex, spatialJoinOutput);
+        return new SpatialJoinInput(spatialIndex, spatialJoinOutput, observer);
     }
 
     // For use by this class
@@ -399,7 +401,7 @@ class SpatialJoinInput
             assert thatCurrentZ >= thisCurrentZ; // otherwise, we would have entered that.current
             if (thatCurrentZ > thisCurrentZ) {
                 key(thatCurrentZ);
-                cursor.goTo(key);
+                cursorGoTo(cursor, key);
                 copyToCurrent(cursor.next());
                 if (!singleCellOptimization || !singleCell) {
                     if (!eof && SpaceImpl.contains(thatCurrentZ, current.z())) {
@@ -420,13 +422,15 @@ class SpatialJoinInput
         throws IOException, InterruptedException
     {
         // Find the largest ancestor of current that exists and that is past zLowerBound.
+        boolean foundAncestor = false;
         long zCandidate = SpaceImpl.parent(zStart);
         while (zCandidate > zLowerBound) {
             key(zCandidate);
-            cursor.goTo(key);
-            Record ancestor = cursor.next();
+            cursorGoTo(ancestorFindingCursor, key);
+            Record ancestor = ancestorFindingCursor.next();
             if (ancestor != null && ancestor.z() == zCandidate) {
                 copyToCurrent(ancestor);
+                foundAncestor = true;
             }
             zCandidate = SpaceImpl.parent(zCandidate);
             counters.countAncestorFind();
@@ -436,8 +440,10 @@ class SpatialJoinInput
             cursor.close();
         } else {
             assert current.z() >= zLowerBound;
-            cursor.goTo(current);
-            copyToCurrent(cursor.next());
+            if (foundAncestor) {
+                cursorGoTo(cursor, current);
+                copyToCurrent(cursor.next());
+            }
         }
     }
 
@@ -464,16 +470,6 @@ class SpatialJoinInput
         return nest.peekLast();
     }
 
-    private static Cursor newCursor(SpatialIndexImpl spatialIndex) throws IOException, InterruptedException
-    {
-        Index index = spatialIndex.index();
-        Cursor cursor = index.cursor();
-        Record key = index.newKeyRecord();
-        key.z(SpaceImpl.Z_MIN);
-        cursor.goTo(key);
-        return cursor;
-    }
-
     private void generateSpatialJoinOutput(Record thatRecord)
     {
         for (Record thisRecord : nest) {
@@ -491,15 +487,25 @@ class SpatialJoinInput
         return String.format("sjinput(%s)", id);
     }
 
-    private SpatialJoinInput(SpatialIndexImpl spatialIndex, SpatialJoinOutput spatialJoinOutput)
+    private SpatialJoinInput(SpatialIndexImpl spatialIndex,
+                             SpatialJoinOutput spatialJoinOutput,
+                             SpatialJoin.InputObserver observer)
         throws IOException, InterruptedException
     {
+        Index index = spatialIndex.index();
         this.spatialIndex = spatialIndex;
-        this.keyTemplate = spatialIndex.index().newKeyRecord();
-        this.cursor = newCursor(spatialIndex);
-        this.current = spatialIndex.index().newRecord();
-        this.key = spatialIndex.index().newRecord();
+        this.keyTemplate = index.newKeyRecord();
+        this.observer = observer == null ? DEFAULT_OBSERVER : observer;
+        // Initialize cursor
+        this.cursor = index.cursor();
+        Record zMinKey = index.newKeyRecord();
+        zMinKey.z(SpaceImpl.Z_MIN);
+        cursorGoTo(cursor, zMinKey);
+        //
+        this.current = index.newRecord();
+        this.key = index.newRecord();
         copyToCurrent(this.cursor.next());
+        this.ancestorFindingCursor = index.cursor();
         this.spatialJoinOutput = spatialJoinOutput;
         this.singleCell = spatialIndex.singleCell();
         this.singleCellOptimization = SpatialJoinImpl.singleCellOptimization();
@@ -539,17 +545,30 @@ class SpatialJoinInput
         }
     }
 
+    private void cursorGoTo(Cursor cursor, Record key) throws IOException, InterruptedException
+    {
+        cursor.goTo(key);
+        observer.randomAccess(key.z());
+    }
+
     // Class state
-
-    private static final Logger LOG = Logger.getLogger(SpatialJoinInput.class.getName());
-    private static final AtomicInteger idGenerator = new AtomicInteger(0);
-
-    // Object state
 
     // A 64-bit z-value is definitely less than Long.MAX_VALUE. The maxium z-value length is 57, which is recorded
     // in a 6-bit length field. So the length field will always have some zeros in the last 6 bits,
     // while Long.MAX_VALUE doesn't.
     public static long EOF = Long.MAX_VALUE;
+    private static final Logger LOG = Logger.getLogger(SpatialJoinInput.class.getName());
+    private static final AtomicInteger idGenerator = new AtomicInteger(0);
+    private static final SpatialJoin.InputObserver DEFAULT_OBSERVER =
+        new SpatialJoin.InputObserver()
+        {
+            @Override
+            public void randomAccess(long z)
+            {
+            }
+        };
+
+    // Object state
 
     private final int id = idGenerator.getAndIncrement();
     private final SpatialIndexImpl spatialIndex;
@@ -561,9 +580,11 @@ class SpatialJoinInput
     // and cursor contains later z-values.
     private final Deque<Record> nest = new ArrayDeque<>();
     private final Cursor cursor;
+    private final Cursor ancestorFindingCursor;
     private final Record current;
     private final Record key;
     private boolean eof = false;
     private final boolean singleCellOptimization;
     private final Counters counters = Counters.forThread();
+    private final SpatialJoin.InputObserver observer;
 }

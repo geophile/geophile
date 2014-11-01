@@ -7,10 +7,8 @@
 package com.geophile.z.space;
 
 import com.geophile.z.*;
-import com.geophile.z.SpatialJoinFilter;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
-import com.geophile.z.util.IndexDumper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -236,7 +234,7 @@ public abstract class SpatialIndexTestBase
         record.spatialObject(box);
         query.add(box, record);
         Iterator<Pair<TestRecord, TestRecord>> iterator =
-            SpatialJoin.iterator(query, spatialIndex, FILTER, SpatialJoin.Duplicates.INCLUDE);
+            SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, FILTER).iterator(query, spatialIndex);
         List<Point> actual = new ArrayList<>();
         while (iterator.hasNext()) {
             Point point = (Point) iterator.next().right().spatialObject();
@@ -287,8 +285,8 @@ public abstract class SpatialIndexTestBase
             }
         };
     private static final SpaceImpl SPACE = new SpaceImpl(new double[]{0, 0}, new double[]{1000, 1000}, new int[]{10, 10}, null);
-    private static final SpatialJoinFilter<TestRecord, TestRecord> FILTER =
-        new SpatialJoinFilter<TestRecord, TestRecord>()
+    private static final SpatialJoin.Filter<TestRecord, TestRecord> FILTER =
+        new SpatialJoin.Filter<TestRecord, TestRecord>()
         {
             @Override
             public boolean overlap(TestRecord r, TestRecord s)

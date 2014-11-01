@@ -35,8 +35,8 @@ public class SelfJoinTest extends SpatialJoinTestBase
     @Test
     public void selfJoin() throws IOException, InterruptedException
     {
-        SpatialJoinFilter<TestRecord, TestRecord> filter =
-            new SpatialJoinFilter<TestRecord, TestRecord>()
+        SpatialJoin.Filter<TestRecord, TestRecord> filter =
+            new SpatialJoin.Filter<TestRecord, TestRecord>()
             {
                 @Override
                 public boolean overlap(TestRecord r, TestRecord s)
@@ -77,7 +77,7 @@ public class SelfJoinTest extends SpatialJoinTestBase
         box = new Box(10, 20, 30, 40);
         spatialIndex.add(box, new TestRecord(box, 2));
         Iterator<Pair<TestRecord, TestRecord>> iterator =
-            SpatialJoin.iterator(spatialIndex, spatialIndex, KEEP_ALL, SpatialJoin.Duplicates.EXCLUDE);
+            SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, KEEP_ALL).iterator(spatialIndex, spatialIndex);
         // Should see all combinations of b1 and b2
         int count = 0;
         int mask = 0;
@@ -157,8 +157,8 @@ public class SelfJoinTest extends SpatialJoinTestBase
     private static final int COUNT = 10_000;
     private static final int[] MAX_SIZES = new int[]{1, 10_000, /* 1% */ 100_000 /* 10% */};
     private static final BoxOverlapTester OVERLAP_TESTER = new BoxOverlapTester();
-    private static final SpatialJoinFilter KEEP_ALL =
-        new SpatialJoinFilter()
+    private static final SpatialJoin.Filter KEEP_ALL =
+        new SpatialJoin.Filter()
         {
             @Override
             public boolean overlap(Object left, Object right)

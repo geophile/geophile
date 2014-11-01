@@ -13,23 +13,23 @@ import java.util.Iterator;
 
 /**
  * Provides the API for specifying a spatial join. There are four methods, representing the following options:
- *
+ * <p/>
  * <ul>
- *     <li><b>One/many or many/many join:</b> In general, a spatial join is computed between two sets of
- *     {@link com.geophile.z.SpatialObject}s, each contained in a {@link com.geophile.z.SpatialIndex}. But it is
- *     often the case that one of the sets is a singleton.
- *
- *     <li><b>Filtering of results:</b> Geophile's spatial join algorithm returns false positives -- pairs of objects
- *     that don't actually overlap. It may be possible
- *     to filter out the false positives for some record types, e.g., if the records contain the spatial objects
- *     themselves. To support such cases, a {@link com.geophile.z.SpatialJoinFilter} may be supplied.
+ * <li><b>One/many or many/many join:</b> In general, a spatial join is computed between two sets of
+ * {@link com.geophile.z.SpatialObject}s, each contained in a {@link com.geophile.z.SpatialIndex}. But it is
+ * often the case that one of the sets is a singleton.
+ * <p/>
+ * <li><b>Filtering of results:</b> Geophile's spatial join algorithm returns false positives -- pairs of objects
+ * that don't actually overlap. It may be possible
+ * to filter out the false positives for some record types, e.g., if the records contain the spatial objects
+ * themselves. To support such cases, a {@link com.geophile.z.SpatialJoin.Filter} may be supplied.
  * </ul>
- *
+ * <p/>
  * In all cases, spatial join results are accessed through an {@link java.util.Iterator}. For a many/many join,
  * the Iterator yields {@link com.geophile.z.Pair} objects, in which {@link com.geophile.z.Pair#left()}  and
  * {@link com.geophile.z.Pair#right()} provide access to the (possibly) overlapping objects. For a one/many join,
  * the Iterator returns {@link com.geophile.z.SpatialObject}s.
- *
+ * <p/>
  * The spatial join algorithm
  * may return duplicate {@link com.geophile.z.Pair}s or {@link com.geophile.z.SpatialObject}s.
  * Duplicates.INCLUDE keeps these duplicates.
@@ -40,51 +40,43 @@ import java.util.Iterator;
 
 public abstract class SpatialJoin
 {
+    public static <LEFT, RIGHT>
+    SpatialJoin newSpatialJoin(Duplicates duplicates,
+                               Filter<LEFT, RIGHT> filter,
+                               InputObserver leftObserver,
+                               InputObserver rightObserver)
+    {
+        return new SpatialJoinImpl(duplicates, filter, leftObserver, rightObserver);
+    }
+
+    public static <LEFT, RIGHT>
+    SpatialJoin newSpatialJoin(Duplicates duplicates,
+                               Filter<LEFT, RIGHT> filter)
+    {
+        return new SpatialJoinImpl(duplicates, filter, null, null);
+    }
+
+    public static SpatialJoin newSpatialJoin(Duplicates duplicates)
+    {
+        return new SpatialJoinImpl(duplicates, null, null, null);
+    }
+
     /**
      * Returns an {@link java.util.Iterator} that will provide access to spatial join results.
      * The objects accessed through the {@link java.util.Iterator} are {@link com.geophile.z.Pair}s,
      * such that the left object comes from the leftSpatialIndex, and the right object comes from the rightSpatialIndex.
      * The results are not filtered, and so may contain false positives.
      *
-     * @param <LEFT_RECORD> Type of {@link com.geophile.z.Record} in leftSpatialIndex.
-     * @param <RIGHT_RECORD> Type of {@link com.geophile.z.Record} in rightSpatialIndex.
+     * @param <LEFT_RECORD>     Type of {@link com.geophile.z.Record} in leftSpatialIndex.
+     * @param <RIGHT_RECORD>    Type of {@link com.geophile.z.Record} in rightSpatialIndex.
      * @param leftSpatialIndex  One spatial join input.
      * @param rightSpatialIndex The other spatial join input.
-     * @param duplicates        Controls the handling of duplicates.
      * @return An {@link java.util.Iterator} providing access to spatial join results.
      */
-    public static <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
+    public abstract <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
     Iterator<Pair<LEFT_RECORD, RIGHT_RECORD>> iterator(SpatialIndex<LEFT_RECORD> leftSpatialIndex,
-                                                       SpatialIndex<RIGHT_RECORD> rightSpatialIndex,
-                                                       Duplicates duplicates)
-        throws IOException, InterruptedException
-    {
-        return SpatialJoinImpl.iterator(leftSpatialIndex, rightSpatialIndex, duplicates);
-    }
-
-    /**
-     * Returns an {@link java.util.Iterator} that will provide access to spatial join results.
-     * The objects accessed through the {@link java.util.Iterator} are {@link com.geophile.z.Pair}s,
-     * such that the left object comes from the leftSpatialIndex, and the right object comes from the rightSpatialIndex.
-     * The results are filtered using the given filter, and should not contain false positives.
-     *
-     * @param <LEFT_RECORD> Type of {@link com.geophile.z.Record} in leftSpatialIndex.
-     * @param <RIGHT_RECORD> Type of {@link com.geophile.z.Record} in rightSpatialIndex.
-     * @param leftSpatialIndex  One spatial join input.
-     * @param rightSpatialIndex The other spatial join input.
-     * @param filter Discards false positives in the join results.
-     * @param duplicates        Controls the handling of duplicates.
-     * @return An {@link java.util.Iterator} providing access to spatial join results.
-     */
-    public static <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
-    Iterator<Pair<LEFT_RECORD, RIGHT_RECORD>> iterator(SpatialIndex<LEFT_RECORD> leftSpatialIndex,
-                                                       SpatialIndex<RIGHT_RECORD> rightSpatialIndex,
-                                                       SpatialJoinFilter<LEFT_RECORD, RIGHT_RECORD> filter,
-                                                       Duplicates duplicates)
-        throws IOException, InterruptedException
-    {
-        return SpatialJoinImpl.iterator(leftSpatialIndex, rightSpatialIndex, filter, duplicates);
-    }
+                                                                  SpatialIndex<RIGHT_RECORD> rightSpatialIndex)
+        throws IOException, InterruptedException;
 
     /**
      * Returns an {@link java.util.Iterator} that will provide access to spatial join results.
@@ -93,40 +85,14 @@ public abstract class SpatialJoin
      * The results are filtered using the given filter, and should not contain false positives.
      *
      * @param <RECORD> Type of {@link com.geophile.z.Record} in data.
-     * @param query Used to locate data elements of interest.
-     * @param data The set of {@link com.geophile.z.SpatialObject}s to be searched.
-     * @param duplicates        Controls the handling of duplicates.
+     * @param query    Used to locate data elements of interest.
+     * @param data     The set of {@link com.geophile.z.SpatialObject}s to be searched.
      * @return An {@link java.util.Iterator} providing access to spatial join results.
      */
-    public static <RECORD extends Record> Iterator<RECORD> iterator(SpatialObject query,
-                                                                    SpatialIndex<RECORD> data,
-                                                                    Duplicates duplicates)
-        throws IOException, InterruptedException
-    {
-        return SpatialJoinImpl.iterator(query, data, duplicates);
-    }
-
-    /**
-     * Returns an {@link java.util.Iterator} that will provide access to spatial join results.
-     * The objects accessed through the {@link java.util.Iterator} are {@link com.geophile.z.SpatialObject}s
-     * from the data argument that overlap the given query object.
-     * The results are filtered using the given filter, and should not contain false positives.
-     *
-     * @param <RECORD> Type of {@link com.geophile.z.Record} in data.
-     * @param query Used to locate data elements of interest.
-     * @param data The set of {@link com.geophile.z.SpatialObject}s to be searched.
-     * @param filter Discards false positives in the join results.
-     * @param duplicates        Controls the handling of duplicates.
-     * @return An {@link java.util.Iterator} providing access to spatial join results.
-     */
-    public static <RECORD extends Record> Iterator<RECORD> iterator(SpatialObject query,
-                                                                    SpatialIndex<RECORD> data,
-                                                                    SpatialJoinFilter<SpatialObject, RECORD> filter,
-                                                                    Duplicates duplicates)
-        throws IOException, InterruptedException
-    {
-        return SpatialJoinImpl.iterator(query, data, filter, duplicates);
-    }
+    public abstract <RECORD extends Record>
+    Iterator<RECORD> iterator(SpatialObject query,
+                                         SpatialIndex<RECORD> data)
+        throws IOException, InterruptedException;
 
     /**
      * Specifies duplicate-handling behavior for spatial joins.
@@ -145,5 +111,22 @@ public abstract class SpatialJoin
          * {@link com.geophile.z.Pair}s retrieved, but should be more convenient for the application.
          */
         EXCLUDE
+    }
+
+    public interface InputObserver
+    {
+        void randomAccess(long z);
+    }
+
+    public interface Filter<LEFT, RIGHT>
+    {
+        /**
+         * Indicates whether the left and right objects overlap.
+         *
+         * @param left  Object from the left side of the spatial join.
+         * @param right Object from the right side of the spatial join.
+         * @return true if the objects overlap, false otherwise.
+         */
+        boolean overlap(LEFT left, RIGHT right);
     }
 }

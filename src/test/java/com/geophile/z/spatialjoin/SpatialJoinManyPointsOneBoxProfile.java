@@ -63,10 +63,9 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
         long totalMsec = 0;
         for (int trial = 0; trial < TRIALS; trial++) {
             long start = System.currentTimeMillis();
-            Iterator<TestRecord> joinScan = SpatialJoin.iterator(boxGenerator.newSpatialObject(),
-                                                                 rightInput,
-                                                                 FILTER,
-                                                                 SpatialJoin.Duplicates.INCLUDE);
+            Iterator<TestRecord> joinScan =
+                SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, FILTER)
+                           .iterator(boxGenerator.newSpatialObject(), rightInput);
             while (joinScan.hasNext()) {
                 joinScan.next();
                 totalOutputCount++;
@@ -152,7 +151,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{NX, NY},
                                                       new int[]{X_BITS, Y_BITS});
-    private static final SpatialJoinFilter FILTER =
+    private static final SpatialJoin.Filter FILTER =
         USE_JTS
         ? new TestFilterJTS()
         : new TestFilter();
@@ -160,7 +159,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     private final Random random = new Random(12345);
     private final GeometryFactory factory = new GeometryFactory();
 
-    private static final class TestFilter implements SpatialJoinFilter<Box, TestRecord>
+    private static final class TestFilter implements SpatialJoin.Filter<Box, TestRecord>
     {
         @Override
         public boolean overlap(Box box, TestRecord record)
@@ -174,7 +173,7 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
         }
     }
 
-    private static final class TestFilterJTS implements SpatialJoinFilter<Box, TestRecord>
+    private static final class TestFilterJTS implements SpatialJoin.Filter<Box, TestRecord>
     {
         @Override
         public boolean overlap(Box box, TestRecord record)
