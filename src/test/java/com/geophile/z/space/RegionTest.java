@@ -9,7 +9,7 @@ package com.geophile.z.space;
 import com.geophile.z.Space;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public class RegionTest
 {

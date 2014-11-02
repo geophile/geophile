@@ -24,7 +24,17 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.*;
+import com.geophile.z.Index;
+import com.geophile.z.JTSLineStringGenerator;
+import com.geophile.z.JTSMultiPointGenerator;
+import com.geophile.z.JTSPointGenerator;
+import com.geophile.z.JTSPolygonGenerator;
+import com.geophile.z.JTSSquareGenerator;
+import com.geophile.z.Space;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
+import com.geophile.z.TestIndex;
+import com.geophile.z.TestRecord;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.junit.Test;
 

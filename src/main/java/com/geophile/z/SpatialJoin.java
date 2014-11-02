@@ -12,20 +12,8 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
- * Provides the API for specifying a spatial join. There are four methods, representing the following options:
- * <p/>
- * <ul>
- * <li><b>One/many or many/many join:</b> In general, a spatial join is computed between two sets of
- * {@link com.geophile.z.SpatialObject}s, each contained in a {@link com.geophile.z.SpatialIndex}. But it is
- * often the case that one of the sets is a singleton.
- * <p/>
- * <li><b>Filtering of results:</b> Geophile's spatial join algorithm returns false positives -- pairs of objects
- * that don't actually overlap. It may be possible
- * to filter out the false positives for some record types, e.g., if the records contain the spatial objects
- * themselves. To support such cases, a {@link com.geophile.z.SpatialJoin.Filter} may be supplied.
- * </ul>
- * <p/>
- * In all cases, spatial join results are accessed through an {@link java.util.Iterator}. For a many/many join,
+ * Provides the API for specifying a spatial join.
+ * Spatial join results are accessed through an {@link java.util.Iterator}. For a many/many join,
  * the Iterator yields {@link com.geophile.z.Pair} objects, in which {@link com.geophile.z.Pair#left()}  and
  * {@link com.geophile.z.Pair#right()} provide access to the (possibly) overlapping objects. For a one/many join,
  * the Iterator returns {@link com.geophile.z.SpatialObject}s.
@@ -36,10 +24,25 @@ import java.util.Iterator;
  * Duplicates.EXCLUDE suppresses duplicates, which is more convenient for applications, but
  * requires the storing of all returned results, and checking each
  * {@link com.geophile.z.Pair} to see whether it has already been returned.
+ * <p>
+ * A spatial join may yield false positives, which a Filter can remove.
+ * </p>
  */
 
 public abstract class SpatialJoin
 {
+    /**
+     * Creates and configures a new SpatialJoin object.
+     *
+     * @param duplicates    Indicates whether the spatial join will suppress duplicates.
+     * @param filter        Used to eliminate false positives from the spatial join output.
+     * @param leftObserver  Used to monitor operations on the left input to the spatial join.
+     * @param rightObserver Used to monitor operations on the right input to the spatial join.
+     * @param <LEFT>        Type of object passed to the left filter argument.
+     * @param <RIGHT>       TYpe of object passed to the right filter argument.
+     * @return A configured SpatialJoin object. All spatial joins computed using it will use the configuration
+     * specified by the above arguments.
+     */
     public static <LEFT, RIGHT>
     SpatialJoin newSpatialJoin(Duplicates duplicates,
                                Filter<LEFT, RIGHT> filter,
@@ -49,6 +52,16 @@ public abstract class SpatialJoin
         return new SpatialJoinImpl(duplicates, filter, leftObserver, rightObserver);
     }
 
+    /**
+     * Creates and configures a new SpatialJoin object.
+     *
+     * @param duplicates Indicates whether the spatial join will suppress duplicates.
+     * @param filter     Used to eliminate false positives from the spatial join output.
+     * @param <LEFT>     Type of object passed to the left filter argument.
+     * @param <RIGHT>    TYpe of object passed to the right filter argument.
+     * @return A configured SpatialJoin object. All spatial joins computed using it will use the configuration
+     * specified by the above arguments.
+     */
     public static <LEFT, RIGHT>
     SpatialJoin newSpatialJoin(Duplicates duplicates,
                                Filter<LEFT, RIGHT> filter)
@@ -56,6 +69,13 @@ public abstract class SpatialJoin
         return new SpatialJoinImpl(duplicates, filter, null, null);
     }
 
+    /**
+     * Creates and configures a new SpatialJoin object.
+     *
+     * @param duplicates Indicates whether the spatial join will suppress duplicates.
+     * @return A configured SpatialJoin object. All spatial joins computed using it will use the configuration
+     * specified by the above arguments. False positives will be included in spatial join output.
+     */
     public static SpatialJoin newSpatialJoin(Duplicates duplicates)
     {
         return new SpatialJoinImpl(duplicates, null, null, null);
@@ -75,7 +95,7 @@ public abstract class SpatialJoin
      */
     public abstract <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
     Iterator<Pair<LEFT_RECORD, RIGHT_RECORD>> iterator(SpatialIndex<LEFT_RECORD> leftSpatialIndex,
-                                                                  SpatialIndex<RIGHT_RECORD> rightSpatialIndex)
+                                                       SpatialIndex<RIGHT_RECORD> rightSpatialIndex)
         throws IOException, InterruptedException;
 
     /**
@@ -91,7 +111,7 @@ public abstract class SpatialJoin
      */
     public abstract <RECORD extends Record>
     Iterator<RECORD> iterator(SpatialObject query,
-                                         SpatialIndex<RECORD> data)
+                              SpatialIndex<RECORD> data)
         throws IOException, InterruptedException;
 
     /**
@@ -113,11 +133,20 @@ public abstract class SpatialJoin
         EXCLUDE
     }
 
+    /**
+     * Used to monitor operations on a spatial join input.
+     */
     public interface InputObserver
     {
         void randomAccess(long z);
     }
 
+    /**
+     * Used to remove false positives from spatial join output.
+     *
+     * @param <LEFT>  Type of object passed to the left filter argument.
+     * @param <RIGHT> TYpe of object passed to the right filter argument.
+     */
     public interface Filter<LEFT, RIGHT>
     {
         /**

@@ -6,8 +6,10 @@
 
 package com.geophile.z.examples;
 
-import com.geophile.z.*;
-import com.geophile.z.SpatialJoin.Filter;
+import com.geophile.z.Space;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 

@@ -7,7 +7,12 @@
 package com.geophile.z.spatialjoin;
 
 import com.geophile.util.MicroBenchmark;
-import com.geophile.z.*;
+import com.geophile.z.Pair;
+import com.geophile.z.Space;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
+import com.geophile.z.TestRecord;
 import com.geophile.z.index.RecordWithSpatialObject;
 import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.spatialobject.d2.Box;

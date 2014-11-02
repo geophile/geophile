@@ -6,7 +6,14 @@
 
 package com.geophile.z.space;
 
-import com.geophile.z.*;
+import com.geophile.z.Cursor;
+import com.geophile.z.Index;
+import com.geophile.z.Record;
+import com.geophile.z.RecordFilter;
+import com.geophile.z.SingleCellException;
+import com.geophile.z.Space;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialObject;
 
 import java.io.IOException;
 import java.util.logging.Level;

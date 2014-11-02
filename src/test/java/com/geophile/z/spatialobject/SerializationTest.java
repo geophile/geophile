@@ -6,9 +6,9 @@
 
 package com.geophile.z.spatialobject;
 
-import com.geophile.z.SpatialObjectSerializer;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialObject;
+import com.geophile.z.SpatialObjectSerializer;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import com.geophile.z.spatialobject.jts.JTS;

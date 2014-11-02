@@ -7,7 +7,6 @@
 package com.geophile.z.index.tree;
 
 import com.geophile.z.Index;
-import com.geophile.z.Record;
 import com.geophile.z.TestRecord;
 import com.geophile.z.index.IndexTestBase;
 

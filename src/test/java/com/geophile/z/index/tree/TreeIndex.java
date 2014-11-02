@@ -6,7 +6,11 @@
 
 package com.geophile.z.index.tree;
 
-import com.geophile.z.*;
+import com.geophile.z.Cursor;
+import com.geophile.z.DuplicateRecordException;
+import com.geophile.z.Index;
+import com.geophile.z.Record;
+import com.geophile.z.RecordFilter;
 
 import java.util.Comparator;
 import java.util.Iterator;

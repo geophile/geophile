@@ -18,7 +18,13 @@
 
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.*;
+import com.geophile.z.Index;
+import com.geophile.z.Space;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
+import com.geophile.z.TestIndex;
+import com.geophile.z.TestRecord;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;

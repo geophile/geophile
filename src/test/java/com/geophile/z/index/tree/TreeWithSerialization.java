@@ -6,9 +6,14 @@
 
 package com.geophile.z.index.tree;
 
-import com.geophile.z.*;
+import com.geophile.z.Cursor;
+import com.geophile.z.DuplicateRecordException;
+import com.geophile.z.Index;
+import com.geophile.z.RecordFilter;
+import com.geophile.z.SerializedRecord;
+import com.geophile.z.SpatialObjectSerializer;
+import com.geophile.z.TestRecord;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;

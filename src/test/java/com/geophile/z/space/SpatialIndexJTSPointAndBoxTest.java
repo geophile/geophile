@@ -12,7 +12,14 @@
 
 package com.geophile.z.space;
 
-import com.geophile.z.*;
+import com.geophile.z.Index;
+import com.geophile.z.Pair;
+import com.geophile.z.RecordFilter;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.SpatialJoin;
+import com.geophile.z.SpatialObject;
+import com.geophile.z.TestIndex;
+import com.geophile.z.TestRecord;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.jts.JTS;
 import com.geophile.z.spatialobject.jts.JTSPoint;
@@ -22,7 +29,12 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 

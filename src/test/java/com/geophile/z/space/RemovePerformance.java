@@ -7,7 +7,11 @@
 package com.geophile.z.space;
 
 import com.geophile.util.MicroBenchmark;
-import com.geophile.z.*;
+import com.geophile.z.RecordFilter;
+import com.geophile.z.Space;
+import com.geophile.z.SpatialIndex;
+import com.geophile.z.TestIndex;
+import com.geophile.z.TestRecord;
 import com.geophile.z.spatialobject.d2.Point;
 
 import java.io.IOException;

@@ -11,7 +11,6 @@ import com.geophile.z.SpatialObjectException;
 import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 import com.geophile.z.spatialobject.jts.JTS;
-import com.geophile.z.spatialobject.jts.JTSPoint;
 import com.geophile.z.spatialobject.jts.JTSSpatialObject;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;

@@ -404,14 +404,16 @@ class SpatialJoinInput
                 cursorGoTo(cursor, key);
                 copyToCurrent(cursor.next());
                 if (!singleCellOptimization || !singleCell) {
-                    if (!eof && SpaceImpl.contains(thatCurrentZ, current.z())) {
-                        // that.current contains this.current. Find the largest ancestor.
-                        findAncestorToResume(current.z(), thisCurrentZ);
-                    } else {
-                        // that.current does not contain this.current. Look for a z-value in this containing
-                        // that.current.
-                        findAncestorToResume(thatCurrentZ, thisCurrentZ);
-                    }
+                    // Why this works: There are two cases to consider.
+                    // 1) thatCurrentZ contains thisCurrentZ: thisCurrentZ might be the correct place to
+                    //    resume. But it is also possible that there is a larger, containing ancestor z-value,
+                    //    a, such that a.lo() < thatCurrentZ. This call finds that ancestor.
+                    // 2) thatCurrentZ does not contain thisCurrentZ, which means that thatCurrentZ.hi() <=
+                    //    thisCurrentZ.lo(). We need to find an ancestor of thisCurrentZ, a. If a.lo() >
+                    //    thatCurrentZ.hi(), then the random access would have discovered it, so this case can't happen.
+                    //    We must therefore look for a container of thisCurrentZ that ALSO contains thatCurrentZ.
+                    //    So again, we can start the search for an ancestor at thatCurrentZ.
+                    findAncestorToResume(thatCurrentZ, thisCurrentZ);
                 }
                 // else: No ancestor z-values in a single-cell index
             }
@@ -423,7 +425,7 @@ class SpatialJoinInput
     {
         // Find the largest ancestor of current that exists and that is past zLowerBound.
         boolean foundAncestor = false;
-        long zCandidate = SpaceImpl.parent(zStart);
+        long zCandidate = zStart;
         while (zCandidate > zLowerBound) {
             key(zCandidate);
             cursorGoTo(ancestorFindingCursor, key);
@@ -440,6 +442,26 @@ class SpatialJoinInput
             cursor.close();
         } else {
             assert current.z() >= zLowerBound;
+            // If foundAncestor is false, then the random access is unnecessary. Doing the random access would create
+            // an *unpredictable* random access, which we want to avoid.
+            //
+            // Explanation: Suppose that we are doing a one/many spatial join. This is a very common special case,
+            // including in relational database query processors that rely exclusively on nested loop joins.
+            // In a one/many join, we have a single query object, and a set of data objects. Typically, the data objects
+            // are stored in a persistent index, and the query object is in memory, (e.g. a query literal). All of
+            // the random accesses done on the data objects' SpatialJoinInput can be predicted before the join starts:
+            // It is the set of z-values from the query object's decomposition, along with all of the ancestors of
+            // all those z-values. (Most likely, not all of these z-values will actually be accessed. But no random
+            // access outside of this set should be possible.)
+            //
+            // For some Index implementations, random access is much more expensive than sequential access, and can
+            // also be done asynchronously. So it is a good idea to get all of the possible random accesses started at
+            // the beginning of the join, and then use them later as the join proceeds.
+            //
+            // A previous version of SpatialJoinInput did not guarantee only predictable random accesses. There were
+            // cases in which we would do a random access based on a z-value *from the same SpatialJoinInput*.
+            // One of those cases occurs here. If !foundAncestor, then the cursorGoTo call would position the cursor
+            // at current, which, at this point, reflects a record from this SpatialJoinInput.
             if (foundAncestor) {
                 cursorGoTo(cursor, current);
                 copyToCurrent(cursor.next());

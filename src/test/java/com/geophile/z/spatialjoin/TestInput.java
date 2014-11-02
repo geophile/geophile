@@ -1,6 +1,5 @@
 package com.geophile.z.spatialjoin;
 
-import com.geophile.z.Record;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.TestRecord;

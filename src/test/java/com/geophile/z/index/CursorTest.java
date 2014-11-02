@@ -6,7 +6,11 @@
 
 package com.geophile.z.index;
 
-import com.geophile.z.*;
+import com.geophile.z.Cursor;
+import com.geophile.z.Index;
+import com.geophile.z.Record;
+import com.geophile.z.TestIndex;
+import com.geophile.z.TestRecord;
 import com.geophile.z.spatialobject.d2.Point;
 import org.junit.Test;
 
