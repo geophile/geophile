@@ -437,7 +437,7 @@ class SpatialJoinInput
             zCandidate = SpaceImpl.parent(zCandidate);
             counters.countAncestorFind();
         }
-        // Resume at current
+        // Resume at ancestor, if there is one.
         if (eof) {
             cursor.close();
         } else {
@@ -460,8 +460,9 @@ class SpatialJoinInput
             //
             // A previous version of SpatialJoinInput did not guarantee only predictable random accesses. There were
             // cases in which we would do a random access based on a z-value *from the same SpatialJoinInput*.
-            // One of those cases occurs here. If !foundAncestor, then the cursorGoTo call would position the cursor
-            // at current, which, at this point, reflects a record from this SpatialJoinInput.
+            // One of those cases occured here -- there was no test for foundAncestor. If !foundAncestor, then
+            // the cursorGoTo call would position the cursor at it's current position. This is both unnecessary,
+            // and because the position is a z-value in the data input, the random access is unpredictable.
             if (foundAncestor) {
                 cursorGoTo(cursor, current);
                 copyToCurrent(cursor.next());
