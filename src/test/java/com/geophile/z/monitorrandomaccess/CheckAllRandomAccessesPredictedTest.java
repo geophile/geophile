@@ -6,6 +6,7 @@
 
 package com.geophile.z.monitorrandomaccess;
 
+import com.geophile.z.Cursor;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialJoin;
@@ -20,27 +21,41 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 
+import static com.geophile.z.space.SpaceImpl.formatZ;
+import static com.geophile.z.space.SpaceImpl.Z_NULL;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class CheckAllRandomAccessesPredictedTest
 {
     @Test
     public void test() throws IOException, InterruptedException
     {
-        SpatialIndex<TestRecord> spatialIndex = loadDB();
-        for (int q = 0; q < QUERIES; q++) {
-            spatialJoin(spatialIndex);
+        for (int dataBoxSize = DELTA_DATA_BOX_SIDE;
+             dataBoxSize <= MAX_DATA_BOX_SIDE;
+             dataBoxSize += DELTA_DATA_BOX_SIDE) {
+            SpatialIndex<TestRecord> spatialIndex = loadDB(dataBoxSize);
+            for (int queryBoxSize = DELTA_QUERY_BOX_SIDE;
+                 queryBoxSize <= MAX_QUERY_BOX_SIDE;
+                 queryBoxSize += DELTA_QUERY_BOX_SIDE) {
+                for (int q = 0; q < QUERIES; q++) {
+                    spatialJoin(spatialIndex, queryBoxSize);
+                }
+            }
         }
     }
 
-    private SpatialIndex<TestRecord> loadDB() throws IOException, InterruptedException
+    private SpatialIndex<TestRecord> loadDB(int dataBoxSide) throws IOException, InterruptedException
     {
+        BoxGenerator dataGenerator = new BoxGenerator(SPACE, new Random(dataBoxSide), dataBoxSide, dataBoxSide);
         TestIndex index = new TestIndex();
         SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         for (int id = 0; id < BOXES; id++) {
@@ -48,16 +63,18 @@ public class CheckAllRandomAccessesPredictedTest
             TestRecord record = new TestRecord(box, id);
             spatialIndex.add(box, record);
         }
+        // dumpIndex(index);
         return spatialIndex;
     }
 
-    private void spatialJoin(SpatialIndex<TestRecord> dataIndex) throws IOException, InterruptedException
+    private void spatialJoin(SpatialIndex<TestRecord> dataIndex, int queryBoxSize) throws IOException, InterruptedException
     {
+        BoxGenerator queryGenerator = new BoxGenerator(SPACE, new Random(queryBoxSize), queryBoxSize, queryBoxSize);
         SpatialIndex<TestRecord> queryIndex = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         Box query = (Box) queryGenerator.newSpatialObject();
         TestRecord record = new TestRecord(query, 0);
         queryIndex.add(query, record);
-        CheckPredictedRandomAccesses dataObserver = new CheckPredictedRandomAccesses(query);
+        RandomAccessMonitor dataObserver = new RandomAccessMonitor(query);
         Iterator<TestRecord> iterator =
             SpatialJoin
                 .newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, null, null, dataObserver)
@@ -68,21 +85,49 @@ public class CheckAllRandomAccessesPredictedTest
         }
 /*
         System.out.println("Predicted");
-        for (Long z : dataObserver.predictRandomAccesses()) {
+        for (Long z : dataObserver.predictedRandomAccesses()) {
             System.out.format("    %s\n", SpaceImpl.formatZ(z));
         }
         System.out.println("Unexpected");
         for (Long z : dataObserver.unexpectedRandomAccesses()) {
             System.out.format("    %s\n", SpaceImpl.formatZ(z));
         }
+        System.out.format("ancestorFound: %d\nancestorNotFound: %d\n",
+                          dataObserver.ancestorFound(),
+                          dataObserver.ancestorNotFound());
 */
         assertTrue(dataObserver.unexpectedRandomAccesses().isEmpty());
     }
 
+    private void dumpIndex(TestIndex index) throws IOException, InterruptedException
+    {
+        System.out.println("DATA");
+        Cursor<TestRecord> cursor = index.cursor();
+        TestRecord minZ = index.newKeyRecord();
+        minZ.z(SpaceImpl.Z_MIN);
+        cursor.goTo(minZ);
+        TestRecord record;
+        while ((record = cursor.next()) != null) {
+            indent(record.z());
+            System.out.format("%s: %s\n", formatZ(record.z()), record.spatialObject());
+        }
+        System.out.println();
+    }
+
+    private static void indent(long z)
+    {
+        int n = SpaceImpl.length(z);
+        for (int i = 0; i < n; i++) {
+            System.out.print(' ');
+        }
+    }
+
     private static final int QUERIES = 1000;
     private static final int BOXES = 10000;
-    private static final int DATA_BOX_SIDE = 100;
-    private static final int QUERY_BOX_SIDE = 20000;
+    private static final int MAX_DATA_BOX_SIDE = 50000;
+    private static final int DELTA_DATA_BOX_SIDE = 10000;
+    private static final int MAX_QUERY_BOX_SIDE = 50000;
+    private static final int DELTA_QUERY_BOX_SIDE = 10000;
     private static final int NX = 1_000_000;
     private static final int NY = 1_000_000;
     private static final int X_BITS = 20;
@@ -91,26 +136,59 @@ public class CheckAllRandomAccessesPredictedTest
                                                       new double[]{NX, NY},
                                                       new int[]{X_BITS, Y_BITS});
 
-    private final BoxGenerator dataGenerator = new BoxGenerator(SPACE, new Random(1234567), DATA_BOX_SIDE, DATA_BOX_SIDE);
-    private final BoxGenerator queryGenerator = new BoxGenerator(SPACE, new Random(7654321), QUERY_BOX_SIDE, QUERY_BOX_SIDE);
-
     // Inner classes
 
-    private static class CheckPredictedRandomAccesses implements SpatialJoin.InputObserver
+    private static class RandomAccessMonitor extends SpatialJoin.InputObserver
     {
         @Override
-        public void randomAccess(long z)
+        public void randomAccess(Cursor cursor, long z)
         {
-            if (!predictedRandomAccesses.contains(z)) {
+            // System.out.format("    %s -> %s\n", cursor, formatZ(z));
+            ZRun zRun = predictedRandomAccesses.get(z);
+            if (zRun == null) {
                 unexpectedRandomAccesses.add(z);
+            } else {
+                zRun.randomAccess(z);
             }
         }
 
-        public List<Long> predictedRandomAccesses()
+        @Override
+        public void sequentialAccess(Cursor cursor, long zRandomAccess, long zSequentialAccess)
         {
-            List<Long> sorted = new ArrayList<>(predictedRandomAccesses);
-            Collections.sort(sorted);
-            return sorted;
+            // System.out.format("        %s.next: %s -> %s\n", cursor, formatZ(zRandomAccess), formatZ(zSequentialAccess));
+            if (zSequentialAccess != Z_NULL) {
+                ZRun zRun = predictedRandomAccesses.get(zRandomAccess);
+                if (zRun == null) {
+                    fail();
+                } else {
+                    zRun.sequentialAccess(zSequentialAccess);
+                }
+            }
+        }
+
+        @Override
+        public void ancestorSearch(Cursor cursor, long zStart, long zAncestor)
+        {
+            if (zAncestor == SpaceImpl.Z_NULL) {
+                ancestorNotFound++;
+            } else {
+                ancestorFound++;
+            }
+        }
+
+        public Set<Long> predictedRandomAccesses()
+        {
+            return predictedRandomAccesses.keySet();
+        }
+
+        public int ancestorFound()
+        {
+            return ancestorFound;
+        }
+
+        public int ancestorNotFound()
+        {
+            return ancestorNotFound;
         }
 
         public List<Long> unexpectedRandomAccesses()
@@ -119,21 +197,60 @@ public class CheckAllRandomAccessesPredictedTest
             return unexpectedRandomAccesses;
         }
 
-        public CheckPredictedRandomAccesses(SpatialObject spatialObject)
+        public RandomAccessMonitor(SpatialObject spatialObject)
         {
-            predictedRandomAccesses.add(0L); // Simplifies loop
+            predictedRandomAccesses.put(0L, new ZRun(0L)); // Simplifies loop
             long[] zs = new long[spatialObject.maxZ()];
             SPACE.decompose(spatialObject, zs);
             for (int i = 0; i < zs.length && zs[i] != Space.Z_NULL; i++) {
                 long z = zs[i];
                 do {
-                    predictedRandomAccesses.add(z);
+                    predictedRandomAccesses.put(z, new ZRun(z));
                     z = SpaceImpl.parent(z);
                 } while (SpaceImpl.length(z) > 0);
             }
         }
 
-        private final Set<Long> predictedRandomAccesses = new HashSet<>();
+        private final Map<Long, ZRun> predictedRandomAccesses = new TreeMap<>();
         private final List<Long> unexpectedRandomAccesses = new ArrayList<>();
+        private int ancestorFound;
+        private int ancestorNotFound;
+
+        // Tracks a run of z-values, starting with random access at a predicted z-value.
+        private static class ZRun
+        {
+            public ZRun(long zPredicted)
+            {
+                this.zPredicted = zPredicted;
+            }
+
+            public void randomAccess(long z)
+            {
+                // OK as long as we haven't moved past the first.
+                assertTrue(zMax == -1L || zMax == zFirst);
+            }
+
+            public void sequentialAccess(long z)
+            {
+                assertTrue(z >= zPredicted);
+                if (zFirst == Z_NULL) {
+                    assertEquals(Z_NULL, zMax);
+                    zFirst = z;
+                    zMax = z;
+                } else if (z == zFirst) {
+                    // OK, a revisit
+                } else if (z > zFirst) {
+                    if (z < zMax) {
+                        fail();
+                    } else {
+                        zMax = z;
+                    }
+                }
+            }
+
+            private final long zPredicted;
+            private long zFirst = Z_NULL; // first after zPredicted
+            private long zMax = Z_NULL; // max z-value seen in sequential accesses starting at zPredicted
+        }
     }
 }

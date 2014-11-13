@@ -44,7 +44,7 @@ public class SpatialJoinImpl extends SpatialJoin
     @Override
     public <LEFT_RECORD extends Record, RIGHT_RECORD extends Record>
     Iterator<Pair<LEFT_RECORD, RIGHT_RECORD>> iterator(SpatialIndex<LEFT_RECORD> leftSpatialIndex,
-                                                                  SpatialIndex<RIGHT_RECORD> rightSpatialIndex)
+                                                       SpatialIndex<RIGHT_RECORD> rightSpatialIndex)
         throws IOException, InterruptedException
     {
         if (!leftSpatialIndex.space().equals(rightSpatialIndex.space())) {
@@ -65,7 +65,7 @@ public class SpatialJoinImpl extends SpatialJoin
     @Override
     public <RECORD extends Record>
     Iterator<RECORD> iterator(SpatialObject query,
-                                         SpatialIndex<RECORD> data)
+                              SpatialIndex<RECORD> data)
         throws IOException, InterruptedException
     {
         SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();

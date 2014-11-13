@@ -136,9 +136,34 @@ public abstract class SpatialJoin
     /**
      * Used to monitor operations on a spatial join input.
      */
-    public interface InputObserver
+    public static class InputObserver
     {
-        void randomAccess(long z);
+        /**
+         * Called when a random access to z has occurred on the given cursor. This method must not
+         * cause the cursor state to be modified in any way.
+         * @param cursor Cursor used to implement the random access.
+         * @param z The z-value located by the random access.
+         */
+        public void randomAccess(Cursor cursor, long z)
+        {}
+
+        /**
+         * Called when a sequential access has occurred on the given cursor. The z-value of the record
+         * located is z. This method must not cause the cursor state to be modified in any way.
+         * @param cursor Cursor used to implement the sequential access.
+         * @param z The z-value located by the sequential access.
+         */
+        public void sequentialAccess(Cursor cursor, long zRandomAccess, long zSequentialAccess)
+        {}
+
+        /**
+         * Called when an ancestor search is done (using SpatialJoinInput.findAncestorToResume).
+         * @param cursor Cursor used for the ancestor search.
+         * @param zStart The starting point of the ancestor search.
+         * @param zAncestor The ancestor found, or SpaceImpl.Z_NULL if none found.
+         */
+        public void ancestorSearch(Cursor cursor, long zStart, long zAncestor)
+        {}
     }
 
     /**

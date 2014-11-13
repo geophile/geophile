@@ -357,11 +357,10 @@ class SpatialJoinInput
             Record currentCopy = spatialIndex.index().newRecord();
             current.copyTo(currentCopy);
             nest.push(currentCopy);
-            copyToCurrent(cursor.next());
+            copyToCurrent(cursorNext(cursor));
         } else {
             advanceCursor();
         }
-        counters.countEnterZ();
         log("enter");
     }
 
@@ -402,7 +401,7 @@ class SpatialJoinInput
             if (thatCurrentZ > thisCurrentZ) {
                 key(thatCurrentZ);
                 cursorGoTo(cursor, key);
-                copyToCurrent(cursor.next());
+                copyToCurrent(cursorNext(cursor));
                 if (!singleCellOptimization || !singleCell) {
                     // Why this works: There are two cases to consider.
                     // 1) thatCurrentZ contains thisCurrentZ: thisCurrentZ might be the correct place to
@@ -429,14 +428,16 @@ class SpatialJoinInput
         while (zCandidate > zLowerBound) {
             key(zCandidate);
             cursorGoTo(ancestorFindingCursor, key);
-            Record ancestor = ancestorFindingCursor.next();
+            Record ancestor = cursorNext(ancestorFindingCursor);
             if (ancestor != null && ancestor.z() == zCandidate) {
                 copyToCurrent(ancestor);
                 foundAncestor = true;
             }
             zCandidate = SpaceImpl.parent(zCandidate);
-            counters.countAncestorFind();
         }
+        observer.ancestorSearch(ancestorFindingCursor,
+                                zStart,
+                                foundAncestor ? current.z() : SpaceImpl.Z_NULL);
         // Resume at ancestor, if there is one.
         if (eof) {
             cursor.close();
@@ -465,7 +466,7 @@ class SpatialJoinInput
             // and because the position is a z-value in the data input, the random access is unpredictable.
             if (foundAncestor) {
                 cursorGoTo(cursor, current);
-                copyToCurrent(cursor.next());
+                copyToCurrent(cursorNext(cursor));
             }
         }
     }
@@ -526,8 +527,8 @@ class SpatialJoinInput
         cursorGoTo(cursor, zMinKey);
         //
         this.current = index.newRecord();
-        this.key = index.newRecord();
-        copyToCurrent(this.cursor.next());
+        this.key = index.newKeyRecord();
+        copyToCurrent(cursorNext(this.cursor));
         this.ancestorFindingCursor = index.cursor();
         this.spatialJoinOutput = spatialJoinOutput;
         this.singleCell = spatialIndex.singleCell();
@@ -551,6 +552,20 @@ class SpatialJoinInput
         }
     }
 
+    private void cursorGoTo(Cursor cursor, Record key) throws IOException, InterruptedException
+    {
+        cursor.goTo(key);
+        lastZRandomAccess = key.z();
+        observer.randomAccess(cursor, lastZRandomAccess);
+    }
+
+    private Record cursorNext(Cursor cursor) throws IOException, InterruptedException
+    {
+        Record record = cursor.next();
+        observer.sequentialAccess(cursor, lastZRandomAccess, record == null ? SpaceImpl.Z_NULL : record.z());
+        return record;
+    }
+
     private void log(String label)
     {
         if (LOG.isLoggable(Level.FINE)) {
@@ -568,12 +583,6 @@ class SpatialJoinInput
         }
     }
 
-    private void cursorGoTo(Cursor cursor, Record key) throws IOException, InterruptedException
-    {
-        cursor.goTo(key);
-        observer.randomAccess(key.z());
-    }
-
     // Class state
 
     // A 64-bit z-value is definitely less than Long.MAX_VALUE. The maxium z-value length is 57, which is recorded
@@ -582,14 +591,7 @@ class SpatialJoinInput
     public static long EOF = Long.MAX_VALUE;
     private static final Logger LOG = Logger.getLogger(SpatialJoinInput.class.getName());
     private static final AtomicInteger idGenerator = new AtomicInteger(0);
-    private static final SpatialJoin.InputObserver DEFAULT_OBSERVER =
-        new SpatialJoin.InputObserver()
-        {
-            @Override
-            public void randomAccess(long z)
-            {
-            }
-        };
+    private static final SpatialJoin.InputObserver DEFAULT_OBSERVER = new SpatialJoin.InputObserver();
 
     // Object state
 
@@ -606,8 +608,8 @@ class SpatialJoinInput
     private final Cursor ancestorFindingCursor;
     private final Record current;
     private final Record key;
+    private long lastZRandomAccess; // For observing access pattern
     private boolean eof = false;
     private final boolean singleCellOptimization;
-    private final Counters counters = Counters.forThread();
     private final SpatialJoin.InputObserver observer;
 }
