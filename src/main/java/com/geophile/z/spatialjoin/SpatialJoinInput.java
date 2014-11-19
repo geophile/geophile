@@ -399,10 +399,11 @@ class SpatialJoinInput
             long thatCurrentZ = that.current.z();
             assert thatCurrentZ >= thisCurrentZ; // otherwise, we would have entered that.current
             if (thatCurrentZ > thisCurrentZ) {
-                key(thatCurrentZ);
-                cursorGoTo(cursor, key);
-                copyToCurrent(cursorNext(cursor));
-                if (!singleCellOptimization || !singleCell) {
+                if (singleCellOptimization && singleCell) {
+                    key(thatCurrentZ);
+                    cursorGoTo(cursor, key);
+                    copyToCurrent(cursorNext(cursor));
+                } else {
                     // Why this works: There are two cases to consider.
                     // 1) thatCurrentZ contains thisCurrentZ: thisCurrentZ might be the correct place to
                     //    resume. But it is also possible that there is a larger, containing ancestor z-value,
@@ -412,63 +413,51 @@ class SpatialJoinInput
                     //    thatCurrentZ.hi(), then the random access would have discovered it, so this case can't happen.
                     //    We must therefore look for a container of thisCurrentZ that ALSO contains thatCurrentZ.
                     //    So again, we can start the search for an ancestor at thatCurrentZ.
-                    findAncestorToResume(thatCurrentZ, thisCurrentZ);
+                    advanceToNextOrAncestor(thatCurrentZ, thisCurrentZ);
                 }
-                // else: No ancestor z-values in a single-cell index
             }
         }
     }
 
-    private void findAncestorToResume(long zStart, long zLowerBound)
+    // Advance to an ancestor of zStart, or if there is none, to the z-value after zStart.
+    private void advanceToNextOrAncestor(long zStart, long zLowerBound)
         throws IOException, InterruptedException
     {
-        // Find the largest ancestor of current that exists and that is past zLowerBound.
-        boolean foundAncestor = false;
+        // Generate all the ancestors that need to be considered.
+        int nCandidates = 0;
         long zCandidate = zStart;
         while (zCandidate > zLowerBound) {
-            key(zCandidate);
-            cursorGoTo(ancestorFindingCursor, key);
-            Record ancestor = cursorNext(ancestorFindingCursor);
-            if (ancestor != null && ancestor.z() == zCandidate) {
-                copyToCurrent(ancestor);
-                foundAncestor = true;
-            }
+            zCandidates[nCandidates++] = zCandidate;
             zCandidate = SpaceImpl.parent(zCandidate);
         }
-        observer.ancestorSearch(ancestorFindingCursor,
-                                zStart,
-                                foundAncestor ? current.z() : SpaceImpl.Z_NULL);
-        // Resume at ancestor, if there is one.
+        // In the caller, thatCurrentZ > thisCurrentZ, so zStart > zLowerBound, and zCandidate is initialized to
+        // zStart. So zCandidate > zLowerBound has to be true at least once, and nCandidates > 0.
+        assert nCandidates > 0;
+        // Find the largest ancestor among the candidates that exists.
+        int c = nCandidates;
+        boolean foundAncestor = false;
+        while (!foundAncestor && --c >= 0) {
+            zCandidate = zCandidates[c];
+            key(zCandidate);
+            cursorGoTo(cursor, key);
+            Record record = cursorNext(cursor);
+            if (c == 0) {
+                // No ancestors were found. Go to the record following zStart.
+                assert zCandidate == zStart;
+                copyToCurrent(record);
+            } else if (record != null && record.z() == zCandidate) {
+                copyToCurrent(record);
+                foundAncestor = true;
+            }
+        }
         if (eof) {
             cursor.close();
         } else {
             assert current.z() >= zLowerBound;
-            // If foundAncestor is false, then the random access is unnecessary. Doing the random access would create
-            // an *unpredictable* random access, which we want to avoid.
-            //
-            // Explanation: Suppose that we are doing a one/many spatial join. This is a very common special case,
-            // including in relational database query processors that rely exclusively on nested loop joins.
-            // In a one/many join, we have a single query object, and a set of data objects. Typically, the data objects
-            // are stored in a persistent index, and the query object is in memory, (e.g. a query literal). All of
-            // the random accesses done on the data objects' SpatialJoinInput can be predicted before the join starts:
-            // It is the set of z-values from the query object's decomposition, along with all of the ancestors of
-            // all those z-values. (Most likely, not all of these z-values will actually be accessed. But no random
-            // access outside of this set should be possible.)
-            //
-            // For some Index implementations, random access is much more expensive than sequential access, and can
-            // also be done asynchronously. So it is a good idea to get all of the possible random accesses started at
-            // the beginning of the join, and then use them later as the join proceeds.
-            //
-            // A previous version of SpatialJoinInput did not guarantee only predictable random accesses. There were
-            // cases in which we would do a random access based on a z-value *from the same SpatialJoinInput*.
-            // One of those cases occured here -- there was no test for foundAncestor. If !foundAncestor, then
-            // the cursorGoTo call would position the cursor at it's current position. This is both unnecessary,
-            // and because the position is a z-value in the data input, the random access is unpredictable.
-            if (foundAncestor) {
-                cursorGoTo(cursor, current);
-                copyToCurrent(cursorNext(cursor));
-            }
         }
+        observer.ancestorSearch(cursor,
+                                zStart,
+                                foundAncestor ? current.z() : SpaceImpl.Z_NULL);
     }
 
     private boolean currentOverlapsOtherNest()
@@ -529,7 +518,6 @@ class SpatialJoinInput
         this.current = index.newRecord();
         this.key = index.newKeyRecord();
         copyToCurrent(cursorNext(this.cursor));
-        this.ancestorFindingCursor = index.cursor();
         this.spatialJoinOutput = spatialJoinOutput;
         this.singleCell = spatialIndex.singleCell();
         this.singleCellOptimization = SpatialJoinImpl.singleCellOptimization();
@@ -605,9 +593,10 @@ class SpatialJoinInput
     // and cursor contains later z-values.
     private final Deque<Record> nest = new ArrayDeque<>();
     private final Cursor cursor;
-    private final Cursor ancestorFindingCursor;
     private final Record current;
     private final Record key;
+    // For use in finding ancestors
+    private final long[] zCandidates = new long[SpaceImpl.MAX_Z_BITS];
     private long lastZRandomAccess; // For observing access pattern
     private boolean eof = false;
     private final boolean singleCellOptimization;
