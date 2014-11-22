@@ -79,64 +79,6 @@ public class CursorTest
                 }
             }
         }
-        // Alternating next and previous
-        // debug("Alternate next and previous %s\n", n);
-        {
-            // debug("n: %s", n);
-            cursor = newCursor(index, 0);
-            expectedKey = 0;
-            record = cursor.next();
-            if (record != null) {
-                // debug("expected: %s, start: %s", expectedKey, entry.getKey());
-                expectedKey += GAP;
-            }
-            while ((record = cursor.next()) != null) {
-                // debug("expected: %s, next: %s", expectedKey, entry.getKey());
-                assertEquals(expectedKey, key(record));
-                expectedKey += GAP;
-                if (expectedKey != n * GAP) {
-                    record = cursor.next();
-                    // debug("expected: %s, next: %s", expectedKey, entry.getKey());
-                    assertTrue(record != null);
-                    assertEquals(expectedKey, key(record));
-                    expectedKey -= GAP;
-                    record = cursor.previous();
-                    // debug("expected: %s, previous: %s", expectedKey, entry.getKey());
-                    assertEquals(expectedKey, key(record));
-                    expectedKey += GAP; // About to go to next
-                }
-            }
-            assertEquals(n * GAP, expectedKey);
-        }
-        // Alternating previous and next
-        // debug("Alternate previous and next %s\n", n);
-        {
-            // debug("n: %s", n);
-            cursor = newCursor(index, Long.MAX_VALUE);
-            expectedKey = (n - 1) * GAP;
-            record = cursor.previous();
-            if (record != null) {
-                // debug("expected: %s, start: %s", expectedKey, entry.getKey());
-                expectedKey -= GAP;
-            }
-            while ((record = cursor.previous()) != null) {
-                // debug("expected: %s, previous: %s", expectedKey, entry.getKey());
-                assertEquals(expectedKey, key(record));
-                expectedKey -= GAP;
-                if (expectedKey >= 0) {
-                    record = cursor.previous();
-                    // debug("expected: %s, previous: %s", expectedKey, entry.getKey());
-                    assertTrue(record != null);
-                    assertEquals(expectedKey, key(record));
-                    expectedKey += GAP;
-                    record = cursor.next();
-                    // debug("expected: %s, next: %s", expectedKey, entry.getKey());
-                    assertEquals(expectedKey, key(record));
-                    expectedKey -= GAP; // About to go to next
-                }
-            }
-            assertEquals(-GAP, expectedKey);
-        }
         // goTo
         // debug("goTo %s\n", n);
         if (n > 0) {
@@ -150,9 +92,6 @@ public class CursorTest
                     // Match, next
                     cursor.goTo(key(index, match));
                     assertEquals(match, key(cursor.next()));
-                    // Match, previous
-                    cursor.goTo(key(index, match + 1));
-                    assertEquals(match, key(cursor.previous()));
                 }
                 // Before, next
                 before = match - GAP / 2;
@@ -161,13 +100,6 @@ public class CursorTest
                     assertTrue(cursor.next() == null);
                 } else {
                     assertEquals(match, key(cursor.next()));
-                }
-                // Before, previous
-                cursor.goTo(key(index, before));
-                if (i == 0) {
-                    assertTrue(cursor.previous() == null);
-                } else {
-                    assertEquals(match - GAP, key(cursor.previous()));
                 }
             }
         }

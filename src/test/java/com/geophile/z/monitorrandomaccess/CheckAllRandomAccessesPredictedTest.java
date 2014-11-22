@@ -28,8 +28,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
-import static com.geophile.z.space.SpaceImpl.formatZ;
 import static com.geophile.z.space.SpaceImpl.Z_NULL;
+import static com.geophile.z.space.SpaceImpl.formatZ;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

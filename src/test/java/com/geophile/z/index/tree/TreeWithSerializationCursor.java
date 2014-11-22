@@ -23,12 +23,6 @@ public class TreeWithSerializationCursor extends Cursor<TestRecord>
     }
 
     @Override
-    public TestRecord previous() throws IOException, InterruptedException
-    {
-        return neighbor(false);
-    }
-
-    @Override
     public void goTo(TestRecord key)
     {
         this.startAt = key;

@@ -24,12 +24,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableMap;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -228,31 +226,7 @@ public abstract class IndexTestBase
         cursor = newCursor(index, start.z());
         assertNull(cursor.next());
         assertTrue(!expected.hasNext());
-        // Try traversal backward from the beginning (lower bound is before first key)
-        start = key(index, SpaceImpl.Z_MIN);
-        expected = allKeys.headMap(start, true).descendingKeySet().iterator();
-        cursor = newCursor(index, start.z());
-        assertNull(cursor.previous());
         assertTrue(!expected.hasNext());
-        // Try traversal backward from halfway
-        start = key(index, z(GAP * nObjects / 2 + GAP / 2), Integer.MAX_VALUE);
-        expected = allKeys.headMap(start, true).descendingKeySet().iterator();
-        cursor = newCursor(index, start.z());
-        while ((record = cursor.previous()) != null) {
-            assertEquals(expected.next(), record);
-        }
-        assertTrue(!expected.hasNext());
-        // Try traversal backward from the end (upper bound gets everything)
-        start = key(index, SpaceImpl.Z_MAX, Integer.MAX_VALUE);
-        expected = allKeys.descendingKeySet().iterator();
-        cursor = newCursor(index, start.z());
-        count = 0;
-        while ((record = cursor.previous()) != null) {
-            assertEquals(expected.next(), record);
-            count++;
-        }
-        assertTrue(!expected.hasNext());
-        assertEquals(nObjects * zCount, count);
     }
 
     private void testCursor(int nObjects) throws Exception
@@ -273,21 +247,6 @@ public abstract class IndexTestBase
                 cursor.goTo(key(index, SpaceImpl.Z_MIN));
                 assertNull(cursor.next());
                 assertEquals(id, nObjects);
-            }
-            // Same thing, backwards
-            {
-                load(index, nObjects, 1);
-                Cursor<TestRecord> cursor = newCursor(index, SpaceImpl.Z_MAX);
-                Record record;
-                int id = nObjects;
-                while ((record = cursor.previous()) != null) {
-                    id--;
-                    assertEquals(z(id * GAP), record.z());
-                    cursor.deleteCurrent();
-                }
-                cursor.goTo(key(index, SpaceImpl.Z_MAX));
-                assertNull(cursor.previous());
-                assertEquals(id, 0);
             }
             // Skip every other
             {
@@ -314,93 +273,6 @@ public abstract class IndexTestBase
                 cursor.goTo(key(index, SpaceImpl.Z_MIN));
                 assertNull(cursor.next());
                 assertEquals(id, nObjects + 1);
-            }
-            // Skip every other going backward
-            {
-                load(index, nObjects, 1);
-                Cursor<TestRecord> cursor = newCursor(index, SpaceImpl.Z_MAX);
-                Record record;
-                int id = nObjects;
-                while ((record = cursor.previous()) != null) {
-                    id--;
-                    // Delete even ids
-                    assertEquals(z(id * GAP), record.z());
-                    if (id % 2 == 0) {
-                        cursor.deleteCurrent();
-                    }
-                }
-                // Check odd ids remain
-                id = 1;
-                cursor.goTo(key(index, SpaceImpl.Z_MIN));
-                while ((record = cursor.next()) != null) {
-                    assertEquals(z(id * GAP), record.z());
-                    cursor.deleteCurrent();
-                    id += 2;
-                }
-                cursor.deleteCurrent();
-                cursor.goTo(key(index, SpaceImpl.Z_MAX));
-                assertNull(cursor.previous());
-                assertEquals(id, nObjects + 1);
-            }
-            // Test random walk, selecting next or previous randomly
-            {
-                Random random = new Random(23456);
-                load(index, nObjects, 1);
-                // Get copy of keys for control
-                long[] control = new long[nObjects];
-                Cursor<TestRecord> cursor = newCursor(index, SpaceImpl.Z_MIN);
-                TestRecord record;
-                int c = 0;
-                while ((record = cursor.next()) != null) {
-                    control[c++] = record.z();
-                }
-                // Do random walk, starting in the middle, deleting each visited key.
-                // Do the same walk in the control array, indicating deleting with -1.
-                c = nObjects / 2;
-                long zExpected;
-                cursor = newCursor(index, z(nObjects * GAP / 2));
-                int delta;
-                for (int i = 0; i < nObjects; i++) {
-                    if (random.nextBoolean()) {
-                        // forward
-                        record = cursor.next();
-                        if (record == null) {
-                            cursor.goTo(key(index, SpaceImpl.Z_MIN));
-                            record = cursor.next();
-                        }
-                        assertNotNull(record);
-                        cursor.deleteCurrent();
-                        delta = 1;
-                    } else {
-                        // backward
-                        record = cursor.previous();
-                        if (record == null) {
-                            cursor.goTo(key(index, SpaceImpl.Z_MAX));
-                            record = cursor.previous();
-                        }
-                        assertNotNull(record);
-                        cursor.deleteCurrent();
-                        delta = -1;
-                    }
-                    if (i > 0) {
-                        do {
-                            c += delta;
-                            if (c == nObjects) {
-                                c = 0;
-                            } else if (c == -1) {
-                                c = nObjects - 1;
-                            }
-                        } while (control[c] == -1);
-                    }
-                    zExpected = control[c];
-                    control[c] = -1;
-                    assertEquals(zExpected, record.z());
-                }
-                cursor.goTo(key(index, SpaceImpl.Z_MIN));
-                assertNull(cursor.previous());
-                for (c = 0; c < nObjects; c++) {
-                    assertEquals(-1, control[c]);
-                }
             }
         } finally {
             shutdown();

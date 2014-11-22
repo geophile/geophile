@@ -20,13 +20,7 @@ public class TreeIndexCursor<RECORD extends Record> extends Cursor<RECORD>
     @Override
     public RECORD next() throws IOException, InterruptedException
     {
-        return neighbor(true);
-    }
-
-    @Override
-    public RECORD previous() throws IOException, InterruptedException
-    {
-        return neighbor(false);
+        return neighbor();
     }
 
     @Override
@@ -57,16 +51,13 @@ public class TreeIndexCursor<RECORD extends Record> extends Cursor<RECORD>
 
     // For use by this class
 
-    private RECORD neighbor(boolean forwardMove) throws IOException, InterruptedException
+    private RECORD neighbor() throws IOException, InterruptedException
     {
         switch (state()) {
             case NEVER_USED:
-                startIteration(forwardMove, true);
+                startIteration(true);
                 break;
             case IN_USE:
-                if (forward != forwardMove) {
-                    startIteration(forwardMove, false);
-                }
                 break;
             case DONE:
                 assert current() == null;
@@ -83,19 +74,14 @@ public class TreeIndexCursor<RECORD extends Record> extends Cursor<RECORD>
         return current();
     }
 
-    private void startIteration(boolean forwardMove, boolean includeStartKey)
+    private void startIteration(boolean includeStartKey)
     {
-        treeIterator =
-            forwardMove
-            ? tree.tailSet(startAt, includeStartKey).iterator()
-            : tree.headSet(startAt, includeStartKey).descendingIterator();
-        forward = forwardMove;
+        treeIterator = tree.tailSet(startAt, includeStartKey).iterator();
     }
 
     // Object state
 
     private final TreeSet<RECORD> tree;
     private RECORD startAt;
-    private boolean forward;
     private Iterator<RECORD> treeIterator;
 }

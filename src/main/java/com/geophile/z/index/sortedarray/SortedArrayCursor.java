@@ -18,13 +18,7 @@ public class SortedArrayCursor<RECORD extends Record> extends Cursor<RECORD>
     @Override
     public RECORD next() throws IOException, InterruptedException
     {
-        return neighbor(true);
-    }
-
-    @Override
-    public RECORD previous() throws IOException, InterruptedException
-    {
-        return neighbor(false);
+        return neighbor();
     }
 
     @Override
@@ -59,16 +53,13 @@ public class SortedArrayCursor<RECORD extends Record> extends Cursor<RECORD>
 
     // For use by this class
 
-    private RECORD neighbor(boolean forwardMove) throws IOException, InterruptedException
+    private RECORD neighbor() throws IOException, InterruptedException
     {
         switch (state()) {
             case NEVER_USED:
-                startIteration(forwardMove, true);
+                startIteration(true);
                 break;
             case IN_USE:
-                if (forward != forwardMove) {
-                    startIteration(forwardMove, false);
-                }
                 break;
             case DONE:
                 assert current() == null;
@@ -80,10 +71,9 @@ public class SortedArrayCursor<RECORD extends Record> extends Cursor<RECORD>
             startAt = record;
             lastReportedPosition = position;
             state(State.IN_USE);
-            position += forwardMove ? 1 : -1;
-            assert position >= -1 : position;
+            position++;
             assert position <= sortedArray.n : position;
-            if (position == -1 || position == sortedArray.n) {
+            if (position == sortedArray.n) {
                 position = DONE;
             }
         } else {
@@ -92,31 +82,22 @@ public class SortedArrayCursor<RECORD extends Record> extends Cursor<RECORD>
         return current();
     }
 
-    private void startIteration(boolean forwardMove, boolean includeStartKey)
+    private void startIteration(boolean includeStartKey)
     {
         position = sortedArray.binarySearch(startAt);
         if (position < 0) {
             // Key not found
             position = -position - 1; // See javadoc for binarySearch
-            if (!forwardMove) {
-                position--;
-            }
         } else {
             // Key found
             if (!includeStartKey) {
-                if (forwardMove) {
-                    position++;
-                } else {
-                    position--;
-                }
+                position++;
             }
         }
-        assert position >= -1 : position;
         assert position <= sortedArray.n : position;
         if (position == -1 || position == sortedArray.n) {
             position = DONE;
         }
-        forward = forwardMove;
     }
 
     private RECORD record(int i)
@@ -131,8 +112,7 @@ public class SortedArrayCursor<RECORD extends Record> extends Cursor<RECORD>
 
     private final SortedArray<RECORD> sortedArray;
     private RECORD startAt;
-    private boolean forward;
     private int position;
-    // Position of the last record returned via next() or previous(). Needed to support deleteCurrent().
+    // Position of the last record returned via next(). Needed to support deleteCurrent().
     private int lastReportedPosition = UNDEFINED;
 }
