@@ -34,9 +34,7 @@ public class ExampleRecord extends RecordWithSpatialObject
     @Override
     public void copyTo(Record record)
     {
-        ExampleRecord exampleRecord = (ExampleRecord) record;
-        super.copyTo(exampleRecord);
-        exampleRecord.id = id;
+        throw new UnsupportedOperationException();
     }
 
     public ExampleRecord(SpatialObject spatialObject, int id)

@@ -354,9 +354,7 @@ class SpatialJoinInput
                 long topZ = nest.peek().z();
                 assert SpaceImpl.contains(topZ, current.z());
             }
-            Record currentCopy = spatialIndex.index().newRecord();
-            current.copyTo(currentCopy);
-            nest.push(currentCopy);
+            push(current);
             copyToCurrent(cursorNext(cursor));
         } else {
             advanceCursor();
@@ -400,7 +398,7 @@ class SpatialJoinInput
             assert thatCurrentZ >= thisCurrentZ; // otherwise, we would have entered that.current
             if (thatCurrentZ > thisCurrentZ) {
                 if (singleCellOptimization && singleCell) {
-                    key(thatCurrentZ);
+                    key.z(thatCurrentZ);
                     cursorGoTo(cursor, key);
                     copyToCurrent(cursorNext(cursor));
                 } else {
@@ -438,7 +436,7 @@ class SpatialJoinInput
         boolean foundAncestor = false;
         while (!foundAncestor && --c >= 0) {
             zCandidate = zCandidates[c];
-            key(zCandidate);
+            key.z(zCandidate);
             cursorGoTo(cursor, key);
             Record record = cursorNext(cursor);
             if (c == 0) {
@@ -506,8 +504,8 @@ class SpatialJoinInput
         throws IOException, InterruptedException
     {
         Index index = spatialIndex.index();
+        this.stableRecords = index.stableRecords();
         this.spatialIndex = spatialIndex;
-        this.keyTemplate = index.newKeyRecord();
         this.observer = observer == null ? DEFAULT_OBSERVER : observer;
         // Initialize cursor
         this.cursor = index.cursor();
@@ -515,7 +513,7 @@ class SpatialJoinInput
         zMinKey.z(SpaceImpl.Z_MIN);
         cursorGoTo(cursor, zMinKey);
         //
-        this.current = index.newRecord();
+        this.current = stableRecords ? null : index.newRecord();
         this.key = index.newKeyRecord();
         copyToCurrent(cursorNext(this.cursor));
         this.spatialJoinOutput = spatialJoinOutput;
@@ -524,19 +522,28 @@ class SpatialJoinInput
         log("initialize");
     }
 
-    private void key(long z)
-    {
-        keyTemplate.copyTo(key);
-        key.z(z);
-    }
-
     private void copyToCurrent(Record record)
     {
         if (record == null) {
             eof = true;
         } else {
-            record.copyTo(current);
+            if (stableRecords) {
+                current = record;
+            } else {
+                record.copyTo(current);
+            }
             eof = false;
+        }
+    }
+
+    private void push(Record record)
+    {
+        if (stableRecords) {
+            nest.push(record);
+        } else {
+            Record copy = spatialIndex.index().newRecord();
+            record.copyTo(copy);
+            nest.push(copy);
         }
     }
 
@@ -585,7 +592,7 @@ class SpatialJoinInput
 
     private final int id = idGenerator.getAndIncrement();
     private final SpatialIndexImpl spatialIndex;
-    private final Record keyTemplate;
+    private final boolean stableRecords;
     private final boolean singleCell;
     private SpatialJoinInput that;
     private final SpatialJoinOutput spatialJoinOutput;
@@ -593,7 +600,7 @@ class SpatialJoinInput
     // and cursor contains later z-values.
     private final Deque<Record> nest = new ArrayDeque<>();
     private final Cursor cursor;
-    private final Record current;
+    private Record current;
     private final Record key;
     // For use in finding ancestors
     private final long[] zCandidates = new long[SpaceImpl.MAX_Z_BITS];

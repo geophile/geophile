@@ -102,6 +102,18 @@ public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
     @Override
     public abstract RECORD newRecord();
 
+    @Override
+    public boolean blindUpdates()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean stableRecords()
+    {
+        return true;
+    }
+
     // SortedArray
 
     public void reset()

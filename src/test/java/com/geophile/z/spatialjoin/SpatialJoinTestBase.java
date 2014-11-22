@@ -147,7 +147,7 @@ public abstract class SpatialJoinTestBase
     protected final TestInput newTestInput(int n, SpatialObjectGenerator spatialObjectGenerator)
         throws IOException, InterruptedException
     {
-        SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(space(), newIndex());
+        SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(space(), newIndex(true));
         TestInput testInput = new TestInput(spatialIndex, spatialObjectGenerator.description());
         load(n, spatialObjectGenerator, testInput);
         commit();
@@ -156,7 +156,7 @@ public abstract class SpatialJoinTestBase
 
     protected abstract Space space();
 
-    protected abstract Index<TestRecord> newIndex();
+    protected abstract Index<TestRecord> newIndex(boolean stableRecords);
 
     protected void commit()
     {

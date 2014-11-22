@@ -74,7 +74,7 @@ public class TreeWithSerializationCursor extends Cursor<TestRecord>
         if (treeIterator.hasNext()) {
             TestRecord neighbor = treeIterator.next();
             current(neighbor);
-            neighbor.copyTo(startAt);
+            startAt = neighbor;
             state(State.IN_USE);
         } else {
             close();

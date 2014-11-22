@@ -40,12 +40,12 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0, 0},
                                                             new double[]{1000, 1000, 1000},
                                                             new int[]{10, 10, 10}),
-                                             newIndex());
+                                             newIndex(true));
             SpatialIndex<TestRecord> rightSpatialIndex =
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                             new double[]{1000, 1000},
                                                             new int[]{10, 10}),
-                                             newIndex());
+                                             newIndex(true));
             try {
                 SpatialJoin
                     .newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, MANY_MANY_FILTER)
@@ -61,12 +61,12 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                             new double[]{1000, 1000},
                                                             new int[]{10, 10}),
-                                             newIndex());
+                                             newIndex(true));
             SpatialIndex<TestRecord> rightSpatialIndex =
                 SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                             new double[]{2000, 1000},
                                                             new int[]{10, 10}),
-                                             newIndex());
+                                             newIndex(true));
             try {
                 SpatialJoin
                     .newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, MANY_MANY_FILTER)
@@ -85,12 +85,12 @@ public class SpatialJoinTest extends SpatialJoinTestBase
             SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                         new double[]{1000, 1000},
                                                         new int[]{10, 10}),
-                                         newIndex());
+                                         newIndex(true));
         SpatialIndex<TestRecord> rightSpatialIndex =
             SpatialIndex.newSpatialIndex(Space.newSpace(new double[]{0, 0},
                                                         new double[]{1000, 1000},
                                                         new int[]{10, 10}),
-                                         newIndex());
+                                         newIndex(true));
         SpatialJoin
             .newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, MANY_MANY_FILTER)
             .iterator(leftSpatialIndex, rightSpatialIndex);
@@ -114,11 +114,12 @@ public class SpatialJoinTest extends SpatialJoinTestBase
                             BoxGenerator rightBoxGenerator =
                                 new BoxGenerator(SPACE, random, maxRightXSize, maxRightYSize);
                             for (int trial = 0; trial < TRIALS; trial++) {
-                                if (trial == 0 || nLeft < nRight) {
-                                    leftInput = newTestInput(nLeft, leftBoxGenerator);
+                                boolean stableRecords = (trial % 2) == 0;
+                                if (trial <= 1 || nLeft < nRight) {
+                                    leftInput = newTestInput(nLeft, leftBoxGenerator, stableRecords);
                                 }
-                                if (trial == 0 || nRight <= nLeft) {
-                                    rightInput = newTestInput(nRight, rightBoxGenerator);
+                                if (trial <= 1 || nRight <= nLeft) {
+                                    rightInput = newTestInput(nRight, rightBoxGenerator, stableRecords);
                                 }
                                 testJoin(leftInput,
                                          rightInput,
@@ -146,7 +147,7 @@ public class SpatialJoinTest extends SpatialJoinTestBase
     }
 
     @Override
-    protected Index<TestRecord> newIndex()
+    protected Index<TestRecord> newIndex(boolean stableRecords)
     {
         return new TestIndex();
     }
@@ -175,9 +176,9 @@ public class SpatialJoinTest extends SpatialJoinTestBase
         return false;
     }
 
-    private TestInput newTestInput(int n, BoxGenerator boxGenerator) throws IOException, InterruptedException
+    private TestInput newTestInput(int n, BoxGenerator boxGenerator, boolean stableRecords) throws IOException, InterruptedException
     {
-        Index<TestRecord> index = newIndex();
+        Index<TestRecord> index = newIndex(stableRecords);
         SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         TestInput testInput = new TestInput(spatialIndex, boxGenerator.description());
         load(n, boxGenerator, testInput);

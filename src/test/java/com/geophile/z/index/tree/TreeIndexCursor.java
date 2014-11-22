@@ -75,7 +75,7 @@ public class TreeIndexCursor<RECORD extends Record> extends Cursor<RECORD>
         if (treeIterator.hasNext()) {
             RECORD neighbor = treeIterator.next();
             current(neighbor);
-            neighbor.copyTo(startAt);
+            startAt = neighbor;
             state(State.IN_USE);
         } else {
             close();

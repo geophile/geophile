@@ -18,6 +18,6 @@ public class ExampleIndex extends TreeIndex<ExampleRecord>
 
     public ExampleIndex()
     {
-        super(ExampleRecord.COMPARATOR);
+        super(ExampleRecord.COMPARATOR, true);
     }
 }

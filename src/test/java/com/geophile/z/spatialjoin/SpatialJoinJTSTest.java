@@ -102,7 +102,7 @@ public class SpatialJoinJTSTest extends SpatialJoinTestBase
     }
 
     @Override
-    protected Index<TestRecord> newIndex()
+    protected Index<TestRecord> newIndex(boolean stableRecords)
     {
         return new TestIndex();
     }

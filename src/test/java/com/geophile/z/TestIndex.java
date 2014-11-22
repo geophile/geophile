@@ -18,6 +18,23 @@ public class TestIndex extends TreeIndex<TestRecord>
 
     public TestIndex()
     {
-        super(TestRecord.COMPARATOR);
+        super(TestRecord.COMPARATOR, true);
+    }
+
+    public TestIndex(boolean stableRecords)
+    {
+        super(TestRecord.COMPARATOR, stableRecords);
+    }
+
+    @Override
+    public boolean blindUpdates()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean stableRecords()
+    {
+        return true;
     }
 }

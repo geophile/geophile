@@ -116,7 +116,7 @@ public class SelfJoinTest extends SpatialJoinTestBase
     }
 
     @Override
-    protected Index<TestRecord> newIndex()
+    protected Index<TestRecord> newIndex(boolean stableRecords)
     {
         return new TestIndex();
     }
@@ -147,7 +147,7 @@ public class SelfJoinTest extends SpatialJoinTestBase
 
     private TestInput newTestInput(int n, BoxGenerator boxGenerator) throws IOException, InterruptedException
     {
-        Index<TestRecord> index = newIndex();
+        Index<TestRecord> index = newIndex(true);
         SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         TestInput testInput = new TestInput(spatialIndex, boxGenerator.description());
         load(n, boxGenerator, testInput);

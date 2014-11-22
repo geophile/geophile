@@ -51,7 +51,7 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     }
 
     @Override
-    protected Index<TestRecord> newIndex()
+    protected Index<TestRecord> newIndex(boolean stableRecords)
     {
         return new TestIndex();
     }
@@ -106,7 +106,7 @@ public class SpatialJoinApplicationSpaceTest extends SpatialJoinTestBase
     {
         int xSize = random.nextInt(GRID_CELL_WIDTH * 3);
         int ySize = random.nextInt(GRID_CELL_WIDTH * 3);
-        Index<TestRecord> index = newIndex();
+        Index<TestRecord> index = newIndex(true);
         SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         TestInput input = new TestInput(spatialIndex, String.format("box(%s x %s)", xSize, ySize));
         double xLo = APP_SPACE_LO + random.nextInt(APP_SPACE_WIDTH - xSize);

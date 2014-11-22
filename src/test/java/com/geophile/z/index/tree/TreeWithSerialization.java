@@ -76,6 +76,18 @@ public class TreeWithSerialization extends Index<TestRecord>
         return new SerializedRecord(serializer);
     }
 
+    @Override
+    public boolean blindUpdates()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean stableRecords()
+    {
+        return true;
+    }
+
     // TreeWithSerialization
 
     public TreeWithSerialization(SpatialObjectSerializer serializer)

@@ -77,7 +77,7 @@ public class SortedArrayCursor<RECORD extends Record> extends Cursor<RECORD>
         if (position != DONE) {
             RECORD record = record(position);
             current(record);
-            record.copyTo(startAt);
+            startAt = record;
             lastReportedPosition = position;
             state(State.IN_USE);
             position += forwardMove ? 1 : -1;

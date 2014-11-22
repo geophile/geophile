@@ -74,11 +74,24 @@ public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
     @Override
     public abstract RECORD newRecord();
 
+    @Override
+    public boolean blindUpdates()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean stableRecords()
+    {
+        return stableRecords;
+    }
+
     // TreeIndex
 
-    public TreeIndex(Comparator<RECORD> recordComparator)
+    public TreeIndex(Comparator<RECORD> recordComparator, boolean stableRecords)
     {
-        tree = new TreeSet<>(recordComparator);
+        this.tree = new TreeSet<>(recordComparator);
+        this.stableRecords = stableRecords;
     }
 
     // For use by this package
@@ -105,4 +118,5 @@ public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
 
     private final String name = String.format("TreeIndex(%s)", idGenerator.getAndIncrement());
     private final TreeSet<RECORD> tree;
+    private final boolean stableRecords;
 }

@@ -89,19 +89,24 @@ public abstract class Cursor<RECORD extends Record>
     public void close()
     {
         state = State.DONE;
+        current = null;
     }
 
     // For use by subclasses
 
     protected final RECORD current() throws IOException, InterruptedException
     {
-        return state == State.DONE ? null : current;
+        return current;
     }
 
     protected final void current(RECORD record)
     {
         assert state != State.DONE;
-        record.copyTo(current);
+        if (stableRecords) {
+            current = record;
+        } else {
+            record.copyTo(current);
+        }
     }
 
     protected State state()
@@ -117,12 +122,14 @@ public abstract class Cursor<RECORD extends Record>
 
     protected Cursor(Index<RECORD> index)
     {
-        current = index.newRecord();
+        stableRecords = index.stableRecords();
+        current = stableRecords ? null : index.newRecord();
     }
 
     // Object state
 
-    private final RECORD current;
+    private final boolean stableRecords;
+    private RECORD current;
     private State state = State.NEVER_USED;
 
     // Inner classes

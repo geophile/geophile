@@ -6,8 +6,6 @@
 
 package com.geophile.z;
 
-import com.geophile.z.index.KeyTemplateIndex;
-
 import java.io.IOException;
 
 /**
@@ -74,21 +72,13 @@ public abstract class Index<RECORD extends Record>
      * Indicates whether this index does blind updates.
      * @return true if this index does blind updates, false otherwise.
      */
-    public boolean blindUpdates()
-    {
-        return false;
-    }
+    public abstract boolean blindUpdates();
 
     /**
-     * keyTemplate is a {@link com.geophile.z.Record} containing a partially specified Index key.
-     * This method returns an Index in which retrievals (through a {@link com.geophile.z.Cursor})
-     * are limited to {@link com.geophile.z.Record}s matching that partially specified key.
-     * @param keyTemplate A partially specified key.
-     * @return An Index whose {@link com.geophile.z.Record} is restricted as specified by the keyTemplate.
-     * Note that this is a view, and that changes to the Index may be visible through the returned Index.
+     * Indicates whether records retrieved from this index are stable. A stable record doesn't change
+     * as the cursor that produces it advances. A record that is not stable has state tied to the cursor,
+     * and may change as the cursor moves.
+     * @return true iff records retrieved from this index are stable.
      */
-    public Index<RECORD> restrict(RECORD keyTemplate)
-    {
-        return new KeyTemplateIndex<>(this, keyTemplate);
-    }
+    public abstract boolean stableRecords();
 }
