@@ -13,6 +13,11 @@ import java.io.IOException;
 
 /**
  * A SpatialIndex organizes a set of {@link SpatialObject}s for the efficient execution of spatial joins.
+ * There are two overloadings for add and for remove. The overloadings for each method differ in whether
+ * the maximum number of z-values is specified for the spatial object's decomposition. Remove will work only
+ * if the maximum number of z-values is the same as was specified when the object was added. To minimize
+ * the possibility of getting this wrong, use the default values, (i.e., use the overloadings without the
+ * maxZ arguments).
  */
 
 public abstract class SpatialIndex<RECORD extends Record>
@@ -27,12 +32,26 @@ public abstract class SpatialIndex<RECORD extends Record>
     }
 
     /**
-     * Adds the given record to the index, keyed by the given {@link com.geophile.z.SpatialObject}. A search of
-     * this index given a {@link com.geophile.z.SpatialObject} overlapping the given key will locate the given record.
-     * @param key The {@link com.geophile.z.SpatialObject} being indexed.
+     * Adds the given record to the index, keyed by the given {@link com.geophile.z.SpatialObject}.
+     * The spatial object will be represented in the index by up to key.maxZ() records, each with a
+     * different z-value.
+     * @param spatialObject The {@link com.geophile.z.SpatialObject} being indexed.
      * @param record The record to be added.
      */
-    public abstract void add(SpatialObject key, RECORD record) throws IOException, InterruptedException;
+    public final void add(SpatialObject spatialObject, RECORD record) throws IOException, InterruptedException
+    {
+        add(spatialObject, record, USE_SPATIAL_OBJECT_MAX_Z);
+    }
+
+    /**
+     * Adds the given record to the index, keyed by the given {@link com.geophile.z.SpatialObject}.
+     * The spatial object will be represented in the index by up to maxZ records, each with a different
+     * z-value.
+     * @param spatialObject The {@link com.geophile.z.SpatialObject} being indexed.
+     * @param record The record to be added.
+     * @param maxZ The maximum number of z-values to be generated for the given {@link com.geophile.z.SpatialObject}.
+     */
+    public abstract void add(SpatialObject spatialObject, RECORD record, int maxZ) throws IOException, InterruptedException;
 
     /**
      * Removes from this index the record associated with the given {@link com.geophile.z.SpatialObject}.
@@ -42,8 +61,24 @@ public abstract class SpatialIndex<RECORD extends Record>
      * @param recordFilter Identifies the exact records to be removed, causing false positives to be ignored.
      * @return true if spatialObject was found and removed, false otherwise
      */
+    public final boolean remove(SpatialObject spatialObject,
+                                RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException
+    {
+        return remove(spatialObject, recordFilter, USE_SPATIAL_OBJECT_MAX_Z);
+    }
+
+    /**
+     * Removes from this index the record associated with the given {@link com.geophile.z.SpatialObject}.
+     * A number of records may be located during the removal. The given {@link com.geophile.z.RecordFilter}
+     * will identify the records to be removed.
+     * @param spatialObject Key of the records to be removed.
+     * @param recordFilter Identifies the exact records to be removed, causing false positives to be ignored.
+     * @param maxZ The maximum number of z-values to be generated for the given {@link com.geophile.z.SpatialObject}.
+     * @return true if spatialObject was found and removed, false otherwise
+     */
     public abstract boolean remove(SpatialObject spatialObject,
-                                   RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException;
+                                   RecordFilter<RECORD> recordFilter,
+                                   int maxZ) throws IOException, InterruptedException;
 
     /**
      * Creates a SpatialIndex. The index
@@ -82,6 +117,10 @@ public abstract class SpatialIndex<RECORD extends Record>
         this.index = index;
         this.options = options;
     }
+
+    // Class state
+
+    protected static final int USE_SPATIAL_OBJECT_MAX_Z = -1;
 
     // Object state
 

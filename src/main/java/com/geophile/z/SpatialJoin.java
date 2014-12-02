@@ -148,12 +148,14 @@ public abstract class SpatialJoin
         {}
 
         /**
-         * Called when a sequential access has occurred on the given cursor. The z-value of the record
-         * located is z. This method must not cause the cursor state to be modified in any way.
+         * Called when a sequential access has occurred on the given cursor.
+         * This method must not cause the cursor state to be modified in any way.
          * @param cursor Cursor used to implement the sequential access.
-         * @param z The z-value located by the sequential access.
+         * @param zRandomAccess The z-value located by the random access that preceded the current
+         *                      sequential access.
+         * @param record The record located by this sequential access.
          */
-        public void sequentialAccess(Cursor cursor, long zRandomAccess, long zSequentialAccess)
+        public void sequentialAccess(Cursor cursor, long zRandomAccess, Record record)
         {}
 
         /**

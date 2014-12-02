@@ -557,7 +557,7 @@ class SpatialJoinInput
     private Record cursorNext(Cursor cursor) throws IOException, InterruptedException
     {
         Record record = cursor.next();
-        observer.sequentialAccess(cursor, lastZRandomAccess, record == null ? SpaceImpl.Z_NULL : record.z());
+        observer.sequentialAccess(cursor, lastZRandomAccess, record);
         return record;
     }
 

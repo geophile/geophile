@@ -7,6 +7,7 @@
 package com.geophile.z.monitorrandomaccess;
 
 import com.geophile.z.Cursor;
+import com.geophile.z.Record;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialJoin;
@@ -153,15 +154,15 @@ public class CheckAllRandomAccessesPredictedTest
         }
 
         @Override
-        public void sequentialAccess(Cursor cursor, long zRandomAccess, long zSequentialAccess)
+        public void sequentialAccess(Cursor cursor, long zRandomAccess, Record record)
         {
             // System.out.format("        %s.next: %s -> %s\n", cursor, formatZ(zRandomAccess), formatZ(zSequentialAccess));
-            if (zSequentialAccess != Z_NULL) {
+            if (record != null) {
                 ZRun zRun = predictedRandomAccesses.get(zRandomAccess);
                 if (zRun == null) {
                     fail();
                 } else {
-                    zRun.sequentialAccess(zSequentialAccess);
+                    zRun.sequentialAccess(record);
                 }
             }
         }
@@ -230,8 +231,9 @@ public class CheckAllRandomAccessesPredictedTest
                 assertTrue(zMax == -1L || zMax == zFirst);
             }
 
-            public void sequentialAccess(long z)
+            public void sequentialAccess(Record record)
             {
+                long z = record.z();
                 assertTrue(z >= zPredicted);
                 if (zFirst == Z_NULL) {
                     assertEquals(Z_NULL, zMax);

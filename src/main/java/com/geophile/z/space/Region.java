@@ -48,7 +48,7 @@ public class Region
                 buffer.append(", ");
             }
             buffer.append(lo(d));
-            buffer.append('-');
+            buffer.append(" : ");
             buffer.append(hi(d));
         }
         buffer.append(')');

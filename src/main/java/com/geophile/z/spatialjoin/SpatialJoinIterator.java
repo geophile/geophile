@@ -50,7 +50,7 @@ public class SpatialJoinIterator<T> implements Iterator<T>
         }
         next = pending.poll();
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.INFO, "{0} -> {1}", new Object[]{this, next});
+            LOG.log(Level.FINE, "{0} -> {1}", new Object[]{this, next});
         }
         return next;
     }

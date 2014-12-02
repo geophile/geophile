@@ -33,9 +33,9 @@ public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD
 
     // SpatialIndex interface
 
-    public void add(SpatialObject spatialObject, RECORD record) throws IOException, InterruptedException
+    public void add(SpatialObject spatialObject, RECORD record, int maxZ) throws IOException, InterruptedException
     {
-        long[] zs = decompose(spatialObject);
+        long[] zs = decompose(spatialObject, maxZ);
         for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
             record.z(zs[i]);
             index.add(record);
@@ -49,9 +49,10 @@ public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD
     }
 
     public boolean remove(SpatialObject spatialObject,
-                          RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException
+                          RecordFilter<RECORD> recordFilter,
+                          int maxZ) throws IOException, InterruptedException
     {
-        long[] zs = decompose(spatialObject);
+        long[] zs = decompose(spatialObject, maxZ);
         int recordsDeleted = 0;
         int zCount = 0;
         Cursor<RECORD> cursor = index.cursor();
@@ -109,9 +110,11 @@ public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD
 
     // For use by this class
 
-    private long[] decompose(SpatialObject spatialObject)
+    private long[] decompose(SpatialObject spatialObject, int maxZ)
     {
-        int maxZ = spatialObject.maxZ();
+        if (maxZ == USE_SPATIAL_OBJECT_MAX_Z) {
+            maxZ = spatialObject.maxZ();
+        }
         if (singleCell && maxZ > 1) {
             throw new SingleCellException(spatialObject);
         }
