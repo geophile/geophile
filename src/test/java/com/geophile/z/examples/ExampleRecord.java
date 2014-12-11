@@ -66,4 +66,25 @@ public class ExampleRecord extends RecordWithSpatialObject
         };
 
     private int id;
+
+    // Inner classes
+
+    public static class Factory implements Record.Factory<ExampleRecord>
+    {
+        @Override
+        public ExampleRecord newRecord()
+        {
+            return new ExampleRecord(spatialObject, id);
+        }
+
+        public Factory setup(SpatialObject spatialObject, int id)
+        {
+            this.spatialObject = spatialObject;
+            this.id = id;
+            return this;
+        }
+
+        private SpatialObject spatialObject;
+        private int id;
+    }
 }

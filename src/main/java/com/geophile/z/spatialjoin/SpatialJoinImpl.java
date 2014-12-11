@@ -64,28 +64,36 @@ public class SpatialJoinImpl extends SpatialJoin
 
     @Override
     public <RECORD extends Record>
-    Iterator<RECORD> iterator(SpatialObject query,
+    Iterator<RECORD> iterator(final SpatialObject query,
                               SpatialIndex<RECORD> data)
         throws IOException, InterruptedException
     {
-        SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();
+        final SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();
         SpatialIndex<RecordWithSpatialObject> querySpatialIndex =
             SpatialIndex.newSpatialIndex(data.space(),
                                          queryIndex,
                                          query.maxZ() == 1
                                          ? SpatialIndex.Options.SINGLE_CELL
                                          : SpatialIndex.Options.DEFAULT);
-        RecordWithSpatialObject queryRecord = queryIndex.newRecord();
-        queryRecord.spatialObject(query);
-        querySpatialIndex.add(query, queryRecord);
-        Iterator iterator =
-            SpatialJoinIterator.spatialObjectIterator(query,
-                                                      (SpatialIndexImpl) data,
-                                                      filter,
-                                                      leftObserver,
-                                                      rightObserver);
+        querySpatialIndex.add(query,
+                              new Record.Factory<RecordWithSpatialObject>()
+                              {
+                                  @Override
+                                  public RecordWithSpatialObject newRecord()
+                                  {
+                                      RecordWithSpatialObject queryRecord = queryIndex.newRecord();
+                                      queryRecord.spatialObject(query);
+                                      return queryRecord;
+                                  }
+                              });
+        Iterator<RECORD> iterator =
+            (Iterator<RECORD>) SpatialJoinIterator.spatialObjectIterator(query,
+                                                                         (SpatialIndexImpl) data,
+                                                                         filter,
+                                                                         leftObserver,
+                                                                         rightObserver);
         if (duplicates == SpatialJoin.Duplicates.EXCLUDE) {
-            iterator = new DuplicateEliminatingIterator<RECORD>(iterator);
+            iterator = new DuplicateEliminatingIterator<>(iterator);
         }
         return iterator;
     }

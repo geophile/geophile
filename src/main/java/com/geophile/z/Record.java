@@ -49,4 +49,40 @@ public interface Record
      * @param record The Record to be modified.
      */
     void copyTo(Record record);
+
+    /**
+     * Used to filter {@link Record}s in conjunction
+     * with {@link SpatialIndex#remove(com.geophile.z.SpatialObject, com.geophile.z.Record.Filter)}.
+     * @param <RECORD> Type of the Records to be filtered.
+     */
+
+    /**
+     * Used in conjuction with {@link com.geophile.z.SpatialIndex#remove(SpatialObject, com.geophile.z.Record.Filter)},
+     * a Filter identifies a record to be removed from a spatial index.
+     * @param <RECORD> An implementation of Record.
+     */
+    interface Filter<RECORD extends Record>
+    {
+        /**
+         * Returns true iff the given Record is of interest, (i.e., should be removed).
+         * @param record A candidate for removal.
+         * @return true iff the given Record is of interest, (i.e., should be removed).
+         */
+        boolean select(RECORD record);
+    }
+
+    /**
+     * Used in conjuction with {@link com.geophile.z.SpatialIndex#add(SpatialObject, com.geophile.z.Record.Factory)},
+     * a Factory creates a RECORD to be inserted into a spatial index. The RECORD will be owned by the spatial index,
+     * and if made available to the application, the application should not modify it.
+     * @param <RECORD> An implementation of Record.
+     */
+    interface Factory<RECORD extends Record>
+    {
+        /**
+         * Returns a new RECORD.
+         * @return a new RECORD
+         */
+        RECORD newRecord();
+    }
 }

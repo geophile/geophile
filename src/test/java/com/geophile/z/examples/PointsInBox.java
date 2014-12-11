@@ -27,10 +27,11 @@ public class PointsInBox
     private void run() throws IOException, InterruptedException
     {
         // Load spatial index with points
+        ExampleRecord.Factory recordFactory = new ExampleRecord.Factory();
         SpatialIndex<ExampleRecord> points = SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
         for (int i = 0; i < N_POINTS; i++) {
             Point point = randomPoint();
-            points.add(point, new ExampleRecord(point, i));
+            points.add(point, recordFactory.setup(point, i));
         }
         // Run queries
         for (int q = 0; q < N_QUERIES; q++) {

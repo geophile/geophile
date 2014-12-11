@@ -10,7 +10,6 @@ import com.geophile.util.Stopwatch;
 import com.geophile.z.Cursor;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
-import com.geophile.z.RecordFilter;
 import com.geophile.z.SpatialObjectSerializer;
 import com.geophile.z.TestRecord;
 import com.geophile.z.space.SpaceImpl;
@@ -297,10 +296,10 @@ public abstract class IndexTestBase
         return SpaceImpl.z(x << SpaceImpl.LENGTH_BITS, SpaceImpl.MAX_Z_BITS);
     }
 
-    private RecordFilter<TestRecord> recordFilter(final long z, final int soid)
+    private Record.Filter<TestRecord> recordFilter(final long z, final int soid)
     {
         return
-            new RecordFilter<TestRecord>()
+            new Record.Filter<TestRecord>()
             {
                 @Override
                 public boolean select(TestRecord record)

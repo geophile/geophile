@@ -80,9 +80,10 @@ public class SelfJoinTest extends SpatialJoinTestBase
             };
         SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         Box box = new Box(10, 20, 30, 40);
-        spatialIndex.add(box, new TestRecord(box, 1));
+        TestRecord.Factory recordFactory = new TestRecord.Factory();
+        spatialIndex.add(box, recordFactory.setup(box, 1));
         box = new Box(10, 20, 30, 40);
-        spatialIndex.add(box, new TestRecord(box, 2));
+        spatialIndex.add(box, recordFactory.setup(box, 2));
         Iterator<Pair<TestRecord, TestRecord>> iterator =
             SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, KEEP_ALL).iterator(spatialIndex, spatialIndex);
         // Should see all combinations of b1 and b2

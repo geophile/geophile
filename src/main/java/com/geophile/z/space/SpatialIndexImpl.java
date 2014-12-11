@@ -9,7 +9,6 @@ package com.geophile.z.space;
 import com.geophile.z.Cursor;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
-import com.geophile.z.RecordFilter;
 import com.geophile.z.SingleCellException;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
@@ -33,10 +32,12 @@ public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD
 
     // SpatialIndex interface
 
-    public void add(SpatialObject spatialObject, RECORD record, int maxZ) throws IOException, InterruptedException
+    public void add(SpatialObject spatialObject, Record.Factory<RECORD> recordFactory, int maxZ)
+        throws IOException, InterruptedException
     {
         long[] zs = decompose(spatialObject, maxZ);
         for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
+            RECORD record = recordFactory.newRecord();
             record.z(zs[i]);
             index.add(record);
         }
@@ -49,7 +50,7 @@ public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD
     }
 
     public boolean remove(SpatialObject spatialObject,
-                          RecordFilter<RECORD> recordFilter,
+                          Record.Filter<RECORD> recordFilter,
                           int maxZ) throws IOException, InterruptedException
     {
         long[] zs = decompose(spatialObject, maxZ);

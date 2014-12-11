@@ -7,7 +7,7 @@
 package com.geophile.z.space;
 
 import com.geophile.util.MicroBenchmark;
-import com.geophile.z.RecordFilter;
+import com.geophile.z.Record;
 import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.TestIndex;
@@ -35,7 +35,7 @@ public class RemovePerformance extends MicroBenchmark
     @Override
     public Object action() throws Exception
     {
-        TestRecordFilter filter = new TestRecordFilter();
+        TestFilter filter = new TestFilter();
         // Worst case: visit ids in reverse order
         for (int id = copies - 1; id >= 0; id--) {
             filter.soid = id;
@@ -52,8 +52,9 @@ public class RemovePerformance extends MicroBenchmark
     private void loadCopies() throws IOException, InterruptedException
     {
         spatialIndex = SpatialIndex.newSpatialIndex(SPACE, new TestIndex(), SpatialIndex.Options.SINGLE_CELL);
+        TestRecord.Factory recordFactory = new TestRecord.Factory();
         for (int id = 0; id < copies; id++) {
-            spatialIndex.add(TEST_POINT, new TestRecord(TEST_POINT, id));
+            spatialIndex.add(TEST_POINT, recordFactory.setup(TEST_POINT, id));
         }
     }
 
@@ -69,7 +70,7 @@ public class RemovePerformance extends MicroBenchmark
 
     private SpatialIndex<TestRecord> spatialIndex;
 
-    private static class TestRecordFilter implements RecordFilter<TestRecord>
+    private static class TestFilter implements Record.Filter<TestRecord>
     {
         @Override
         public boolean select(TestRecord record)

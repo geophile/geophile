@@ -18,11 +18,8 @@ public class TestInput
 
     public void add(SpatialObject spatialObject) throws IOException, InterruptedException
     {
-        TestRecord record = (TestRecord) ((SpatialIndexImpl<TestRecord>)spatialIndex).index().newRecord();
-        record.spatialObject(spatialObject);
-        record.soid(soidCounter++);
-        records.add(record);
-        spatialIndex.add(spatialObject, record);
+        spatialIndex.add(spatialObject, RECORD_FACTORY.setup(spatialObject, soidCounter++));
+        records.add(RECORD_FACTORY.newRecord());
     }
 
     public List<TestRecord> records()
@@ -48,6 +45,8 @@ public class TestInput
         this.records = new ArrayList<>();
         this.spatialIndex = spatialIndex;
     }
+
+    private static final TestRecord.Factory RECORD_FACTORY = new TestRecord.Factory();
 
     private final String description;
     private final List<TestRecord> records;

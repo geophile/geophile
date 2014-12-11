@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 
 // T is either Pair or SpatialObject
 
-public class SpatialJoinIterator<T> implements Iterator<T>
+class SpatialJoinIterator<T> implements Iterator<T>
 {
     // Object interface
 
@@ -78,11 +78,12 @@ public class SpatialJoinIterator<T> implements Iterator<T>
                                          rightInputObserver);
     }
 
-    public static SpatialJoinIterator<Record> spatialObjectIterator(SpatialObject leftSpatialObject,
-                                                                    SpatialIndexImpl rightSpatialIndex,
-                                                                    SpatialJoin.Filter filter,
-                                                                    SpatialJoin.InputObserver leftInputObserver,
-                                                                    SpatialJoin.InputObserver rightInputObserver)
+    public static SpatialJoinIterator<? extends Record>
+    spatialObjectIterator(SpatialObject leftSpatialObject,
+                          SpatialIndexImpl rightSpatialIndex,
+                          SpatialJoin.Filter filter,
+                          SpatialJoin.InputObserver leftInputObserver,
+                          SpatialJoin.InputObserver rightInputObserver)
         throws IOException, InterruptedException
     {
 
@@ -144,16 +145,24 @@ public class SpatialJoinIterator<T> implements Iterator<T>
                                 SpatialJoin.InputObserver leftInputObserver,
                                 SpatialJoin.InputObserver rightInputObserver) throws IOException, InterruptedException
     {
-        SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();
+        final SortedArray<RecordWithSpatialObject> queryIndex = new SortedArray.OfBaseRecord();
         final SpatialIndex<RecordWithSpatialObject> querySpatialIndex =
             SpatialIndex.newSpatialIndex(dataSpatialIndex.space(),
                                          queryIndex,
                                          querySpatialObject.maxZ() == 1
                                          ? SpatialIndex.Options.SINGLE_CELL
                                          : SpatialIndex.Options.DEFAULT);
-        RecordWithSpatialObject queryRecord = queryIndex.newRecord();
-        queryRecord.spatialObject(querySpatialObject);
-        querySpatialIndex.add(querySpatialObject, queryRecord);
+        querySpatialIndex.add(querySpatialObject,
+                              new Record.Factory<RecordWithSpatialObject>()
+                              {
+                                  @Override
+                                  public RecordWithSpatialObject newRecord()
+                                  {
+                                      RecordWithSpatialObject queryRecord = queryIndex.newRecord();
+                                      queryRecord.spatialObject(querySpatialObject);
+                                      return queryRecord;
+                                  }
+                              });
         SpatialJoinOutput pendingLeftRight =
             new SpatialJoinOutput()
             {

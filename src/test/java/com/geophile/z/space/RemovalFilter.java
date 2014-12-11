@@ -6,11 +6,11 @@
 
 package com.geophile.z.space;
 
-import com.geophile.z.RecordFilter;
+import com.geophile.z.Record;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.TestRecord;
 
-class RemovalFilter implements RecordFilter<TestRecord>
+class RemovalFilter implements Record.Filter<TestRecord>
 {
     @Override
     public boolean select(TestRecord record)

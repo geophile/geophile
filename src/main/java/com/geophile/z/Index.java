@@ -34,18 +34,18 @@ public abstract class Index<RECORD extends Record>
      * Removal of an indexed spatial object requires removal of the {@link com.geophile.z.Record}s
      * containing each of the spatial object's z-values. Z-values are not unique -- the same z-value
      * may be part of the decomposition of any number of {@link com.geophile.z.SpatialObject}s.
-     * A {@link com.geophile.z.RecordFilter} is used to determine which {@link com.geophile.z.Record}s
-     * are to be removed. Geophile (via {@link com.geophile.z.SpatialIndex#remove(SpatialObject, RecordFilter)})
+     * A {@link com.geophile.z.Record.Filter} is used to determine which {@link com.geophile.z.Record}s
+     * are to be removed. Geophile (via {@link com.geophile.z.SpatialIndex#remove(SpatialObject, com.geophile.z.Record.Filter)})
      * orchestrates the calls to this method, and does not ensure that recordFilter.select returns true
      * for at most one record. Instead, it proceeds until one such record is located and removes that record.
      * @param z z-value representing a region that overlaps the spatial object being removed.
-     * @param recordFilter identifies which {@link com.geophile.z.Record} associated with the given
+     * @param filter identifies which {@link com.geophile.z.Record} associated with the given
      *                     z-value should be removed.
      * @return false if this index does blind updates. Otherwise, the return value is true
      *               iff a {@link com.geophile.z.Record} is found such that it has given z-value, and causes
      *               recordFilter.select to return true.
      */
-    public abstract boolean remove(long z, RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException;
+    public abstract boolean remove(long z, Record.Filter<RECORD> filter) throws IOException, InterruptedException;
 
     /**
      * Returns a {@link com.geophile.z.Cursor} that can visit this Index's records.

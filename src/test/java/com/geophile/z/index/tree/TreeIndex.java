@@ -10,7 +10,6 @@ import com.geophile.z.Cursor;
 import com.geophile.z.DuplicateRecordException;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
-import com.geophile.z.RecordFilter;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -46,7 +45,7 @@ public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
     }
 
     @Override
-    public boolean remove(long z, RecordFilter<RECORD> recordFilter)
+    public boolean remove(long z, Record.Filter<RECORD> filter)
     {
         boolean foundRecord = false;
         boolean zMatch = true;
@@ -54,7 +53,7 @@ public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
         while (zMatch && iterator.hasNext() && !foundRecord) {
             RECORD record = iterator.next();
             if (record.z() == z) {
-                foundRecord = recordFilter.select(record);
+                foundRecord = filter.select(record);
             } else {
                 zMatch = false;
             }

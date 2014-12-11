@@ -12,7 +12,6 @@ import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialJoin;
 import com.geophile.z.SpatialObject;
-import com.geophile.z.TestRecord;
 import com.geophile.z.index.RecordWithSpatialObject;
 import com.geophile.z.index.sortedarray.SortedArray;
 import com.geophile.z.spatialobject.d2.Box;
@@ -49,9 +48,7 @@ public class SpatialJoinManyPointsOneBox
                         {
                             SpatialIndex<RecordWithSpatialObject> queryIndex =
                                 SpatialIndex.newSpatialIndex(SPACE, new SortedArray.OfBaseRecord());
-                            RecordWithSpatialObject queryRecord = new RecordWithSpatialObject();
-                            queryRecord.spatialObject(query);
-                            queryIndex.add(query, queryRecord);
+                            queryIndex.add(query, RECORD_FACTORY.setup(query));
                             for (int trial = 0; trial < TRIALS; trial++) {
                                 Iterator<Pair<RecordWithSpatialObject, RecordWithSpatialObject>> iterator =
                                     SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, manyManyFilter)
@@ -96,7 +93,7 @@ public class SpatialJoinManyPointsOneBox
         SpatialIndex<RecordWithSpatialObject> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, new SortedArray.OfBaseRecord());
         for (int i = 0; i < n; i++) {
             SpatialObject spatialObject = generator.newSpatialObject();
-            spatialIndex.add(spatialObject, new TestRecord(spatialObject, i));
+            spatialIndex.add(spatialObject, RECORD_FACTORY.setup(spatialObject));
         }
         return spatialIndex;
     }
@@ -108,6 +105,8 @@ public class SpatialJoinManyPointsOneBox
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{NX, NY},
                                                       new int[]{X_BITS, Y_BITS});
+    private static final RecordWithSpatialObject.Factory RECORD_FACTORY = new RecordWithSpatialObject.Factory();
+
     private static final int TRIALS = 200;
     private static final int N_POINTS = 1_000_000;
     private static final int MIN_QUERY_BOX_SIZE = 1000;

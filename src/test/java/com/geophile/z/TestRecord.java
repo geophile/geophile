@@ -99,4 +99,25 @@ public class TestRecord extends RecordWithSpatialObject
     // Object state
 
     private int soid = UNDEFINED_SOID;
+
+    // Inner classes
+
+    public static class Factory implements Record.Factory<TestRecord>
+    {
+        @Override
+        public TestRecord newRecord()
+        {
+            return new TestRecord(spatialObject, id);
+        }
+
+        public Factory setup(SpatialObject spatialObject, int id)
+        {
+            this.spatialObject = spatialObject;
+            this.id = id;
+            return this;
+        }
+
+        private SpatialObject spatialObject;
+        private int id;
+    }
 }

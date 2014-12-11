@@ -133,9 +133,10 @@ public class SpatialJoinManyPointsOneBoxProfile extends SpatialJoinTestBase
     {
         SpatialIndex<TestRecord> index =
             SpatialIndex.newSpatialIndex(SPACE, newIndex(true), SpatialIndex.Options.SINGLE_CELL);
+        TestRecord.Factory recordFactory = new TestRecord.Factory();
         for (int i = 0; i < n; i++) {
             SpatialObject point = testPoint();
-            index.add(point, new TestRecord(point, i));
+            index.add(point, recordFactory.setup(point, i));
         }
         return index;
     }

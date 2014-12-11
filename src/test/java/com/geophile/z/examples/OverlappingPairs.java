@@ -26,13 +26,14 @@ public class OverlappingPairs
     private void run() throws IOException, InterruptedException
     {
         // Load spatial indexes with boxes
+        ExampleRecord.Factory recordFactory = new ExampleRecord.Factory();
         SpatialIndex<ExampleRecord> left = SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
         SpatialIndex<ExampleRecord> right = SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
         for (int i = 0; i < N_BOXES; i++) {
             Box leftBox = randomBox();
             Box rightBox = randomBox();
-            left.add(leftBox, new ExampleRecord(leftBox, i));
-            right.add(rightBox, new ExampleRecord(rightBox, i));
+            left.add(leftBox, recordFactory.setup(leftBox, i));
+            right.add(rightBox, recordFactory.setup(rightBox, i));
         }
         // Find overlapping pairs
         Iterator<Pair<ExampleRecord, ExampleRecord>> iterator =

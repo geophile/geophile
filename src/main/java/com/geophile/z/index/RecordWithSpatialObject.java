@@ -83,4 +83,25 @@ public class RecordWithSpatialObject implements Record
     private long z;
     private SpatialObject spatialObject;
     private int spatialObjectHash;
+
+    // Inner classes
+
+    public static class Factory implements Record.Factory<RecordWithSpatialObject>
+    {
+        @Override
+        public RecordWithSpatialObject newRecord()
+        {
+            RecordWithSpatialObject record = new RecordWithSpatialObject();
+            record.spatialObject(spatialObject);
+            return record;
+        }
+
+        public Factory setup(SpatialObject spatialObject)
+        {
+            this.spatialObject = spatialObject;
+            return this;
+        }
+
+        private SpatialObject spatialObject;
+    }
 }

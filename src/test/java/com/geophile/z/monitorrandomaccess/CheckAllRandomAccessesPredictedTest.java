@@ -61,8 +61,7 @@ public class CheckAllRandomAccessesPredictedTest
         SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         for (int id = 0; id < BOXES; id++) {
             Box box = (Box) dataGenerator.newSpatialObject();
-            TestRecord record = new TestRecord(box, id);
-            spatialIndex.add(box, record);
+            spatialIndex.add(box, RECORD_FACTORY.setup(box, id));
         }
         // dumpIndex(index);
         return spatialIndex;
@@ -73,8 +72,7 @@ public class CheckAllRandomAccessesPredictedTest
         BoxGenerator queryGenerator = new BoxGenerator(SPACE, new Random(queryBoxSize), queryBoxSize, queryBoxSize);
         SpatialIndex<TestRecord> queryIndex = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         Box query = (Box) queryGenerator.newSpatialObject();
-        TestRecord record = new TestRecord(query, 0);
-        queryIndex.add(query, record);
+        queryIndex.add(query, RECORD_FACTORY.setup(query, 0));
         RandomAccessMonitor dataObserver = new RandomAccessMonitor(query);
         Iterator<TestRecord> iterator =
             SpatialJoin
@@ -136,6 +134,7 @@ public class CheckAllRandomAccessesPredictedTest
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
                                                       new double[]{NX, NY},
                                                       new int[]{X_BITS, Y_BITS});
+    private static final TestRecord.Factory RECORD_FACTORY = new TestRecord.Factory();
 
     // Inner classes
 

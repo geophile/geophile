@@ -9,7 +9,6 @@ package com.geophile.z.index.sortedarray;
 import com.geophile.z.Cursor;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
-import com.geophile.z.RecordFilter;
 import com.geophile.z.index.RecordWithSpatialObject;
 
 import java.util.Arrays;
@@ -44,7 +43,7 @@ public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
     }
 
     @Override
-    public boolean remove(long z, RecordFilter<RECORD> recordFilter)
+    public boolean remove(long z, Record.Filter<RECORD> filter)
     {
         boolean removeRecordFound = false;
         RECORD key = newKeyRecord();
@@ -58,7 +57,7 @@ public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
             while (position >= 0 && sameZ && !removeRecordFound) {
                 RECORD record = (RECORD) records[position];
                 if (record.z() == z) {
-                    if (recordFilter.select(record)) {
+                    if (filter.select(record)) {
                         removeRecordFound = true;
                     } else {
                         position--;
@@ -74,7 +73,7 @@ public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
                 while (position < n && sameZ && !removeRecordFound) {
                     RECORD record = (RECORD) records[position];
                     if (record.z() == z) {
-                        if (recordFilter.select(record)) {
+                        if (filter.select(record)) {
                             removeRecordFound = true;
                         } else {
                             position++;

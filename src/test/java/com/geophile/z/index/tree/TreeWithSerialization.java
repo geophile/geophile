@@ -9,7 +9,7 @@ package com.geophile.z.index.tree;
 import com.geophile.z.Cursor;
 import com.geophile.z.DuplicateRecordException;
 import com.geophile.z.Index;
-import com.geophile.z.RecordFilter;
+import com.geophile.z.Record;
 import com.geophile.z.SerializedRecord;
 import com.geophile.z.SpatialObjectSerializer;
 import com.geophile.z.TestRecord;
@@ -45,7 +45,7 @@ public class TreeWithSerialization extends Index<TestRecord>
     }
 
     @Override
-    public boolean remove(long z, RecordFilter<TestRecord> recordFilter)
+    public boolean remove(long z, Record.Filter<TestRecord> filter)
     {
         boolean foundRecord = false;
         boolean zMatch = true;
@@ -53,7 +53,7 @@ public class TreeWithSerialization extends Index<TestRecord>
         while (zMatch && iterator.hasNext() && !foundRecord) {
             TestRecord record = iterator.next();
             if (record.z() == z) {
-                foundRecord = recordFilter.select(record);
+                foundRecord = filter.select(record);
             } else {
                 zMatch = false;
             }

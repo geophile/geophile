@@ -36,11 +36,12 @@ public abstract class SpatialIndex<RECORD extends Record>
      * The spatial object will be represented in the index by up to key.maxZ() records, each with a
      * different z-value.
      * @param spatialObject The {@link com.geophile.z.SpatialObject} being indexed.
-     * @param record The record to be added.
+     * @param recordFactory Creates the record to be added.
      */
-    public final void add(SpatialObject spatialObject, RECORD record) throws IOException, InterruptedException
+    public final void add(SpatialObject spatialObject, Record.Factory<RECORD> recordFactory)
+        throws IOException, InterruptedException
     {
-        add(spatialObject, record, USE_SPATIAL_OBJECT_MAX_Z);
+        add(spatialObject, recordFactory, USE_SPATIAL_OBJECT_MAX_Z);
     }
 
     /**
@@ -48,28 +49,29 @@ public abstract class SpatialIndex<RECORD extends Record>
      * The spatial object will be represented in the index by up to maxZ records, each with a different
      * z-value.
      * @param spatialObject The {@link com.geophile.z.SpatialObject} being indexed.
-     * @param record The record to be added.
+     * @param recordFactory Creates the record to be added.
      * @param maxZ The maximum number of z-values to be generated for the given {@link com.geophile.z.SpatialObject}.
      */
-    public abstract void add(SpatialObject spatialObject, RECORD record, int maxZ) throws IOException, InterruptedException;
+    public abstract void add(SpatialObject spatialObject, Record.Factory<RECORD> recordFactory, int maxZ)
+        throws IOException, InterruptedException;
 
     /**
      * Removes from this index the record associated with the given {@link com.geophile.z.SpatialObject}.
-     * A number of records may be located during the removal. The given {@link com.geophile.z.RecordFilter}
+     * A number of records may be located during the removal. The given {@link com.geophile.z.Record.Filter}
      * will identify the records to be removed.
      * @param spatialObject Key of the records to be removed.
      * @param recordFilter Identifies the exact records to be removed, causing false positives to be ignored.
      * @return true if spatialObject was found and removed, false otherwise
      */
     public final boolean remove(SpatialObject spatialObject,
-                                RecordFilter<RECORD> recordFilter) throws IOException, InterruptedException
+                                Record.Filter<RECORD> recordFilter) throws IOException, InterruptedException
     {
         return remove(spatialObject, recordFilter, USE_SPATIAL_OBJECT_MAX_Z);
     }
 
     /**
      * Removes from this index the record associated with the given {@link com.geophile.z.SpatialObject}.
-     * A number of records may be located during the removal. The given {@link com.geophile.z.RecordFilter}
+     * A number of records may be located during the removal. The given {@link com.geophile.z.Record.Filter}
      * will identify the records to be removed.
      * @param spatialObject Key of the records to be removed.
      * @param recordFilter Identifies the exact records to be removed, causing false positives to be ignored.
@@ -77,7 +79,7 @@ public abstract class SpatialIndex<RECORD extends Record>
      * @return true if spatialObject was found and removed, false otherwise
      */
     public abstract boolean remove(SpatialObject spatialObject,
-                                   RecordFilter<RECORD> recordFilter,
+                                   Record.Filter<RECORD> recordFilter,
                                    int maxZ) throws IOException, InterruptedException;
 
     /**

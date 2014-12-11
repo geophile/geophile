@@ -8,7 +8,7 @@ package com.geophile.z.space;
 
 import com.geophile.z.Index;
 import com.geophile.z.Pair;
-import com.geophile.z.RecordFilter;
+import com.geophile.z.Record;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialJoin;
 import com.geophile.z.SpatialObject;
@@ -48,11 +48,8 @@ public abstract class SpatialIndexTestBase
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                TestRecord record = index.newRecord();
                 Point point = new Point(x, y);
-                record.spatialObject(point);
-                record.soid(id++);
-                spatialIndex.add(point, record);
+                spatialIndex.add(point, RECORD_FACTORY.setup(point, id++));
             }
         }
         commitTransaction();
@@ -90,11 +87,8 @@ public abstract class SpatialIndexTestBase
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                TestRecord record = index.newRecord();
                 Point point = new Point(x, y);
-                record.spatialObject(point);
-                record.soid(id++);
-                spatialIndex.add(point, record);
+                spatialIndex.add(point, RECORD_FACTORY.setup(point, id++));
             }
         }
         commitTransaction();
@@ -132,11 +126,8 @@ public abstract class SpatialIndexTestBase
         int id = 0;
         for (long x = 0; x < X_MAX; x += 10) {
             for (long y = 0; y < Y_MAX; y += 10) {
-                TestRecord record = index.newRecord();
                 Point point = new Point(x, y);
-                record.spatialObject(point);
-                record.soid(id++);
-                spatialIndex.add(point, record);
+                spatialIndex.add(point, RECORD_FACTORY.setup(point, id++));
             }
         }
         commitTransaction();
@@ -192,11 +183,8 @@ public abstract class SpatialIndexTestBase
         SpatialIndexImpl<TestRecord> spatialIndex = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
         Box box = new Box(250, 750, 250, 750);
         for (int c = 0; c < COPIES; c++) {
-            TestRecord record = index.newRecord();
-            record.spatialObject(box);
-            record.soid(c);
-            spatialIndex.add(box, record);
-            records[c] = record;
+            spatialIndex.add(box, RECORD_FACTORY.setup(box, c));
+            records[c] = RECORD_FACTORY.newRecord();
         }
         // Generate a permutation of records
         Random random = new Random(123456);
@@ -214,7 +202,7 @@ public abstract class SpatialIndexTestBase
         }
         for (int c = 0; c < COPIES; c++) {
             final TestRecord victim = records[c];
-            RecordFilter<TestRecord> recordFilter = new RecordFilter<TestRecord>()
+            Record.Filter<TestRecord> filter = new Record.Filter<TestRecord>()
             {
                 @Override
                 public boolean select(TestRecord record)
@@ -222,9 +210,9 @@ public abstract class SpatialIndexTestBase
                     return record.soid() == victim.soid();
                 }
             };
-            assertTrue(spatialIndex.remove(box, recordFilter));
+            assertTrue(spatialIndex.remove(box, filter));
             // Try it again, to make sure the removal doesn't happen
-            assertTrue(!spatialIndex.remove(box, recordFilter));
+            assertTrue(!spatialIndex.remove(box, filter));
         }
         commitTransaction();
     }
@@ -242,9 +230,7 @@ public abstract class SpatialIndexTestBase
         Box box = new Box(xLo, xHi, yLo, yHi);
         Index<TestRecord> index = newIndex();
         SpatialIndex<TestRecord> query = new SpatialIndexImpl<>(SPACE, index, SpatialIndex.Options.DEFAULT);
-        TestRecord record = index.newRecord();
-        record.spatialObject(box);
-        query.add(box, record);
+        query.add(box, RECORD_FACTORY.setup(box, 0));
         Iterator<Pair<TestRecord, TestRecord>> iterator =
             SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, FILTER).iterator(query, spatialIndex);
         List<Point> actual = new ArrayList<>();
@@ -297,6 +283,7 @@ public abstract class SpatialIndexTestBase
             }
         };
     private static final SpaceImpl SPACE = new SpaceImpl(new double[]{0, 0}, new double[]{1000, 1000}, new int[]{10, 10}, null);
+    private static final TestRecord.Factory RECORD_FACTORY = new TestRecord.Factory();
     private static final SpatialJoin.Filter<TestRecord, TestRecord> FILTER =
         new SpatialJoin.Filter<TestRecord, TestRecord>()
         {
