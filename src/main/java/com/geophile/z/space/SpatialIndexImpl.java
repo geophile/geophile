@@ -10,7 +10,6 @@ import com.geophile.z.Cursor;
 import com.geophile.z.Index;
 import com.geophile.z.Record;
 import com.geophile.z.SingleCellException;
-import com.geophile.z.Space;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
 
@@ -36,7 +35,7 @@ public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD
         throws IOException, InterruptedException
     {
         long[] zs = decompose(spatialObject, maxZ);
-        for (int i = 0; i < zs.length && zs[i] != -1L; i++) {
+        for (int i = 0; i < zs.length && zs[i] != SpaceImpl.Z_NULL; i++) {
             RECORD record = recordFactory.newRecord();
             record.z(zs[i]);
             index.add(record);
@@ -58,33 +57,27 @@ public class SpatialIndexImpl<RECORD extends Record> extends SpatialIndex<RECORD
         int zCount = 0;
         Cursor<RECORD> cursor = index.cursor();
         RECORD key = index.newKeyRecord();
-        for (int i = 0; i < zs.length; i++) {
+        for (int i = 0; i < zs.length && zs[i] != SpaceImpl.Z_NULL; i++) {
             long z = zs[i];
-            if (z != Space.Z_NULL) {
-                key.z(z);
-                cursor.goTo(key);
-                boolean more = true;
-                boolean found = false;
-                while (more && !found) {
-                    RECORD record = cursor.next();
-                    if (record == null) {
-                        more = false;
-                    } else {
-                        if (record.z() == z) {
-                            if (recordFilter.select(record)) {
-                                found = true;
-                            }
-                        } else {
-                            more = false;
-                        }
-                    }
-                    if (found) {
+            key.z(z);
+            cursor.goTo(key);
+            boolean more = true;
+            boolean found = false;
+            while (more && !found) {
+                RECORD record = cursor.next();
+                if (record == null) {
+                    more = false;
+                } else if (record.z() == z) {
+                    if (recordFilter.select(record)) {
                         cursor.deleteCurrent();
                         recordsDeleted++;
+                        found = true;
                     }
+                } else {
+                    more = false;
                 }
-                zCount++;
             }
+            zCount++;
         }
         if (recordsDeleted > 0 && recordsDeleted < zCount) {
             throw new SpatialIndex.Exception(String.format("Incomplete deletion of spatial object %s", spatialObject));
