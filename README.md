@@ -115,6 +115,8 @@ The space is created as follows:
 
 The spatial indexes are created and loaded as follows:
 
+        ExampleRecord.Factory recordFactory = 
+            new ExampleRecord.Factory();
         SpatialIndex<ExampleRecord> left = 
             SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
         SpatialIndex<ExampleRecord> right = 
@@ -123,13 +125,18 @@ The spatial indexes are created and loaded as follows:
         for (int i = 0; i < N_BOXES; i++) {
             Box leftBox = randomBox();
             Box rightBox = randomBox();
-            left.add(leftBox, new ExampleRecord(leftBox, i));
-            right.add(rightBox, new ExampleRecord(rightBox, i));
+            left.add(leftBox, recordFactory.setup(leftBox, i));
+            right.add(rightBox, recordFactory.setup(rightBox, i));
         }
         ...
         private static final int N_BOXES = 1_000_000;
 
 * `ExampleRecord` is a simple class encapsulating a `SpatialObject` and an integer identifier.
+
+* `ExampleRecord.Factory` creates `ExampleRecord` objects. 
+`ExampleRecord.Factory.setup(SpatialObject, int)` modifies the `Factory` so that
+`Factory.newRecord()` calls will create an `ExampleRecord` with the desired `SpatialObject` and
+identifier. It also returns the `Factory` object itself.
 
 * `ExampleIndex` is a wrapper around `TreeIndex` (a `TreeSet`-based
 index) which specifies that it contains records of type
@@ -163,11 +170,13 @@ inputs is a single spatial object.
 
 The spatial index with 1,000,000 points is created and loaded as follows:
 
+        ExampleRecord.Factory recordFactory = 
+            new ExampleRecord.Factory();
         SpatialIndex<ExampleRecord> points = 
             SpatialIndex.newSpatialIndex(SPACE, new ExampleIndex());
         for (int i = 0; i < N_POINTS; i++) {
             Point point = randomPoint();
-            points.add(point, new ExampleRecord(point, i));
+            points.add(point, recordFactory.setup(point, i));
         }
         ...
         private static final int N_POINTS = 100_000;
