@@ -36,9 +36,7 @@ public abstract class SortedArray<RECORD extends Record> extends Index<RECORD>
     public void add(RECORD record)
     {
         ensureSpace(n + 1);
-        RECORD copy = newRecord();
-        record.copyTo(copy);
-        records[n++] = copy;
+        records[n++] = record;
         sorted = false;
     }
 

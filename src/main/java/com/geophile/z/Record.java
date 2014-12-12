@@ -45,7 +45,8 @@ public interface Record
     void z(long z);
 
     /**
-     * Copy the state of this Record into the given Record.
+     * Copy the state of this Record into the given Record. This method is only called if this Record is used in
+     * conjunction with an Index with stableRecords() = false.
      * @param record The Record to be modified.
      */
     void copyTo(Record record);

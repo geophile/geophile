@@ -32,9 +32,10 @@ public abstract class SpatialIndex<RECORD extends Record>
     }
 
     /**
-     * Adds the given record to the index, keyed by the given {@link com.geophile.z.SpatialObject}.
-     * The spatial object will be represented in the index by up to key.maxZ() records, each with a
-     * different z-value.
+     * Adds up to spatialObject.maxZ() records to the index, associated with the given
+     * {@link com.geophile.z.SpatialObject}. The records are intended to differ only by the z-values,
+     * which are obtained by decomposing spatialObject. The recordFactory allocates the records to be added.
+     * After creating each record, Geophile will set the record's z-value by calling Record.z(long).
      * @param spatialObject The {@link com.geophile.z.SpatialObject} being indexed.
      * @param recordFactory Creates the record to be added.
      */
@@ -45,9 +46,10 @@ public abstract class SpatialIndex<RECORD extends Record>
     }
 
     /**
-     * Adds the given record to the index, keyed by the given {@link com.geophile.z.SpatialObject}.
-     * The spatial object will be represented in the index by up to maxZ records, each with a different
-     * z-value.
+     * Adds up to maxZ records to the index, associated with the given
+     * {@link com.geophile.z.SpatialObject}. The records are intended to differ only by the z-values,
+     * which are obtained by decomposing spatialObject. The recordFactory allocates the records to be added.
+     * After creating each record, Geophile will set the record's z-value by calling Record.z(long).
      * @param spatialObject The {@link com.geophile.z.SpatialObject} being indexed.
      * @param recordFactory Creates the record to be added.
      * @param maxZ The maximum number of z-values to be generated for the given {@link com.geophile.z.SpatialObject}.

@@ -3,7 +3,6 @@ package com.geophile.z.spatialjoin;
 import com.geophile.z.SpatialIndex;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.TestRecord;
-import com.geophile.z.space.SpatialIndexImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
