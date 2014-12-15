@@ -86,6 +86,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
         <configuration>
+          <additionalJOption>-Xdoclint:-missing</additionalJOption>
           <excludePackageNames>com.geophile.z.space.*;com.geophile.z.spatialjoin.*</excludePackageNames>
           <show>public</show>
         </configuration>

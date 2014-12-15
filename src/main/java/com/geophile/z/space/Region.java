@@ -19,12 +19,13 @@ import java.util.Arrays;
  * {@link com.geophile.z.SpatialObject} subtypes to ensure that spatial object decompositions are correct.
  *
  * Suppose we have a grid of size 64 x 64, (which is far too coarse in practice), and a Region occuping the
- * lower-left quadrant, 0-32 x 0-32. The Region contains all points (x, y) such that 0 <= x < 16 and 0 <= y < 16.
+ * lower-left quadrant, 0-32 x 0-32. The Region contains all points (x, y) such that 0 &lt;= x &lt; 16 and
+ * 0 &lt;= y &lt; 16.
  * I.e., the top and and right boundaries do <i>not</i> belong to the region. However, these excluded boundaries
  * <i>do</i> belong to Regions at the top and right edges of the space. So, for example, the upper right quadrant,
- * 32-64 x 32-64 contains the points 32 <= x <= 64 and 32 <= y <= 64. The reason for this exception, along the top
- * and right edges of the space, is that we must deal with spatial objects that touch these edges, and these
- * objects must be completely covered by Regions.
+ * 32-64 x 32-64 contains the points 32 &lt;= x &lt;= 64 and 32 &lt;= y &lt;= 64. The reason for this exception,
+ * along the top and right edges of the space, is that we must deal with spatial objects that touch these edges,
+ * and these objects must be completely covered by Regions.
  *
  * To ensure that this logic is implemented correctly, the Region API does not expose the Region's boundaries directly.
  * Instead, there are methods for comparing the boundaries to given coordinates. For example, hiGT(int d, double coord)

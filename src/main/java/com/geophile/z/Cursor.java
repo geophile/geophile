@@ -54,6 +54,7 @@ public abstract class Cursor<RECORD extends Record>
      * on the underlying Index, in which case the return value is also false.
      * This is unlikely, but could occur if the index is being
      * accessed at a low level of isolation, e.g. READ COMMITTED.
+     * @return true iff a record was deleted.
      * @throws IOException
      * @throws InterruptedException
      */

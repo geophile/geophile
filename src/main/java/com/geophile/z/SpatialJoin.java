@@ -12,19 +12,19 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
- * Provides the API for specifying a spatial join.
+ * <p>Provides the API for specifying a spatial join.
  * Spatial join results are accessed through an {@link java.util.Iterator}. For a many/many join,
  * the Iterator yields {@link com.geophile.z.Pair} objects, in which {@link com.geophile.z.Pair#left()}  and
  * {@link com.geophile.z.Pair#right()} provide access to the (possibly) overlapping objects. For a one/many join,
  * the Iterator returns {@link com.geophile.z.SpatialObject}s.
- * <p/>
+ * </p><p>
  * The spatial join algorithm
  * may return duplicate {@link com.geophile.z.Pair}s or {@link com.geophile.z.SpatialObject}s.
  * Duplicates.INCLUDE keeps these duplicates.
  * Duplicates.EXCLUDE suppresses duplicates, which is more convenient for applications, but
  * requires the storing of all returned results, and checking each
  * {@link com.geophile.z.Pair} to see whether it has already been returned.
- * <p>
+ * </p><p>
  * A spatial join may yield false positives, which a Filter can remove.
  * </p>
  */

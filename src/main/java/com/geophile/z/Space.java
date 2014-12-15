@@ -37,14 +37,14 @@ public abstract class Space
 
     /**
      * The low bound of dimension d.
-     * @param d A dimension of the space, 0 <= d < dimensions()
+     * @param d A dimension of the space, 0 ^lt;= d &lt; dimensions()
      * @return The low coordinate of dimension d.
      */
     public abstract double lo(int d);
 
     /**
      * The high bound of dimension d.
-     * @param d A dimension of the space, 0 <= d < dimensions()
+     * @param d A dimension of the space, 0 &lt;= d &lt; dimensions()
      * @return The high coordinate of dimension d.
      */
     public abstract double hi(int d);
@@ -82,6 +82,7 @@ public abstract class Space
      * @param lo Low coordinates of the space.
      * @param hi High coordinates of the space.
      * @param gridBits Specifies the number of bits of resolution along each dimension.
+     * @return A new Space
      */
     public static Space newSpace(double[] lo, double[] hi, int[] gridBits)
     {
@@ -97,8 +98,9 @@ public abstract class Space
      * @param lo Low coordinates of the space.
      * @param hi High coordinates of the space.
      * @param gridBits Specifies the dimensions and extent of the space.
-     * @param interleave Specifies the how bits of coordinates are interleaved. 0 <= interleave[i] < 2**xBits[d],
-     *     0 <= d < 2**xBits.length. The more bits that are present for a given dimension earlier in the interleaving,
+     * @param interleave Specifies the how bits of coordinates are interleaved. 0 &lt;= interleave[i] &lt; 2**xBits[d],
+     * @return A new Space
+     *     0 &lt;= d &lt; 2**xBits.length. The more bits that are present for a given dimension earlier in the interleaving,
      *     the more the spatial index will be optimized for selectivity in that dimension.
      */
     public static Space newSpace(double[] lo, double[] hi, int[] gridBits, int[] interleave)

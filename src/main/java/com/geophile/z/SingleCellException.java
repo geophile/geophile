@@ -7,7 +7,7 @@
 package com.geophile.z;
 
 /**
- * Indicates an attempt to use a {@link com.geophile.z.SpatialObject} with maxZ > 1 with a
+ * Indicates an attempt to use a {@link com.geophile.z.SpatialObject} with maxZ &gt; 1 with a
  * {@link com.geophile.z.SpatialIndex} created as {@link com.geophile.z.SpatialIndex.Options#SINGLE_CELL}.
  */
 

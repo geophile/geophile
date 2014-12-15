@@ -90,6 +90,7 @@ public abstract class SpatialIndex<RECORD extends Record>
      * through the interface of this class.
      * @param space The {@link Space} containing the {@link SpatialObject}s to be indexed.
      * @param index The {@link Index} that will store the indexed {@link SpatialObject}s.
+     * @return A new SpatialIndex
      */
     public static <RECORD extends Record> SpatialIndex<RECORD> newSpatialIndex(Space space,
                                                                                Index<RECORD> index)
@@ -104,6 +105,7 @@ public abstract class SpatialIndex<RECORD extends Record>
      * through the interface of this class.
      * @param space The {@link Space} containing the {@link SpatialObject}s to be indexed.
      * @param index The {@link Index} that will store the indexed {@link SpatialObject}s.
+     * @return A new SpatialIndex.
      */
     public static <RECORD extends Record> SpatialIndex<RECORD> newSpatialIndex(Space space,
                                                                                Index<RECORD> index,

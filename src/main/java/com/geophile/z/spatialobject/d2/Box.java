@@ -159,8 +159,8 @@ public class Box implements SpatialObject
     }
 
     /**
-     * Creates a box containing points (x, y) such that xLo <= x <= xHi, and
-     * yLo <= y <= yHi.
+     * Creates a box containing points (x, y) such that xLo &lt;= x &lt;= xHi, and
+     * yLo &lt;= y &lt;= yHi.
      *
      * @param xLo The left boundary of the box.
      * @param xHi The right boundary of the box.
