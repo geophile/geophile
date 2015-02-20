@@ -347,6 +347,7 @@ class SpatialJoinInput
     public void enterZ() throws IOException, InterruptedException
     {
         assert !eof;
+        observer.enter(current.z());
         if (currentOverlapsOtherNest() ||
             !that.eof && overlap(current.z(), that.current.z())) {
             // Enter current
@@ -366,6 +367,7 @@ class SpatialJoinInput
     {
         assert !nest.isEmpty();
         Record top = nest.pop();
+        observer.exit(top.z());
         that.generateSpatialJoinOutput(top);
         log("exit");
     }
@@ -398,8 +400,8 @@ class SpatialJoinInput
             assert thatCurrentZ >= thisCurrentZ; // otherwise, we would have entered that.current
             if (thatCurrentZ > thisCurrentZ) {
                 if (singleCellOptimization && singleCell) {
-                    key.z(thatCurrentZ);
-                    cursorGoTo(cursor, key);
+                    randomAccessKey.z(thatCurrentZ);
+                    cursorGoTo(cursor, randomAccessKey);
                     copyToCurrent(cursorNext(cursor));
                 } else {
                     // Why this works: There are two cases to consider.
@@ -436,8 +438,8 @@ class SpatialJoinInput
         boolean foundAncestor = false;
         while (!foundAncestor && --c >= 0) {
             zCandidate = zCandidates[c];
-            key.z(zCandidate);
-            cursorGoTo(cursor, key);
+            randomAccessKey.z(zCandidate);
+            cursorGoTo(cursor, randomAccessKey);
             Record record = cursorNext(cursor);
             if (c == 0) {
                 // No ancestors were found. Go to the record following zStart.
@@ -514,7 +516,7 @@ class SpatialJoinInput
         cursorGoTo(cursor, zMinKey);
         //
         this.current = stableRecords ? null : index.newRecord();
-        this.key = index.newKeyRecord();
+        this.randomAccessKey = index.newKeyRecord();
         copyToCurrent(cursorNext(this.cursor));
         this.spatialJoinOutput = spatialJoinOutput;
         this.singleCell = spatialIndex.singleCell();
@@ -566,10 +568,29 @@ class SpatialJoinInput
         if (LOG.isLoggable(Level.FINE)) {
             StringBuilder buffer = new StringBuilder();
             Iterator<Record> nestScan = nest.descendingIterator();
+            long[] zs = new long[64];
+            int[] counts = new int[64];
+            int n = 0;
             while (nestScan.hasNext()) {
                 Record record = nestScan.next();
+                long z = record.z();
+                if (n > 0 && zs[n - 1] == z) {
+                    counts[n - 1]++;
+                } else {
+                    zs[n] = z;
+                    counts[n] = 1;
+                    n++;
+                }
+            }
+            for (int i = 0; i < n; i++) {
+                long z = zs[i];
                 buffer.append(' ');
-                buffer.append(formatZ(record.z()));
+                buffer.append(formatZ(z));
+                if (counts[i] > 1) {
+                    buffer.append('[');
+                    buffer.append(counts[i]);
+                    buffer.append(']');
+                }
             }
             String nextZ = eof ? "eof" : formatZ(current.z());
             LOG.log(Level.FINE,
@@ -601,7 +622,7 @@ class SpatialJoinInput
     private final Deque<Record> nest = new ArrayDeque<>();
     private final Cursor cursor;
     private Record current;
-    private final Record key;
+    private final Record randomAccessKey;
     // For use in finding ancestors
     private final long[] zCandidates = new long[SpaceImpl.MAX_Z_BITS];
     private long lastZRandomAccess; // For observing access pattern

@@ -139,6 +139,20 @@ public abstract class SpatialJoin
     public static class InputObserver
     {
         /**
+         * Called when the input enters the given z-value.
+         * @param z Z-value being entered.
+         */
+        public void enter(long z)
+        {}
+
+        /**
+         * Called when the input exits the given z-value.
+         * @param z Z-value being exited.
+         */
+        public void exit(long z)
+        {}
+
+        /**
          * Called when a random access to z has occurred on the given cursor. This method must not
          * cause the cursor state to be modified in any way.
          * @param cursor Cursor used to implement the random access.

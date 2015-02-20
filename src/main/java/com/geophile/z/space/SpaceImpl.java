@@ -334,7 +334,7 @@ public class SpaceImpl extends Space
     {
         String formatted;
         if (z < 0) {
-            formatted = Long.toString(z, 16);
+            formatted = "NULL";
         } else {
             int length = length(z);
             if (length > MAX_Z_BITS) {
