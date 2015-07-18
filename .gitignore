@@ -3,6 +3,7 @@ workinprogress
 .idea
 *.iml
 *.class
+.jcunit
 
 # Package Files #
 *.jar
