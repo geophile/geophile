@@ -21,32 +21,33 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A TreeIndex is not safe for use for simultaneous use by multiple threads.
  */
 
-public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
-{
+public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD> {
     // Object interface
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return name;
     }
 
     // Index interface
 
     @Override
-    public void add(RECORD record)
-    {
-        RECORD copy = newRecord();
-        record.copyTo(copy);
-        boolean added = tree.add(copy);
+    public void add(RECORD record) {
+        RECORD toBeAdded;
+        if (stableRecords()) {
+            toBeAdded = record;
+        } else {
+            toBeAdded = newRecord();
+            record.copyTo(toBeAdded);
+        }
+        boolean added = tree.add(toBeAdded);
         if (!added) {
-            throw new DuplicateRecordException(copy);
+            throw new DuplicateRecordException(toBeAdded);
         }
     }
 
     @Override
-    public boolean remove(long z, Record.Filter<RECORD> filter)
-    {
+    public boolean remove(long z, Record.Filter<RECORD> filter) {
         boolean foundRecord = false;
         boolean zMatch = true;
         Iterator<RECORD> iterator = tree.tailSet(key(z)).iterator();
@@ -65,8 +66,7 @@ public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
     }
 
     @Override
-    public Cursor<RECORD> cursor()
-    {
+    public Cursor<RECORD> cursor() {
         return new TreeIndexCursor<>(this);
     }
 
@@ -74,36 +74,31 @@ public abstract class TreeIndex<RECORD extends Record> extends Index<RECORD>
     public abstract RECORD newRecord();
 
     @Override
-    public boolean blindUpdates()
-    {
+    public boolean blindUpdates() {
         return false;
     }
 
     @Override
-    public boolean stableRecords()
-    {
+    public boolean stableRecords() {
         return stableRecords;
     }
 
     // TreeIndex
 
-    public TreeIndex(Comparator<RECORD> recordComparator, boolean stableRecords)
-    {
+    public TreeIndex(Comparator<RECORD> recordComparator, boolean stableRecords) {
         this.tree = new TreeSet<>(recordComparator);
         this.stableRecords = stableRecords;
     }
 
     // For use by this package
 
-    TreeSet<RECORD> tree()
-    {
+    TreeSet<RECORD> tree() {
         return tree;
     }
 
     // For use by this class
 
-    private RECORD key(long z)
-    {
+    private RECORD key(long z) {
         RECORD keyRecord = newRecord();
         keyRecord.z(z);
         return keyRecord;

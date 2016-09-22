@@ -13,6 +13,7 @@ import com.geophile.z.SpatialJoin;
 import com.geophile.z.spatialobject.d2.Box;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -39,10 +40,10 @@ public class OverlappingPairs
         Iterator<Pair<ExampleRecord, ExampleRecord>> iterator =
             SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, BOX_OVERLAP).iterator(left, right);
         // Print points contained in box
-        System.out.println("Overlapping pairs");
+        out.println("Overlapping pairs");
         while (iterator.hasNext()) {
             Pair<ExampleRecord, ExampleRecord> overlappingPair = iterator.next();
-            System.out.format("    %s\t%s\n",
+            out.format("    %s\t%s\n",
                               overlappingPair.left().spatialObject(),
                               overlappingPair.right().spatialObject());
         }
@@ -82,4 +83,6 @@ public class OverlappingPairs
         };
 
     private final Random random = new Random(System.currentTimeMillis());
+    public static PrintStream out = System.out;
+
 }
