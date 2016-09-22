@@ -14,6 +14,7 @@ import com.geophile.z.spatialobject.d2.Box;
 import com.geophile.z.spatialobject.d2.Point;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -40,10 +41,10 @@ public class PointsInBox
             Iterator<ExampleRecord> iterator =
                 SpatialJoin.newSpatialJoin(SpatialJoin.Duplicates.EXCLUDE, BOX_CONTAINS_POINT).iterator(box, points);
             // Print points contained in box
-            System.out.println(String.format("Points inside %s", box));
+            out.println(String.format("Points inside %s", box));
             while (iterator.hasNext()) {
                 ExampleRecord record = iterator.next();
-                System.out.println(String.format("    %s", record.spatialObject()));
+                out.println(String.format("    %s", record.spatialObject()));
             }
         }
     }
@@ -89,5 +90,6 @@ public class PointsInBox
             }
         };
 
+    public static PrintStream out = System.out;
     private final Random random = new Random(System.currentTimeMillis());
 }

@@ -6,44 +6,36 @@
 
 package com.geophile.z.monitorrandomaccess;
 
-import com.geophile.z.Cursor;
-import com.geophile.z.Record;
-import com.geophile.z.Space;
-import com.geophile.z.SpatialIndex;
-import com.geophile.z.SpatialJoin;
-import com.geophile.z.SpatialObject;
-import com.geophile.z.TestIndex;
-import com.geophile.z.TestRecord;
+import com.geophile.z.*;
 import com.geophile.z.space.SpaceImpl;
 import com.geophile.z.spatialjoin.BoxGenerator;
 import com.geophile.z.spatialobject.d2.Box;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 import static com.geophile.z.space.SpaceImpl.Z_NULL;
 import static com.geophile.z.space.SpaceImpl.formatZ;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
-public class CheckAllRandomAccessesPredictedTest
-{
+public class CheckAllRandomAccessesPredictedTest {
     @Test
-    public void test() throws IOException, InterruptedException
-    {
+    public void testWithStableRecords() throws IOException, InterruptedException {
+        runTest(true);
+    }
+
+    @Test
+    public void testWithUnstableRecords() throws IOException, InterruptedException {
+        runTest(false);
+    }
+
+    @Test
+    private void runTest(boolean stable) throws IOException, InterruptedException {
         for (int dataBoxSize = DELTA_DATA_BOX_SIDE;
              dataBoxSize <= MAX_DATA_BOX_SIDE;
              dataBoxSize += DELTA_DATA_BOX_SIDE) {
-            SpatialIndex<TestRecord> spatialIndex = loadDB(dataBoxSize);
+            SpatialIndex<TestRecord> spatialIndex = loadDB(dataBoxSize, stable);
             for (int queryBoxSize = DELTA_QUERY_BOX_SIDE;
                  queryBoxSize <= MAX_QUERY_BOX_SIDE;
                  queryBoxSize += DELTA_QUERY_BOX_SIDE) {
@@ -54,10 +46,9 @@ public class CheckAllRandomAccessesPredictedTest
         }
     }
 
-    private SpatialIndex<TestRecord> loadDB(int dataBoxSide) throws IOException, InterruptedException
-    {
+    private SpatialIndex<TestRecord> loadDB(int dataBoxSide, boolean stable) throws IOException, InterruptedException {
         BoxGenerator dataGenerator = new BoxGenerator(SPACE, new Random(dataBoxSide), dataBoxSide, dataBoxSide);
-        TestIndex index = new TestIndex();
+        TestIndex index = new TestIndex(stable);
         SpatialIndex<TestRecord> spatialIndex = SpatialIndex.newSpatialIndex(SPACE, index);
         for (int id = 0; id < BOXES; id++) {
             Box box = (Box) dataGenerator.newSpatialObject();
@@ -67,17 +58,16 @@ public class CheckAllRandomAccessesPredictedTest
         return spatialIndex;
     }
 
-    private void spatialJoin(SpatialIndex<TestRecord> dataIndex, int queryBoxSize) throws IOException, InterruptedException
-    {
+    private void spatialJoin(SpatialIndex<TestRecord> dataIndex, int queryBoxSize) throws IOException, InterruptedException {
         BoxGenerator queryGenerator = new BoxGenerator(SPACE, new Random(queryBoxSize), queryBoxSize, queryBoxSize);
         SpatialIndex<TestRecord> queryIndex = SpatialIndex.newSpatialIndex(SPACE, new TestIndex());
         Box query = (Box) queryGenerator.newSpatialObject();
         queryIndex.add(query, RECORD_FACTORY.setup(query, 0));
         RandomAccessMonitor dataObserver = new RandomAccessMonitor(query);
         Iterator<TestRecord> iterator =
-            SpatialJoin
-                .newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, null, null, dataObserver)
-                .iterator(query, dataIndex);
+                SpatialJoin
+                        .newSpatialJoin(SpatialJoin.Duplicates.INCLUDE, null, null, dataObserver)
+                        .iterator(query, dataIndex);
         // Run the spatial join
         while (iterator.hasNext()) {
             iterator.next();
@@ -98,8 +88,7 @@ public class CheckAllRandomAccessesPredictedTest
         assertTrue(dataObserver.unexpectedRandomAccesses().isEmpty());
     }
 
-    private void dumpIndex(TestIndex index) throws IOException, InterruptedException
-    {
+    private void dumpIndex(TestIndex index) throws IOException, InterruptedException {
         System.out.println("DATA");
         Cursor<TestRecord> cursor = index.cursor();
         TestRecord minZ = index.newKeyRecord();
@@ -113,8 +102,7 @@ public class CheckAllRandomAccessesPredictedTest
         System.out.println();
     }
 
-    private static void indent(long z)
-    {
+    private static void indent(long z) {
         int n = SpaceImpl.length(z);
         for (int i = 0; i < n; i++) {
             System.out.print(' ');
@@ -132,17 +120,15 @@ public class CheckAllRandomAccessesPredictedTest
     private static final int X_BITS = 20;
     private static final int Y_BITS = 20;
     private static final Space SPACE = Space.newSpace(new double[]{0, 0},
-                                                      new double[]{NX, NY},
-                                                      new int[]{X_BITS, Y_BITS});
+            new double[]{NX, NY},
+            new int[]{X_BITS, Y_BITS});
     private static final TestRecord.Factory RECORD_FACTORY = new TestRecord.Factory();
 
     // Inner classes
 
-    private static class RandomAccessMonitor extends SpatialJoin.InputObserver
-    {
+    private static class RandomAccessMonitor extends SpatialJoin.InputObserver {
         @Override
-        public void randomAccess(Cursor cursor, long z)
-        {
+        public void randomAccess(Cursor cursor, long z) {
             // System.out.format("    %s -> %s\n", cursor, formatZ(z));
             ZRun zRun = predictedRandomAccesses.get(z);
             if (zRun == null) {
@@ -153,8 +139,7 @@ public class CheckAllRandomAccessesPredictedTest
         }
 
         @Override
-        public void sequentialAccess(Cursor cursor, long zRandomAccess, Record record)
-        {
+        public void sequentialAccess(Cursor cursor, long zRandomAccess, Record record) {
             // System.out.format("        %s.next: %s -> %s\n", cursor, formatZ(zRandomAccess), formatZ(zSequentialAccess));
             if (record != null) {
                 ZRun zRun = predictedRandomAccesses.get(zRandomAccess);
@@ -167,8 +152,7 @@ public class CheckAllRandomAccessesPredictedTest
         }
 
         @Override
-        public void ancestorSearch(Cursor cursor, long zStart, long zAncestor)
-        {
+        public void ancestorSearch(Cursor cursor, long zStart, long zAncestor) {
             if (zAncestor == SpaceImpl.Z_NULL) {
                 ancestorNotFound++;
             } else {
@@ -176,29 +160,24 @@ public class CheckAllRandomAccessesPredictedTest
             }
         }
 
-        public Set<Long> predictedRandomAccesses()
-        {
+        public Set<Long> predictedRandomAccesses() {
             return predictedRandomAccesses.keySet();
         }
 
-        public int ancestorFound()
-        {
+        public int ancestorFound() {
             return ancestorFound;
         }
 
-        public int ancestorNotFound()
-        {
+        public int ancestorNotFound() {
             return ancestorNotFound;
         }
 
-        public List<Long> unexpectedRandomAccesses()
-        {
+        public List<Long> unexpectedRandomAccesses() {
             Collections.sort(unexpectedRandomAccesses);
             return unexpectedRandomAccesses;
         }
 
-        public RandomAccessMonitor(SpatialObject spatialObject)
-        {
+        public RandomAccessMonitor(SpatialObject spatialObject) {
             predictedRandomAccesses.put(0L, new ZRun(0L)); // Simplifies loop
             long[] zs = new long[spatialObject.maxZ()];
             SPACE.decompose(spatialObject, zs);
@@ -217,21 +196,17 @@ public class CheckAllRandomAccessesPredictedTest
         private int ancestorNotFound;
 
         // Tracks a run of z-values, starting with random access at a predicted z-value.
-        private static class ZRun
-        {
-            public ZRun(long zPredicted)
-            {
+        private static class ZRun {
+            public ZRun(long zPredicted) {
                 this.zPredicted = zPredicted;
             }
 
-            public void randomAccess(long z)
-            {
+            public void randomAccess(long z) {
                 // OK as long as we haven't moved past the first.
                 assertTrue(zMax == -1L || zMax == zFirst);
             }
 
-            public void sequentialAccess(Record record)
-            {
+            public void sequentialAccess(Record record) {
                 long z = record.z();
                 assertTrue(z >= zPredicted);
                 if (zFirst == Z_NULL) {
