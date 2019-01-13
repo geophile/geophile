@@ -35,7 +35,7 @@ import com.geophile.z.SpatialJoin;
 import com.geophile.z.SpatialObject;
 import com.geophile.z.TestIndex;
 import com.geophile.z.TestRecord;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.junit.Test;
 
 import java.io.IOException;

@@ -10,7 +10,7 @@
   <packaging>jar</packaging>
   <name>geophile</name>
   <description>A Java implementation of spatial indexing and spatial join.</description>
-  <version>2.0.5</version>
+  <version>2.3.0</version>
   <url>https://github.com/geophile/geophile</url>
   <licenses>
     <license>
@@ -36,9 +36,9 @@
     </dependency>
     <!-- jts -->
     <dependency>
-      <groupId>com.vividsolutions</groupId>
-      <artifactId>jts</artifactId>
-      <version>1.13</version>
+      <groupId>org.locationtech.jts</groupId>
+      <artifactId>jts-core</artifactId>
+      <version>1.16.0</version>
     </dependency>
   </dependencies>
   <scm>
