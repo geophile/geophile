@@ -9,8 +9,8 @@ package com.geophile.z.spatialobject.jts;
 import com.geophile.z.Space;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 
 // Region comparisons use bounding box. Override to get more precise.
 

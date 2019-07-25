@@ -3,8 +3,8 @@ package com.geophile.z.spatialobject.jts;
 import com.geophile.z.Space;
 import com.geophile.z.space.Region;
 import com.geophile.z.space.RegionComparison;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Point;
 
 public class JTSPoint extends JTSSpatialObject
 {

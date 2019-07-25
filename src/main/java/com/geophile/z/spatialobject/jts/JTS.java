@@ -7,8 +7,8 @@
 package com.geophile.z.spatialobject.jts;
 
 import com.geophile.z.Space;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 
 public class JTS
 {
